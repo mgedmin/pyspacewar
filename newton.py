@@ -85,6 +85,12 @@ class Viewport(object):
         surface_w, surface_h = self.surface.get_size()
         self.screen_x = surface_w * 0.5 - self.origin.x * self.scale + 0.5
         self.screen_y = surface_h * 0.5 + self.origin.y * self.scale + 0.5
+        x1, y1 = self.world_pos((0, 0))
+        x2, y2 = self.world_pos((surface_w, surface_h))
+        self.world_bounds = min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
+        x1, y1 = self.world_pos((20, 20))
+        x2, y2 = self.world_pos((surface_w-20, surface_h-20))
+        self.world_inner_bounds = min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
 
     def set_origin(self, new_origin):
         self._origin = new_origin
@@ -108,6 +114,39 @@ class Viewport(object):
         y = self.screen_y - world_pos[1] * self._scale
         return (int(x), int(y))
 
+    def in_screen(self, world_pos):
+        xmin, ymin, xmax, ymax = self.world_bounds
+        return xmin <= world_pos[0] <= xmax and ymin <= world_pos[1] <= ymax
+
+    def world_pos(self, screen_pos):
+        x = (screen_pos[0] - self.screen_x) / self._scale
+        y = -(screen_pos[1] - self.screen_y) / self._scale
+        return (x, y)
+
+    def keep_visible(self, *points):
+        if len(points) > 1:
+            xs = [pt.x for pt in points]
+            ys = [pt.y for pt in points]
+            w = max(xs) - min(xs)
+            h = max(ys) - min(ys)
+            xmin, ymin, xmax, ymax = self.world_inner_bounds
+            while (xmax - xmin) < w:
+                self.scale /= SCALE_FACTOR
+                xmin, ymin, xmax, ymax = self.world_inner_bounds
+            while (ymax - ymin) < h:
+                self.scale /= SCALE_FACTOR
+                xmin, ymin, xmax, ymax = self.world_inner_bounds
+        for pt in points:
+            xmin, ymin, xmax, ymax = self.world_inner_bounds
+            if pt.x < xmin:
+                self.origin -= Vector(xmin - pt.x, 0)
+            elif pt.x > xmax:
+                self.origin -= Vector(xmax - pt.x, 0)
+            if pt.y < ymin:
+                self.origin -= Vector(0, ymin - pt.y)
+            elif pt.y > ymax:
+                self.origin -= Vector(0, ymax - pt.y)
+
 
 class World(object):
 
@@ -115,8 +154,14 @@ class World(object):
         self.objects = []
         self.massive_objects = []
         self.collision_objects = []
+        self.in_update = False
+        self.queued_additions = []
+        self.queued_removals = []
 
     def add(self, obj):
+        if self.in_update:
+            self.queued_additions.append(obj)
+            return
         obj.world = self
         self.objects.append(obj)
         if obj.mass != 0:
@@ -125,6 +170,9 @@ class World(object):
             self.collision_objects.append(obj)
 
     def remove(self, obj):
+        if self.in_update:
+            self.queued_removals.append(obj)
+            return
         self.objects.remove(obj)
         if obj.mass != 0:
             self.massive_objects.remove(obj)
@@ -138,6 +186,7 @@ class World(object):
         return False
 
     def update(self, dt):
+        self.in_update = True
         for obj in self.objects:
             for other in self.massive_objects:
                 if other is not obj:
@@ -147,6 +196,13 @@ class World(object):
             for other in self.collision_objects:
                 if obj is not other and obj.collides(other):
                     obj.collision(other)
+        self.in_update = False
+        for obj in self.queued_additions:
+            self.add(obj)
+        for obj in self.queued_removals:
+            self.remove(obj)
+        self.queued_additions = []
+        self.queued_removals = []
 
     def draw(self, viewport):
         for obj in self.objects:
@@ -391,13 +447,21 @@ class Missile(Body):
     def draw(self, viewport):
         if self.orbit and viewport.show_orbits:
             red, green, blue = self.color
-            a = 0.1
-            b = 0.7 / len(self.orbit)
-            f = a
-            for pt in self.orbit:
+            if length_sq(self.position) > 10000**2: # far outer space
+                f = 0.2
                 color = (red*f, green*f, blue*f)
-                viewport.surface.set_at(viewport.screen_pos(pt), color)
-                f += b
+                pygame.draw.line(viewport.surface, color,
+                                 viewport.screen_pos(self.orbit[0]),
+                                 viewport.screen_pos(self.position))
+            else:
+                a = 0.1
+                b = 0.7 / len(self.orbit)
+                f = a
+                for pt in self.orbit:
+                    color = (red*f, green*f, blue*f)
+                    if viewport.in_screen(pt):
+                        viewport.surface.set_at(viewport.screen_pos(pt), color)
+                    f += b
         if not self.dying:
             viewport.surface.set_at(viewport.screen_pos(self.position), self.color)
 
@@ -462,6 +526,7 @@ def make_world():
             break
     ship.pin()
     world.add(ship)
+    world.ship2 = ship
     return world
 
 
@@ -495,7 +560,10 @@ class HUD(object):
         self.surface = surface
         self.font = pygame.font.Font(None, 14)
         self.fps = FPSCounter()
-        self.compass = HUDCompass(surface, world)
+        self.compass = HUDCompass(surface, world, world.ship, 1, 1,
+                                  HUDCompass.BLUE_COLORS)
+        self.compass2 = HUDCompass(surface, world, world.ship2, 0, 1,
+                                   HUDCompass.GREEN_COLORS)
 
     def draw(self):
         self.fps.frame()
@@ -522,25 +590,41 @@ class HUD(object):
         say(x1, y4, "%.1f" % self.fps.fps(), (200, 255, 225))
 
         self.compass.draw()
+        self.compass2.draw()
 
 
 class HUDCompass(object):
 
-    radius = 50
     alpha = int(0.9*255)
-    bgcolor = (0, 0x11, 0x22, alpha)
-    fgcolor1 = (0x99, 0xaa, 0xff, alpha)
-    fgcolor2 = (0x44, 0x55, 0x66, alpha)
-    fgcolor3 = (0xaa, 0x77, 0x66, alpha)
+
+    BLUE_COLORS = (
+        (0x00, 0x11, 0x22, alpha),
+        (0x99, 0xaa, 0xff, alpha),
+        (0x44, 0x55, 0x66, alpha),
+        (0xaa, 0x77, 0x66, alpha),
+    )
+
+    GREEN_COLORS = (
+        (0x00, 0x22, 0x11, alpha),
+        (0x99, 0xff, 0xaa, alpha),
+        (0x44, 0x66, 0x55, alpha),
+        (0xaa, 0x66, 0x77, alpha),
+    )
+
+    radius = 50
     radar_scale = 0.1
     velocity_scale = 10
 
-    def __init__(self, surface, world):
+    def __init__(self, surface, world, ship, xalign=0, yalign=1,
+                 colors=BLUE_COLORS):
         self.real_surface = surface
         self.world = world
+        self.ship = ship
         size = (2*self.radius, 2*self.radius)
         self.surface = pygame.Surface(size).convert_alpha()
-        self.pos = (10, surface.get_height() - 10 - size[1])
+        self.pos = (10 + xalign * (surface.get_width() - 20 - size[0]),
+                    10 + yalign * (surface.get_height() - 20 - size[1]))
+        self.bgcolor, self.fgcolor1, self.fgcolor2, self.fgcolor3 = colors
 
     def draw(self):
         x = y = self.radius
@@ -550,18 +634,18 @@ class HUDCompass(object):
         self.surface.set_at((x, y), self.fgcolor1)
 
         for body in self.world.massive_objects:
-            pos = (body.position - self.world.ship.position) * self.radar_scale
+            pos = (body.position - self.ship.position) * self.radar_scale
             if length(pos) > self.radius:
                 continue
             self.surface.set_at((x + int(pos.x), y - int(pos.y)), self.fgcolor3)
 
-        d = self.world.ship.direction_vector
+        d = self.ship.direction_vector
         d = d.scaled(self.radius * 0.9)
         x2 = x + int(d.x)
         y2 = y - int(d.y)
         pygame.draw.aaline(self.surface, self.fgcolor2, (x, y), (x2, y2))
 
-        v = self.world.ship.velocity * self.velocity_scale
+        v = self.ship.velocity * self.velocity_scale
         if length(v) > self.radius * 0.9:
             v = v.scaled(self.radius * 0.9)
         x2 = x + int(v.x)
@@ -599,15 +683,28 @@ def main():
                 continue
             if event.key == K_o:
                 viewport.show_orbits = not viewport.show_orbits
-            if event.key in (K_LCTRL, K_RCTRL):
+
+            if event.key == K_RCTRL:
                 world.add(world.ship.shoot(MISSILE_SPEED))
-            if event.key == K_SPACE:
+            if event.key == K_RALT:
                 if length_sq(world.ship.velocity) < 1.0:
                     world.ship.velocity = Vector(0, 0)
+                else:
+                    world.ship.velocity *= 0.95
+
+            if event.key == K_LCTRL:
+                world.add(world.ship2.shoot(MISSILE_SPEED))
+            if event.key == K_LALT:
+                if length_sq(world.ship2.velocity) < 1.0:
+                    world.ship2.velocity = Vector(0, 0)
+                else:
+                    world.ship2.velocity *= 0.95
+
         if pygame.key.get_pressed()[K_EQUALS]:
             viewport.scale *= SCALE_FACTOR
         if pygame.key.get_pressed()[K_MINUS]:
             viewport.scale /= SCALE_FACTOR
+
         if pygame.key.get_pressed()[K_LEFT]:
             world.ship.left_thrust = ROTATION_SPEED
         if pygame.key.get_pressed()[K_RIGHT]:
@@ -616,10 +713,20 @@ def main():
             world.ship.forward_thrust = FRONT_THRUST
         if pygame.key.get_pressed()[K_DOWN]:
             world.ship.rear_thrust = REAR_THRUST
+
+        if pygame.key.get_pressed()[K_a]:
+            world.ship2.left_thrust = ROTATION_SPEED
+        if pygame.key.get_pressed()[K_d]:
+            world.ship2.right_thrust = ROTATION_SPEED
+        if pygame.key.get_pressed()[K_w]:
+            world.ship2.forward_thrust = FRONT_THRUST
+        if pygame.key.get_pressed()[K_s]:
+            world.ship2.rear_thrust = REAR_THRUST
+
         world.update(DELTA_TIME)
         if pygame.time.get_ticks() < next_tick + JIFFY_IN_MS:
             screen.fill((0,0,0))
-            viewport.origin = world.ship.position
+            viewport.keep_visible(world.ship.position, world.ship2.position)
             world.draw(viewport)
             hud.draw()
             pygame.display.flip()
