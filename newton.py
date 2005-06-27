@@ -313,11 +313,21 @@ class Ship(Body):
         self.health = 1.0
 
     def collision(self, other):
-        self.bounce(other)
-        if isinstance(other, Missile):
+        # XXX this is ugly, I should use multimethods
+        if isinstance(other, Debris):
+            return
+        elif isinstance(other, Missile):
+            if other.exploded:
+                return
+            other.exploded = True
             self.health -= 0.2
+            v = other.velocity
+            if other.dying:
+                v = other.velocity_before_death
+            self.velocity += v * MISSILE_RECOIL
         else:
             self.health -= 0.05
+            self.bounce(other)
 
     def set_direction(self, direction):
         direction = direction % 360
@@ -430,7 +440,7 @@ class Missile(Body):
             if not self.orbit:
                 self.world.remove(self)
             else:
-                del self.orbit[0]
+                del self.orbit[:2]
             return
         self.orbit.append(self.position)
         if len(self.orbit) > 100:
@@ -440,6 +450,8 @@ class Missile(Body):
     def explode(self, other):
         if self.dying:
             return
+        self.velocity_before_death = self.velocity
+        self.exploded = False
         for n in range(random.randrange(3, 6)):
             color = (random.randrange(0xf0, 0xff),
                      random.randrange(0x70, 0x90),
@@ -663,7 +675,7 @@ class HUDCompass(object):
 
     radius = 50
     radar_scale = 0.1
-    velocity_scale = 10
+    velocity_scale = 50
 
     def __init__(self, surface, world, ship, xalign=0, yalign=1,
                  colors=BLUE_COLORS):
@@ -709,7 +721,16 @@ def main():
     pygame.init()
     pygame.display.set_caption('Newtonian Gravity')
     pygame.mouse.set_visible(False)
-    screen = pygame.display.set_mode((800, 600))
+
+    modes = pygame.display.list_modes()
+    if modes and modes != -1:
+        fullscreen_mode = modes[0]
+    else:
+        fullscreen_mode = (1024, 768) # shrug
+    w, h = fullscreen_mode
+    windowed_mode = (int(w * 0.8), int(h * 0.8))
+    screen = pygame.display.set_mode(windowed_mode)
+
     viewport = Viewport(screen)
     world = make_world()
     viewport.origin = (world.ship.position + world.ship2.position) * 0.5
@@ -734,6 +755,8 @@ def main():
                 continue
             if event.key == K_o:
                 viewport.show_orbits = not viewport.show_orbits
+            if event.key == K_f:
+                pygame.display.toggle_fullscreen()
 
             if event.key == K_RCTRL:
                 world.add(world.ship.shoot(MISSILE_SPEED))
