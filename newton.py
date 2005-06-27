@@ -6,7 +6,7 @@ import pygame
 from pygame.locals import *
 
 
-GRAVITY = 2.0 # constant of gravitation
+GRAVITY = 0.01 # constant of gravitation
 
 FPS = 20
 JIFFY_IN_MS = 1000 / FPS            # 1 jiffy in ms
@@ -16,6 +16,7 @@ ROTATION_SPEED = 10 / DELTA_TIME    # angles per time for left/right
 FRONT_THRUST = 0.2 / DELTA_TIME     # forward acceleration
 REAR_THRUST = 0.1 / DELTA_TIME      # backward acceleration
 MISSILE_SPEED = 3                   # missile speed
+MISSILE_RECOIL = 0.01               # recoil as factor of missile speed
 
 
 class Vector(tuple):
@@ -74,6 +75,7 @@ def arg(vector):
 class Viewport(object):
 
     show_orbits = True
+    autoscale_factor = 1.001
 
     def __init__(self, surface):
         self.surface = surface
@@ -131,10 +133,10 @@ class Viewport(object):
             h = max(ys) - min(ys)
             xmin, ymin, xmax, ymax = self.world_inner_bounds
             while (xmax - xmin) < w:
-                self.scale /= SCALE_FACTOR
+                self.scale /= self.autoscale_factor
                 xmin, ymin, xmax, ymax = self.world_inner_bounds
             while (ymax - ymin) < h:
-                self.scale /= SCALE_FACTOR
+                self.scale /= self.autoscale_factor
                 xmin, ymin, xmax, ymax = self.world_inner_bounds
         for pt in points:
             xmin, ymin, xmax, ymax = self.world_inner_bounds
@@ -380,7 +382,7 @@ class Ship(Body):
         missile = Missile(self.position + self.direction_vector * self.size,
                           self.velocity + self.direction_vector * extra_speed,
                           self.color)
-        self.velocity -= self.direction_vector * extra_speed * 0.01
+        self.velocity -= self.direction_vector * extra_speed * MISSILE_RECOIL
         return missile
 
 
@@ -501,7 +503,7 @@ def make_world():
             pos = Vector.from_polar(random.randrange(0, 360),
                                     random.randrange(0, 600))
             radius = random.randrange(5, 40)
-            mass = radius * random.randrange(2, 6)
+            mass = radius ** 3 * random.randrange(2, 6)
             p = Planet(pos, radius, mass, tuple(color), img)
             if not world.collides(p, 0.1):
                 break
@@ -556,41 +558,75 @@ class FPSCounter(object):
 class HUD(object):
 
     def __init__(self, surface, world):
+        self.surface = surface
         self.world = world
+        self.drawables = [
+            HUDWorldInfo(surface, world, 0.5, 0),
+            HUDShipInfo(surface, world.ship, 1, 0),
+            HUDShipInfo(surface, world.ship2, 0, 0,
+                        HUDShipInfo.GREEN_COLORS),
+            HUDCompass(surface, world, world.ship, 1, 1,
+                       HUDCompass.BLUE_COLORS),
+            HUDCompass(surface, world, world.ship2, 0, 1,
+                       HUDCompass.GREEN_COLORS),
+        ]
+
+    def draw(self):
+        for d in self.drawables:
+            d.draw()
+
+
+class HUDInfoPanel(object):
+
+    STD_COLORS = [(0xff, 0xff, 0xff), (0xcc, 0xff, 0xff)]
+    GREEN_COLORS = [(0x7f, 0xff, 0x00), (0xcc, 0xff, 0xff)]
+
+    def __init__(self, surface, nrows, xalign=0, yalign=0, colors=STD_COLORS):
         self.surface = surface
         self.font = pygame.font.Font(None, 14)
+        self.width = 70
+        self.row_height = 11
+        self.height = nrows * self.row_height
+        self.pos = (10 + xalign * (surface.get_width() - 20 - self.width),
+                    10 + yalign * (surface.get_height() - 20 - self.height))
+        self.color1, self.color2 = colors
+
+    def draw_rows(self, *rows):
+        x, y = self.pos
+        for a, b in rows:
+            self.surface.blit(self.font.render(str(a), True, self.color1), (x, y))
+            img = self.font.render(str(b), True, self.color2)
+            self.surface.blit(img, (x + self.width - img.get_width(), y))
+            y += self.row_height
+
+
+class HUDShipInfo(HUDInfoPanel):
+
+    def __init__(self, surface, ship, xalign=0, yalign=0,
+                 colors=HUDInfoPanel.STD_COLORS):
+        HUDInfoPanel.__init__(self, surface, 3, xalign, yalign, colors)
+        self.ship = ship
+
+    def draw(self):
+        self.draw_rows(
+                ('direction', '%d' % self.ship.direction),
+                ('heading', '%d' % arg(self.ship.velocity)),
+                ('speed', '%.1f' % length(self.ship.velocity)))
+
+
+class HUDWorldInfo(HUDInfoPanel):
+
+    def __init__(self, surface, world, xalign=0, yalign=0,
+                 colors=HUDInfoPanel.STD_COLORS):
+        HUDInfoPanel.__init__(self, surface, 3, xalign, yalign, colors)
+        self.world = world
         self.fps = FPSCounter()
-        self.compass = HUDCompass(surface, world, world.ship, 1, 1,
-                                  HUDCompass.BLUE_COLORS)
-        self.compass2 = HUDCompass(surface, world, world.ship2, 0, 1,
-                                   HUDCompass.GREEN_COLORS)
 
     def draw(self):
         self.fps.frame()
-        x0, y0 = 10, 10
-        w1, h1 = 70, 10
-        x1 = x0 + w1
-        y1 = y0 + h1
-        y2 = y1 + h1
-        y3 = y2 + h1
-        y4 = y3 + h1
-
-        def say(x, y, text, color):
-            self.surface.blit(self.font.render(text, True, color), (x, y))
-
-        say(x0, y0, "direction", (255, 255, 255))
-        say(x1, y0, "%d" % self.world.ship.direction, (200, 255, 225))
-        say(x0, y1, "heading", (255, 255, 255))
-        say(x1, y1, "%d" % arg(self.world.ship.velocity), (200, 255, 225))
-        say(x0, y2, "speed", (255, 255, 255))
-        say(x1, y2, "%.1f" % length(self.world.ship.velocity), (200, 255, 225))
-        say(x0, y3, "objects", (255, 255, 255))
-        say(x1, y3, "%d" % len(self.world.objects), (200, 255, 225))
-        say(x0, y4, "fps", (255, 255, 255))
-        say(x1, y4, "%.1f" % self.fps.fps(), (200, 255, 225))
-
-        self.compass.draw()
-        self.compass2.draw()
+        self.draw_rows(
+                ('objects', len(self.world.objects)),
+                ('fps', '%.1f' % self.fps.fps()))
 
 
 class HUDCompass(object):
@@ -662,6 +698,7 @@ def main():
     screen = pygame.display.set_mode((800, 600))
     viewport = Viewport(screen)
     world = make_world()
+    viewport.origin = (world.ship.position + world.ship2.position) * 0.5
     hud = HUD(screen, world)
     next_tick = pygame.time.get_ticks() + JIFFY_IN_MS
     while True:
