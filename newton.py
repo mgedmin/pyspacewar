@@ -1,8 +1,8 @@
 #!/usr/bin/python
 import math
 import random
+import glob
 import pygame
-import pygame.draw
 from pygame.locals import *
 
 
@@ -196,15 +196,21 @@ class Body(object):
 
 class Planet(Body):
 
-    def __init__(self, position, radius, mass, color):
+    def __init__(self, position, radius, mass, color, image=None):
         Body.__init__(self, position, mass)
         self.radius = radius
         self.color = color
 
+        self.image = image
+
     def draw(self, viewport):
         pos = viewport.screen_pos(self.position)
         radius = viewport.screen_len(self.radius)
-        pygame.draw.circle(viewport.surface, self.color, pos, radius)
+        if self.image is None:
+            pygame.draw.circle(viewport.surface, self.color, pos, radius)
+        else:
+            img = pygame.transform.scale(self.image, (radius*2, radius*2))
+            viewport.surface.blit(img, (pos[0]-radius, pos[1]-radius))
 
     def collision(self, other):
         pass
@@ -350,19 +356,21 @@ def make_simple_world():
 
 
 def make_world():
+    images = map(pygame.image.load, glob.glob('planet*.png'))
     world = World()
     n_planets = random.randrange(2, 20)
     for n in range(n_planets):
         color = [random.randrange(0x80, 0xA0),
                  random.randrange(0x20, 0x7F),
                  random.randrange(0, 0x20)]
+        img = random.choice(images)
         random.shuffle(color)
         while True:
             pos = Vector.from_polar(random.randrange(0, 360),
                                     random.randrange(0, 600))
             radius = random.randrange(5, 40)
             mass = radius * random.randrange(2, 6)
-            p = Planet(pos, radius, mass, tuple(color))
+            p = Planet(pos, radius, mass, tuple(color), img)
             if not world.collides(p, 0.1):
                 break
         p.pin()
