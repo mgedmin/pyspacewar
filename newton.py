@@ -198,6 +198,7 @@ class World(object):
             for other in self.collision_objects:
                 if obj is not other and obj.collides(other):
                     obj.collision(other)
+                    other.collision(obj)
         self.in_update = False
         for obj in self.queued_additions:
             self.add(obj)
@@ -295,8 +296,6 @@ class Planet(Body):
 
 class Ship(Body):
 
-    collision = Body.bounce
-
     def __init__(self, position, size=10, color=(255, 255, 255), direction=0):
         Body.__init__(self, position, 0)
         self.radius = size * 0.6
@@ -311,6 +310,14 @@ class Ship(Body):
         self.draw_rear_thrust = 0
         self.draw_left_thrust = 0
         self.draw_right_thrust = 0
+        self.health = 1.0
+
+    def collision(self, other):
+        self.bounce(other)
+        if isinstance(other, Missile):
+            self.health -= 0.2
+        else:
+            self.health -= 0.05
 
     def set_direction(self, direction):
         direction = direction % 360
@@ -431,6 +438,8 @@ class Missile(Body):
         Body.move(self, dt)
 
     def explode(self, other):
+        if self.dying:
+            return
         for n in range(random.randrange(3, 6)):
             color = (random.randrange(0xf0, 0xff),
                      random.randrange(0x70, 0x90),
@@ -604,7 +613,7 @@ class HUDShipInfo(HUDInfoPanel):
 
     def __init__(self, surface, ship, xalign=0, yalign=0,
                  colors=HUDInfoPanel.STD_COLORS):
-        HUDInfoPanel.__init__(self, surface, 3, xalign, yalign, colors)
+        HUDInfoPanel.__init__(self, surface, 4, xalign, yalign, colors)
         self.ship = ship
 
     def draw(self):
@@ -612,6 +621,11 @@ class HUDShipInfo(HUDInfoPanel):
                 ('direction', '%d' % self.ship.direction),
                 ('heading', '%d' % arg(self.ship.velocity)),
                 ('speed', '%.1f' % length(self.ship.velocity)))
+        x, y = self.pos
+        y += self.height - 2
+        w = max(0, int((self.width - 2) * self.ship.health))
+        pygame.draw.rect(self.surface, self.color2, (x, y, self.width, 4), 1)
+        self.surface.fill(self.color1, (x+1, y+1, w, 2))
 
 
 class HUDWorldInfo(HUDInfoPanel):
@@ -626,7 +640,7 @@ class HUDWorldInfo(HUDInfoPanel):
         self.fps.frame()
         self.draw_rows(
                 ('objects', len(self.world.objects)),
-                ('fps', '%.1f' % self.fps.fps()))
+                ('fps', '%.0f' % self.fps.fps()))
 
 
 class HUDCompass(object):
