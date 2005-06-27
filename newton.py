@@ -117,11 +117,19 @@ class World(object):
         self.collision_objects = []
 
     def add(self, obj):
+        obj.world = self
         self.objects.append(obj)
         if obj.mass != 0:
             self.massive_objects.append(obj)
         if obj.important_for_collision_detection:
             self.collision_objects.append(obj)
+
+    def remove(self, obj):
+        self.objects.remove(obj)
+        if obj.mass != 0:
+            self.massive_objects.remove(obj)
+        if obj.important_for_collision_detection:
+            self.collision_objects.remove(obj)
 
     def collides(self, something, margin=0):
         for obj in self.collision_objects:
@@ -166,11 +174,22 @@ class Body(object):
         collision_distance_sq = collision_distance ** 2
         return distance_sq < collision_distance_sq
 
-    def collision(self, other):
+    def bounce(self, other):
         normal = (self.position - other.position).scaled()
         delta = normal.x * self.velocity.x + normal.y * self.velocity.y
         self.velocity -= normal.scaled(2 * delta) * 0.9
         self.position = other.position + normal.scaled(other.radius + self.radius)
+
+    def stop(self, other):
+        normal = (self.position - other.position).scaled()
+        self.velocity = other.velocity
+        self.position = other.position + normal.scaled(other.radius + self.radius)
+        self.pin()
+
+    def explode(self, other):
+        self.world.remove(self)
+
+    collision = explode
 
     def gravitate(self, other, dt=1.0):
         # F = m1 * a = G*m1*m2/r**2
@@ -217,6 +236,8 @@ class Planet(Body):
 
 
 class Ship(Body):
+
+    collision = Body.bounce
 
     def __init__(self, position, size=10, color=(255, 255, 255), direction=0):
         Body.__init__(self, position, 0)
@@ -303,7 +324,30 @@ class Ship(Body):
         missile = Missile(self.position + self.direction_vector * self.size,
                           self.velocity + self.direction_vector * extra_speed,
                           self.color)
+        self.velocity -= self.direction_vector * extra_speed * 0.01
         return missile
+
+
+class Debris(Body):
+
+    important_for_collision_detection = False  # avoid n-square problem
+
+    collision = Body.bounce
+
+    def __init__(self, position, velocity, color, time=10):
+        Body.__init__(self, position, velocity=velocity)
+        self.color = color
+        self.time = time
+
+    def move(self, dt):
+        if self.time < dt:
+            self.world.remove(self)
+            return
+        self.time -= dt
+        Body.move(self, dt)
+
+    def draw(self, viewport):
+        viewport.surface.set_at(viewport.screen_pos(self.position), self.color)
 
 
 class Missile(Body):
@@ -314,12 +358,35 @@ class Missile(Body):
         Body.__init__(self, position, velocity=velocity)
         self.color = color
         self.orbit = []
+        self.dying = False
 
     def move(self, dt):
+        if self.dying:
+            if not self.orbit:
+                self.world.remove(self)
+            else:
+                del self.orbit[0]
+            return
         self.orbit.append(self.position)
         if len(self.orbit) > 100:
             del self.orbit[0]
         Body.move(self, dt)
+
+    def explode(self, other):
+        for n in range(random.randrange(3, 6)):
+            color = (random.randrange(0xf0, 0xff),
+                     random.randrange(0x70, 0x90),
+                     random.randrange(0, 0x20))
+            velocity = self.velocity * 0.3
+            velocity += Vector.from_polar(random.randrange(0, 360),
+                                          random.randrange(0, 10) / 10.0)
+            debris = Debris(self.position, velocity, color, time=5)
+            debris.pin()
+            self.world.add(debris)
+        self.stop(other)
+        self.dying = True
+
+    collision = explode
 
     def draw(self, viewport):
         if self.orbit and viewport.show_orbits:
@@ -331,7 +398,8 @@ class Missile(Body):
                 color = (red*f, green*f, blue*f)
                 viewport.surface.set_at(viewport.screen_pos(pt), color)
                 f += b
-        viewport.surface.set_at(viewport.screen_pos(self.position), self.color)
+        if not self.dying:
+            viewport.surface.set_at(viewport.screen_pos(self.position), self.color)
 
 
 def make_simple_world():
