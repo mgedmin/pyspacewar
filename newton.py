@@ -493,10 +493,15 @@ class Ship(Body):
 
 class ExperimentalSmartShip(Ship):
 
-    counter = 0
     last_l_r = 1
+    ai = True
 
     def move(self, dt=1.0):
+        if self.ai:
+            self.think()
+        Ship.move(self, dt)
+
+    def think(self):
         enemy = self.world.ship
 
         target_vector = Vector(enemy.position[0] - self.position[0],
@@ -525,7 +530,6 @@ class ExperimentalSmartShip(Ship):
             self.velocity *= 0.95
 
         self.last_l_r = l_r
-        Ship.move(self, dt)
 
     def fire(self, distance):
         if not self.world.ship.dead:
@@ -1000,6 +1004,9 @@ def main():
                     pygame.display.set_mode(windowed_mode)
                 viewport.resize_screen()
                 hud.resize_screen()
+
+            if event.key == K_2:
+                world.ship2.ai = not world.ship2.ai
 
             if event.key == K_RCTRL:
                 world.add(world.ship.shoot(MISSILE_SPEED))
