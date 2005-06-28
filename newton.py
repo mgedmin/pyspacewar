@@ -4,6 +4,8 @@ A game based on Newtonian gravity (loosely).
 
 Copyright (c) 2005 Marius Gedminas <marius@pov.lt>
 Consider this game GPLed.
+
+$Id$
 """
 import math
 import random
