@@ -503,6 +503,8 @@ class ExperimentalSmartShip(Ship):
 
     def think(self):
         enemy = self.world.ship
+        if enemy is self:
+            enemy = self.world.ship2
 
         target_vector = Vector(enemy.position[0] - self.position[0],
                                enemy.position[1] - self.position[1])
@@ -514,12 +516,12 @@ class ExperimentalSmartShip(Ship):
 
         if l_r > 0:
             if self.last_l_r < 0:
-                self.fire(length(target_vector))
+                self.fire(enemy, length(target_vector))
             self.left_thrust = 4
             self.right_thrust = 0
         else:
             if self.last_l_r > 0:
-                self.fire(length(target_vector))
+                self.fire(enemy, length(target_vector))
             self.left_thrust = 0
             self.right_thrust = 4
 
@@ -531,8 +533,8 @@ class ExperimentalSmartShip(Ship):
 
         self.last_l_r = l_r
 
-    def fire(self, distance):
-        if not self.world.ship.dead:
+    def fire(self, enemy, distance):
+        if not enemy.dead:
             if 0 == random.randrange(0, int(distance / 30) + 1):
                 self.world.add(self.shoot(MISSILE_SPEED))
 
@@ -581,14 +583,17 @@ class Missile(Body):
         if len(self.orbit) > 100:
             del self.orbit[0]
         Body.move(self, dt)
+        if length_sq(self.position) > 2000**2 and len(self.orbit) > 50: # far outer space
+            self.explode()
 
-    def explode(self, other):
+    def explode(self, other=None):
         if self.dying:
             return
         self.velocity_before_death = self.velocity
         self.exploded = False
         self.add_debris()
-        self.stop(other)
+        if other is not None:
+            self.stop(other)
         self.dying = True
 
     collision = explode
@@ -596,7 +601,7 @@ class Missile(Body):
     def draw(self, viewport):
         if self.orbit and viewport.show_orbits:
             red, green, blue = self.color
-            if length_sq(self.position) > 10000**2: # far outer space
+            if length_sq(self.position) > 100000**2: # far outer space
                 f = 0.2
                 color = (red*f, green*f, blue*f)
                 pygame.draw.line(viewport.surface, color,
@@ -636,7 +641,7 @@ def make_simple_world():
     return world
 
 
-def make_world():
+def make_world(world_radius=600):
     images = map(pygame.image.load, glob.glob('planet*.png'))
     world = World()
     n_planets = random.randrange(2, 20)
@@ -648,7 +653,7 @@ def make_world():
         random.shuffle(color)
         while True:
             pos = Vector.from_polar(random.randrange(0, 360),
-                                    random.randrange(0, 600))
+                                    random.randrange(0, world_radius))
             radius = random.randrange(5, 40)
             mass = radius ** 3 * random.randrange(2, 6)
             p = Planet(pos, radius, mass, tuple(color), img)
@@ -659,8 +664,9 @@ def make_world():
 
     while True:
         pos = Vector.from_polar(random.randrange(0, 360),
-                                random.randrange(0, 600))
-        ship = Ship(pos)
+                                random.randrange(0, world_radius))
+        ship = ExperimentalSmartShip(pos)
+        ship.ai = False
         if not world.collides(ship, 0.1):
             break
     ship.pin()
@@ -669,7 +675,7 @@ def make_world():
 
     while True:
         pos = Vector.from_polar(random.randrange(0, 360),
-                                random.randrange(0, 600))
+                                random.randrange(0, world_radius))
         ship = ExperimentalSmartShip(pos, color=(0x7f, 0xff, 0), direction=180)
         if not world.collides(ship, 0.1):
             break
@@ -1005,6 +1011,8 @@ def main():
                 viewport.resize_screen()
                 hud.resize_screen()
 
+            if event.key == K_1:
+                world.ship.ai = not world.ship.ai
             if event.key == K_2:
                 world.ship2.ai = not world.ship2.ai
 
