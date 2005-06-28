@@ -195,6 +195,7 @@ class World(object):
         self.in_update = False
         self.queued_additions = []
         self.queued_removals = []
+        self.ships = []
 
     def add(self, obj):
         if self.in_update:
@@ -206,6 +207,8 @@ class World(object):
             self.massive_objects.append(obj)
         if obj.important_for_collision_detection:
             self.collision_objects.append(obj)
+        if isinstance(obj, Ship):
+            self.ships.append(obj)
 
     def remove(self, obj):
         if self.in_update:
@@ -216,6 +219,8 @@ class World(object):
             self.massive_objects.remove(obj)
         if obj.important_for_collision_detection:
             self.collision_objects.remove(obj)
+        if isinstance(obj, Ship):
+            self.ships.remove(obj)
 
     def collides(self, something, margin=0):
         for obj in self.collision_objects:
@@ -496,6 +501,14 @@ class Ship(Body):
         self.velocity -= direction_vector * extra_speed * recoil
         self.world.add(missile)
 
+    def brake(self):
+        if self.dead:
+            return
+        if length_sq(self.velocity) < 1.0:
+            self.velocity = Vector(0, 0)
+        else:
+            self.velocity *= 0.95
+
 
 class Debris(Body):
 
@@ -583,13 +596,35 @@ class AIController(object):
     def __init__(self, ship):
         self.ship = ship
         self.last_l_r = 1
+        self.enemy = None
+
+    def chooseEnemy(self):
+        enemy = self.enemy
+        if enemy is not None and enemy.dead:
+            enemy = None
+        if enemy is not None:
+            dist_to_enemy = length_sq(enemy.position - self.ship.position)
+        else:
+            dist_to_enemy = 0
+        threshold = 50 ** 2
+        for ship in self.ship.world.ships:
+            if ship is self.ship or ship is self.enemy or ship.dead:
+                continue
+            dist = length_sq(ship.position - self.ship.position)
+            if enemy is None or dist < dist_to_enemy - threshold:
+                enemy = ship
+        return enemy
 
     def control(self):
-        world = self.ship.world
-        enemy = world.ship
-        if enemy is self.ship:
-            enemy = world.ship2
+        enemy = self.chooseEnemy()
+        self.enemy = enemy
+        if enemy is not None:
+            self.target(enemy)
+        else:
+            self.ship.brake()
+        self.evade(enemy)
 
+    def target(self, enemy):
         target_vector = enemy.position - self.ship.position
         moving_target_vector = target_vector + enemy.velocity - self.ship.velocity
 
@@ -623,16 +658,10 @@ class AIController(object):
         else:
             self.ship.velocity *= 0.95
 
-        if enemy.dead:
-            self.ship.left_thrust = 0
-            self.ship.right_thrust = 0
-            self.ship.velocity = self.ship.velocity * 0
-
-        self.evade(enemy)
         self.last_l_r = l_r
 
     def evade(self, enemy):
-        if not enemy.dead:
+        if enemy is not None and not enemy.dead:
             do_not_evade = enemy
         else:
             do_not_evade = None
@@ -758,6 +787,21 @@ def make_world(world_radius=600):
     ship.pin()
     world.add(ship)
     world.ship2 = ship
+
+    for n in range(3):
+        color = [random.randrange(0x90, 0xFF),
+                 random.randrange(0x60, 0xFF),
+                 random.randrange(0x60, 0xFF)]
+        random.shuffle(color)
+        while True:
+            pos = Vector.from_polar(random.randrange(0, 360),
+                                    random.randrange(0, world_radius))
+            ship = SmartShip(pos, color=color, direction=random.randrange(0, 360))
+            if not world.collides(ship, 0.1):
+                break
+        ship.pin()
+        world.add(ship)
+
     return world
 
 
@@ -1151,10 +1195,7 @@ def main():
             if event.key == K_RCTRL:
                 world.ship.shoot(MISSILE_SPEED)
             if event.key == K_RALT:
-                if length_sq(world.ship.velocity) < 1.0:
-                    world.ship.velocity = Vector(0, 0)
-                else:
-                    world.ship.velocity *= 0.95
+                world.ship.brake()
             if event.key in (K_l, K_c):
                 if event.key == K_l:
                     ship = world.ship
@@ -1185,10 +1226,7 @@ def main():
             if event.key == K_LCTRL:
                 world.ship2.shoot(MISSILE_SPEED)
             if event.key == K_LALT:
-                if length_sq(world.ship2.velocity) < 1.0:
-                    world.ship2.velocity = Vector(0, 0)
-                else:
-                    world.ship2.velocity *= 0.95
+                world.ship2.brake()
 
             if event.key == K_6:
                 for n in range(1, 50):
@@ -1224,7 +1262,8 @@ def main():
             or pygame.time.get_ticks() > last_frame_time + 500):
             start = pygame.time.get_ticks()
             screen.fill((0,0,0))
-            viewport.keep_visible(world.ship.position, world.ship2.position)
+##          viewport.keep_visible(world.ship.position, world.ship2.position)
+            viewport.keep_visible(*[s.position for s in world.ships])
             world.draw(viewport)
             hud.draw()
             hud.draw_time = pygame.time.get_ticks() - start
