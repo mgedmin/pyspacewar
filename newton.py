@@ -497,12 +497,17 @@ class ExperimentalSmartShip(Ship):
 
     last_l_r = 1
     ai = True
+    enemy = None
 
     def getClosestToObject(self, object):
-        distance = 90000
+        distance = 90000 # cutoff, 300 ** 2
         closest = None
-        for obj in self.world.massive_objects:
-            dst = length_sq(Vector(object.position - obj.position))
+        for obj in self.world.collision_objects:
+            if obj is self:
+                continue
+            if obj is self.enemy and not obj.dead:
+                continue # do not be a chicken
+            dst = length_sq(object.position - obj.position)
             if dst < distance:
                 closest = obj
                 distance = dst
@@ -514,34 +519,47 @@ class ExperimentalSmartShip(Ship):
         Ship.move(self, dt)
 
     def think(self):
-        enemy = self.world.ship
-        if enemy is self:
-            enemy = self.world.ship2
+        self.enemy = self.world.ship
+        if self.enemy is self:
+            self.enemy = self.world.ship2
 
-        target_vector = Vector(enemy.position[0] - self.position[0],
-                               enemy.position[1] - self.position[1])
-
-        moving_target_vector = target_vector + enemy.velocity - self.velocity
+        target_vector = self.enemy.position - self.position
+        moving_target_vector = target_vector + self.enemy.velocity - self.velocity
 
         l_r = (self.direction_vector[0]*moving_target_vector[1] -
                self.direction_vector[1]*moving_target_vector[0])
 
+        if length_sq(target_vector) < 2500:
+            turn_const = 10
+            thrust_const = 0
+        else:
+            turn_const = 2
+            thrust_const = 1
+
         if l_r > 0:
             if self.last_l_r < 0:
-                self.fire(enemy, length(target_vector))
-            self.left_thrust = 4
+                self.fire(self.enemy, length(target_vector))
+            self.left_thrust = random.randrange(turn_const, turn_const + 5)
             self.right_thrust = 0
         else:
             if self.last_l_r > 0:
-                self.fire(enemy, length(target_vector))
+                self.fire(self.enemy, length(target_vector))
             self.left_thrust = 0
-            self.right_thrust = 4
+            self.right_thrust = random.randrange(turn_const, turn_const + 5)
 
-        if length_sq(self.velocity) < 5.0:
-            self.forward_thrust = 1
+        rel_velocity = length(self.velocity - self.enemy.velocity)
+        if rel_velocity < 3:
+            rel_velocity = 3
+        if length_sq(self.velocity) < random.randrange(int(rel_velocity * 0.8), int(rel_velocity * 1.5) + 1) + 1:
+            self.forward_thrust = 1 * thrust_const
             self.rear_thrust = 0
         else:
             self.velocity *= 0.95
+
+        if self.enemy.dead:
+            self.left_thrust = 0
+            self.right_thrust = 0
+            self.velocity = self.velocity * 0
 
         self.evade()
         self.last_l_r = l_r
@@ -551,18 +569,27 @@ class ExperimentalSmartShip(Ship):
         if not planet:
             return
 
-        evade_vector = Vector(planet.position[0] - self.position[0],
-                              planet.position[1] - self.position[1])
-
+        evade_vector = planet.position - self.position
         moving_target_vector = evade_vector - self.velocity
 
         l_r = (self.direction_vector[0]*moving_target_vector[1] -
                self.direction_vector[1]*moving_target_vector[0])
 
-        if l_r < 0:
-            self.left_thrust += 1
+        evade_vector_length = length(evade_vector)
+        evade_factor = 1
+
+        if evade_vector_length < 100:
+            if l_r < 0:
+                self.left_thrust = evade_factor
+                self.right_thrust = 0
+            else:
+                self.right_thrust = evade_factor
+                self.left_thrust = 0
         else:
-            self.right_thrust += 1
+            if l_r < 0:
+                self.left_thrust += evade_factor
+            else:
+                self.right_thrust += evade_factor
 
     def fire(self, enemy, distance):
         if not enemy.dead:
@@ -697,10 +724,10 @@ def make_world(world_radius=600):
         pos = Vector.from_polar(random.randrange(0, 360),
                                 random.randrange(0, world_radius))
         ship = ExperimentalSmartShip(pos)
-        ship.ai = False
         if not world.collides(ship, 0.1):
             break
     ship.pin()
+    ship.ai = False
     world.add(ship)
     world.ship = ship
 
@@ -711,6 +738,49 @@ def make_world(world_radius=600):
         if not world.collides(ship, 0.1):
             break
     ship.pin()
+    world.add(ship)
+    world.ship2 = ship
+    return world
+
+
+def make_gravitating_world(world_radius=600):
+    images = map(pygame.image.load, glob.glob('planet*.png'))
+    world = World()
+    n_planets = random.randrange(1, 5)
+    for n in range(n_planets):
+        color = [random.randrange(0x80, 0xA0),
+                 random.randrange(0x20, 0x7F),
+                 random.randrange(0, 0x20)]
+        img = random.choice(images)
+        random.shuffle(color)
+        while True:
+            pos = Vector.from_polar(random.randrange(0, 360),
+                                    random.randrange(0, world_radius))
+            radius = random.randrange(5, 40)
+            mass = radius ** 3 * random.randrange(2, 6)
+            p = Planet(pos, radius, mass, tuple(color), img)
+            if not world.collides(p, 0.1):
+                break
+        p.pin()
+        world.add(p)
+
+    while True:
+        pos = Vector.from_polar(random.randrange(0, 360),
+                                random.randrange(0, world_radius))
+        ship = ExperimentalSmartShip(pos)
+        if not world.collides(ship, 0.1):
+            break
+    ship.ai = False
+    world.add(ship)
+    world.ship = ship
+
+    while True:
+        pos = Vector.from_polar(random.randrange(0, 360),
+                                random.randrange(0, world_radius))
+        ship = ExperimentalSmartShip(pos, color=(0x7f, 0xff, 0), direction=180)
+        if not world.collides(ship, 0.1):
+            break
+    ship.ai = False
     world.add(ship)
     world.ship2 = ship
     return world
@@ -999,20 +1069,28 @@ def main():
     pygame.display.set_caption('Newtonian Gravity')
     pygame.mouse.set_visible(False)
 
-    modes = pygame.display.list_modes()
-    if modes and modes != -1:
-        fullscreen_mode = modes[0]
+    if '-s' in sys.argv:
+        size = sys.argv[sys.argv.index('-s')+1].split('x')
+        fullscreen_mode = tuple(map(int, size))
     else:
-        fullscreen_mode = (1024, 768) # shrug
+        modes = pygame.display.list_modes()
+        if modes and modes != -1:
+            fullscreen_mode = modes[0]
+        else:
+            fullscreen_mode = (1024, 768) # shrug
     w, h = fullscreen_mode
     windowed_mode = (int(w * 0.8), int(h * 0.8))
     screen = pygame.display.set_mode(windowed_mode)
     in_fullscreen = False
 
     viewport = Viewport(screen)
-    world = make_world()
+    if '-g' in sys.argv:
+        world = make_gravitating_world()
+    else:
+        world = make_world()
     viewport.origin = (world.ship.position + world.ship2.position) * 0.5
     hud = HUD(screen, world)
+    last_frame_time = pygame.time.get_ticks()
     next_tick = pygame.time.get_ticks() + JIFFY_IN_MS
     while True:
         event = pygame.event.poll()
@@ -1023,10 +1101,12 @@ def main():
                 break
             if event.key == K_q:
                 break
-            if event.key == K_p:
+            if event.key == K_p: # pause
                 while True:
                     event = pygame.event.wait()
-                    if event.type in (KEYDOWN, QUIT, MOUSEBUTTONUP):
+                    if event.type in (QUIT, MOUSEBUTTONUP):
+                        break
+                    if event.type == KEYDOWN and event.key not in (K_LALT, K_RALT) and event.mod == 0:
                         break
                 next_tick = pygame.time.get_ticks() + JIFFY_IN_MS
                 hud.reset_fps()
