@@ -23,6 +23,8 @@ FRONT_THRUST = 0.2 / DELTA_TIME     # forward acceleration
 REAR_THRUST = 0.1 / DELTA_TIME      # backward acceleration
 MISSILE_SPEED = 3                   # missile speed
 MISSILE_RECOIL = 0.01               # recoil as factor of missile speed
+MISSILE_DAMAGE = 0.6
+COLLISSION_DAMAGE = 0.05
 
 
 class Vector(tuple):
@@ -84,10 +86,12 @@ def colorblend(col1, col2, alpha=0.5):
     beta = 1-alpha
     return (alpha*r1+beta*r2, alpha*g1+beta*g2, alpha*b1+beta*b2)
 
+
 class Viewport(object):
 
     show_orbits = True
     autoscale_factor = 1.001
+    visibility_margin = 100
 
     def __init__(self, surface):
         self.surface = surface
@@ -102,9 +106,13 @@ class Viewport(object):
         x1, y1 = self.world_pos((0, 0))
         x2, y2 = self.world_pos((surface_w, surface_h))
         self.world_bounds = min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
-        x1, y1 = self.world_pos((80, 80))
-        x2, y2 = self.world_pos((surface_w-80, surface_h-80))
+        m = self.visibility_margin
+        x1, y1 = self.world_pos((m, m))
+        x2, y2 = self.world_pos((surface_w-m, surface_h-m))
         self.world_inner_bounds = min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
+
+    def resize_screen(self):
+        self._recalc()
 
     def set_origin(self, new_origin):
         self._origin = new_origin
@@ -340,24 +348,31 @@ class Ship(Body):
         self.draw_right_thrust = 0
         self.health = 1.0
         self.dead = False
+        self.frags = 0
 
     def collision(self, other):
         # XXX this is ugly, I should use multimethods
+        ship_responsible = self
         if isinstance(other, Debris):
             return
         elif isinstance(other, Missile):
             if other.exploded:
                 return
             other.exploded = True
-            self.health -= 0.2
+            self.health -= MISSILE_DAMAGE
+            ship_responsible = other.launched_by
             v = other.velocity
             if other.dying:
                 v = other.velocity_before_death
             self.velocity += v * MISSILE_RECOIL
         else:
-            self.health -= 0.05
+            self.health -= COLLISSION_DAMAGE
             self.bounce(other)
         if self.health <= 0 and not self.dead:
+            if ship_responsible is self or ship_responsible is None:
+                self.frags -= 1
+            else:
+                ship_responsible.frags += 1
             self.dead = True
             self.dead_timer = 100
             self.add_debris(time=50, maxdistance=self.size * 0.5,
@@ -453,7 +468,7 @@ class Ship(Body):
     def shoot(self, extra_speed, recoil=MISSILE_RECOIL):
         missile = Missile(self.position + self.direction_vector * self.size,
                           self.velocity + self.direction_vector * extra_speed,
-                          self.color)
+                          self.color, launched_by=self)
         self.velocity -= self.direction_vector * extra_speed * recoil
         return missile
 
@@ -484,11 +499,12 @@ class Missile(Body):
 
     important_for_collision_detection = False  # avoid n-square problem
 
-    def __init__(self, position, velocity, color):
+    def __init__(self, position, velocity, color, launched_by=None):
         Body.__init__(self, position, velocity=velocity)
         self.color = color
         self.orbit = []
         self.dying = False
+        self.launched_by = launched_by
 
     def move(self, dt):
         if self.dying:
@@ -645,6 +661,10 @@ class HUD(object):
     def reset_fps(self):
         self.world_info.fps.reset()
 
+    def resize_screen(self):
+        for d in self.drawables:
+            d.resize_screen()
+
     def draw(self):
         for d in self.drawables:
             d.draw()
@@ -661,9 +681,14 @@ class HUDInfoPanel(object):
         self.width = 70
         self.row_height = 11
         self.height = nrows * self.row_height
-        self.pos = (10 + xalign * (surface.get_width() - 20 - self.width),
-                    10 + yalign * (surface.get_height() - 20 - self.height))
+        self.xalign = xalign
+        self.yalign = yalign
         self.color1, self.color2 = colors
+        self.resize_screen()
+
+    def resize_screen(self):
+        self.pos = (10 + self.xalign * (self.surface.get_width() - 20 - self.width),
+                    10 + self.yalign * (self.surface.get_height() - 20 - self.height))
 
     def draw_rows(self, *rows):
         x, y = self.pos
@@ -678,14 +703,15 @@ class HUDShipInfo(HUDInfoPanel):
 
     def __init__(self, surface, ship, xalign=0, yalign=0,
                  colors=HUDInfoPanel.STD_COLORS):
-        HUDInfoPanel.__init__(self, surface, 4, xalign, yalign, colors)
+        HUDInfoPanel.__init__(self, surface, 4.5, xalign, yalign, colors)
         self.ship = ship
 
     def draw(self):
         self.draw_rows(
                 ('direction', '%d' % self.ship.direction),
                 ('heading', '%d' % arg(self.ship.velocity)),
-                ('speed', '%.1f' % length(self.ship.velocity)))
+                ('speed', '%.1f' % length(self.ship.velocity)),
+                ('frags', '%d' % self.ship.frags),)
         x, y = self.pos
         y += self.height - 2
         w = max(0, int((self.width - 2) * self.ship.health))
@@ -748,11 +774,16 @@ class HUDCompass(object):
         self.real_surface = surface
         self.world = world
         self.ship = ship
-        size = (2*self.radius, 2*self.radius)
-        self.surface = pygame.Surface(size).convert_alpha()
-        self.pos = (10 + xalign * (surface.get_width() - 20 - size[0]),
-                    10 + yalign * (surface.get_height() - 20 - size[1]))
+        self.width = self.height = 2*self.radius
+        self.surface = pygame.Surface((self.width, self.height)).convert_alpha()
         self.bgcolor, self.fgcolor1, self.fgcolor2, self.fgcolor3 = colors
+        self.xalign = xalign
+        self.yalign = yalign
+        self.resize_screen()
+
+    def resize_screen(self):
+        self.pos = (10 + self.xalign * (self.real_surface.get_width() - 20 - self.width),
+                    10 + self.yalign * (self.real_surface.get_height() - 20 - self.height))
 
     def draw(self):
         x = y = self.radius
@@ -796,6 +827,7 @@ def main():
     w, h = fullscreen_mode
     windowed_mode = (int(w * 0.8), int(h * 0.8))
     screen = pygame.display.set_mode(windowed_mode)
+    in_fullscreen = False
 
     viewport = Viewport(screen)
     world = make_world()
@@ -822,7 +854,13 @@ def main():
             if event.key == K_o:
                 viewport.show_orbits = not viewport.show_orbits
             if event.key == K_f:
-                pygame.display.toggle_fullscreen()
+                in_fullscreen = not in_fullscreen
+                if in_fullscreen:
+                    pygame.display.set_mode(fullscreen_mode, FULLSCREEN)
+                else:
+                    pygame.display.set_mode(windowed_mode)
+                viewport.resize_screen()
+                hud.resize_screen()
 
             if event.key == K_RCTRL:
                 world.add(world.ship.shoot(MISSILE_SPEED))
