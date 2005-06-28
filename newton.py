@@ -481,6 +481,8 @@ class Ship(Body):
             pygame.draw.aaline(viewport.surface, (255, 120, 20), pt1, pt2)
 
     def shoot(self, extra_speed, angle=None, recoil=MISSILE_RECOIL):
+        if self.dead:
+            return
         if angle is None:
             angle = self.direction
         direction_vector = Vector.from_polar(angle)
@@ -488,7 +490,7 @@ class Ship(Body):
                           self.velocity + direction_vector * extra_speed,
                           self.color, launched_by=self)
         self.velocity -= direction_vector * extra_speed * recoil
-        return missile
+        self.world.add(missile)
 
 
 class ExperimentalSmartShip(Ship):
@@ -536,7 +538,7 @@ class ExperimentalSmartShip(Ship):
     def fire(self, enemy, distance):
         if not enemy.dead:
             if 0 == random.randrange(0, int(distance / 30) + 1):
-                self.world.add(self.shoot(MISSILE_SPEED))
+                self.shoot(MISSILE_SPEED)
 
 
 class Debris(Body):
@@ -1017,7 +1019,7 @@ def main():
                 world.ship2.ai = not world.ship2.ai
 
             if event.key == K_RCTRL:
-                world.add(world.ship.shoot(MISSILE_SPEED))
+                world.ship.shoot(MISSILE_SPEED)
             if event.key == K_RALT:
                 if length_sq(world.ship.velocity) < 1.0:
                     world.ship.velocity = Vector(0, 0)
@@ -1048,10 +1050,10 @@ def main():
                     if angle is not None and speed is not None:
                         ship.last_speed = speed
                         ship.last_angle = angle
-                        world.add(ship.shoot(speed, angle, recoil=0))
+                        ship.shoot(speed, angle, recoil=0)
 
             if event.key == K_LCTRL:
-                world.add(world.ship2.shoot(MISSILE_SPEED))
+                world.ship2.shoot(MISSILE_SPEED)
             if event.key == K_LALT:
                 if length_sq(world.ship2.velocity) < 1.0:
                     world.ship2.velocity = Vector(0, 0)
@@ -1060,7 +1062,7 @@ def main():
 
             if event.key == K_6:
                 for n in range(1, 50):
-                    world.add(world.ship.shoot(n, angle=random.randrange(360), recoil=0))
+                    world.ship.shoot(n, angle=random.randrange(360), recoil=0)
 
         if pygame.key.get_pressed()[K_EQUALS]:
             viewport.scale *= SCALE_FACTOR
