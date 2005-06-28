@@ -34,6 +34,8 @@ MISSILE_RECOIL = 0.01               # recoil as factor of missile speed
 MISSILE_DAMAGE = 0.6
 COLLISSION_DAMAGE = 0.05
 
+EXTRA_AI_PLAYERS = 0
+
 
 class Vector(tuple):
 
@@ -788,7 +790,7 @@ def make_world(world_radius=600):
     world.add(ship)
     world.ship2 = ship
 
-    for n in range(3):
+    for n in range(EXTRA_AI_PLAYERS):
         color = [random.randrange(0x90, 0xFF),
                  random.randrange(0x60, 0xFF),
                  random.randrange(0x60, 0xFF)]
