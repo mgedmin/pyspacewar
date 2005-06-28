@@ -1080,8 +1080,11 @@ def main():
             fullscreen_mode = (1024, 768) # shrug
     w, h = fullscreen_mode
     windowed_mode = (int(w * 0.8), int(h * 0.8))
-    screen = pygame.display.set_mode(windowed_mode)
-    in_fullscreen = False
+    in_fullscreen = '-f' in sys.argv
+    if in_fullscreen:
+        screen = pygame.display.set_mode(fullscreen_mode, FULLSCREEN)
+    else:
+        screen = pygame.display.set_mode(windowed_mode)
 
     viewport = Viewport(screen)
     if '-g' in sys.argv:
