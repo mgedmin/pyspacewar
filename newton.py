@@ -1,4 +1,10 @@
 #!/usr/bin/python
+"""
+A game based on Newtonian gravity (loosely).
+
+Copyright (c) 2005 Marius Gedminas <marius@pov.lt>
+Consider this game GPLed.
+"""
 import math
 import random
 import glob
@@ -72,6 +78,12 @@ def arg(vector):
     return round(angle)
 
 
+def colorblend(col1, col2, alpha=0.5):
+    r1, g1, b1 = col1
+    r2, g2, b2 = col2
+    beta = 1-alpha
+    return (alpha*r1+beta*r2, alpha*g1+beta*g2, alpha*b1+beta*b2)
+
 class Viewport(object):
 
     show_orbits = True
@@ -90,8 +102,8 @@ class Viewport(object):
         x1, y1 = self.world_pos((0, 0))
         x2, y2 = self.world_pos((surface_w, surface_h))
         self.world_bounds = min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
-        x1, y1 = self.world_pos((20, 20))
-        x2, y2 = self.world_pos((surface_w-20, surface_h-20))
+        x1, y1 = self.world_pos((80, 80))
+        x2, y2 = self.world_pos((surface_w-80, surface_h-80))
         self.world_inner_bounds = min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
 
     def set_origin(self, new_origin):
@@ -183,16 +195,18 @@ class World(object):
 
     def collides(self, something, margin=0):
         for obj in self.collision_objects:
-            if something.collides(obj, margin=0):
+            if obj is not something and something.collides(obj, margin=0):
                 return True
         return False
 
     def update(self, dt):
         self.in_update = True
+        # This is somewhat expensive: 0.3 ms for 1 object
         for obj in self.objects:
             for other in self.massive_objects:
                 if other is not obj:
                     obj.gravitate(other, dt)
+        # The rest eats about 0.1 ms per 1 objects
         for obj in self.objects:
             obj.move(dt)
             for other in self.collision_objects:
@@ -271,6 +285,20 @@ class Body(object):
     def move(self, dt=1.0):
         self.position += self.velocity * dt
 
+    def add_debris(self, howmany=None, maxdistance=1.0, time=5.0):
+        if not howmany:
+            howmany = random.randrange(3, 6)
+        for n in range(howmany):
+            color = (random.randrange(0xf0, 0xff),
+                     random.randrange(0x70, 0x90),
+                     random.randrange(0, 0x20))
+            velocity = self.velocity * 0.3
+            velocity += Vector.from_polar(random.randrange(0, 360),
+                                          random.random() * maxdistance)
+            debris = Debris(self.position, velocity, color, time=time)
+            debris.pin()
+            self.world.add(debris)
+
 
 class Planet(Body):
 
@@ -311,6 +339,7 @@ class Ship(Body):
         self.draw_left_thrust = 0
         self.draw_right_thrust = 0
         self.health = 1.0
+        self.dead = False
 
     def collision(self, other):
         # XXX this is ugly, I should use multimethods
@@ -328,6 +357,11 @@ class Ship(Body):
         else:
             self.health -= 0.05
             self.bounce(other)
+        if self.health <= 0 and not self.dead:
+            self.dead = True
+            self.dead_timer = 100
+            self.add_debris(time=50, maxdistance=self.size * 0.5,
+                            howmany=random.randrange(9, 21))
 
     def set_direction(self, direction):
         direction = direction % 360
@@ -337,7 +371,25 @@ class Ship(Body):
 
     direction = property(lambda self: self._direction, set_direction)
 
+    def respawn(self):
+        self.dead = False
+        self.health = 1.0
+        self.velocity = Vector(0, 0)
+        while True:
+            self.position = Vector.from_polar(random.randrange(0, 360),
+                                              random.randrange(0, 600))
+            if not self.world.collides(self, 0.1):
+                break
+
     def move(self, dt=1.0):
+        if self.dead:
+            self.left_thrust = 0
+            self.right_thrust = 0
+            self.forward_thrust = 0
+            self.rear_thrust = 0
+            self.dead_timer -= dt
+            if self.dead_timer < 0:
+                self.respawn()
         self.draw_forward_thrust = self.forward_thrust
         self.draw_rear_thrust = self.rear_thrust
         self.draw_left_thrust = self.left_thrust
@@ -357,13 +409,16 @@ class Ship(Body):
         Body.move(self, dt)
 
     def draw(self, viewport):
+        color = self.color
+        if self.dead:
+            color = colorblend(color, (0x20, 0x20, 0x20), 0.2)
         direction_vector = self.direction_vector * self.size
         side_vector = direction_vector.perpendicular()
         pt1 = self.position - direction_vector + side_vector * 0.5
         pt2 = self.position + direction_vector
         pt3 = self.position - direction_vector - side_vector * 0.5
         points = map(viewport.screen_pos, [pt1, pt2, pt3])
-        pygame.draw.aalines(viewport.surface, self.color, False, points)
+        pygame.draw.aalines(viewport.surface, color, False, points)
         if self.draw_forward_thrust:
             for x in (-0.1, 0.1):
                 pt1 = self.position - direction_vector * 0.9 + side_vector * x
@@ -395,11 +450,11 @@ class Ship(Body):
             pt1, pt2 = map(viewport.screen_pos, [pt1, pt2])
             pygame.draw.aaline(viewport.surface, (255, 120, 20), pt1, pt2)
 
-    def shoot(self, extra_speed):
+    def shoot(self, extra_speed, recoil=MISSILE_RECOIL):
         missile = Missile(self.position + self.direction_vector * self.size,
                           self.velocity + self.direction_vector * extra_speed,
                           self.color)
-        self.velocity -= self.direction_vector * extra_speed * MISSILE_RECOIL
+        self.velocity -= self.direction_vector * extra_speed * recoil
         return missile
 
 
@@ -452,16 +507,7 @@ class Missile(Body):
             return
         self.velocity_before_death = self.velocity
         self.exploded = False
-        for n in range(random.randrange(3, 6)):
-            color = (random.randrange(0xf0, 0xff),
-                     random.randrange(0x70, 0x90),
-                     random.randrange(0, 0x20))
-            velocity = self.velocity * 0.3
-            velocity += Vector.from_polar(random.randrange(0, 360),
-                                          random.randrange(0, 10) / 10.0)
-            debris = Debris(self.position, velocity, color, time=5)
-            debris.pin()
-            self.world.add(debris)
+        self.add_debris()
         self.stop(other)
         self.dying = True
 
@@ -581,8 +627,12 @@ class HUD(object):
     def __init__(self, surface, world):
         self.surface = surface
         self.world = world
+        self.update_time = -1
+        self.draw_time = -1
+        self.world_info = HUDWorldInfo(surface, world, 0.5, 0)
         self.drawables = [
-            HUDWorldInfo(surface, world, 0.5, 0),
+            self.world_info,
+            HUDDebugInfo(surface, self, 0.5, 1),
             HUDShipInfo(surface, world.ship, 1, 0),
             HUDShipInfo(surface, world.ship2, 0, 0,
                         HUDShipInfo.GREEN_COLORS),
@@ -591,6 +641,9 @@ class HUD(object):
             HUDCompass(surface, world, world.ship2, 0, 1,
                        HUDCompass.GREEN_COLORS),
         ]
+
+    def reset_fps(self):
+        self.world_info.fps.reset()
 
     def draw(self):
         for d in self.drawables:
@@ -653,6 +706,19 @@ class HUDWorldInfo(HUDInfoPanel):
         self.draw_rows(
                 ('objects', len(self.world.objects)),
                 ('fps', '%.0f' % self.fps.fps()))
+
+
+class HUDDebugInfo(HUDInfoPanel):
+
+    def __init__(self, surface, hud, xalign=0, yalign=0,
+                 colors=HUDInfoPanel.STD_COLORS):
+        HUDInfoPanel.__init__(self, surface, 3, xalign, yalign, colors)
+        self.hud = hud
+
+    def draw(self):
+        self.draw_rows(
+                ('update_time', self.hud.update_time),
+                ('draw_time', self.hud.draw_time))
 
 
 class HUDCompass(object):
@@ -751,7 +817,7 @@ def main():
                     if event.type in (KEYDOWN, QUIT, MOUSEBUTTONUP):
                         break
                 next_tick = pygame.time.get_ticks() + JIFFY_IN_MS
-                hud.fps.reset()
+                hud.reset_fps()
                 continue
             if event.key == K_o:
                 viewport.show_orbits = not viewport.show_orbits
@@ -773,6 +839,10 @@ def main():
                     world.ship2.velocity = Vector(0, 0)
                 else:
                     world.ship2.velocity *= 0.95
+
+            if event.key == K_6:
+                for n in range(1, 50):
+                    world.add(world.ship.shoot(n, 0))
 
         if pygame.key.get_pressed()[K_EQUALS]:
             viewport.scale *= SCALE_FACTOR
@@ -797,14 +867,20 @@ def main():
         if pygame.key.get_pressed()[K_s]:
             world.ship2.rear_thrust = REAR_THRUST
 
+        start = pygame.time.get_ticks()
         world.update(DELTA_TIME)
-        if pygame.time.get_ticks() < next_tick + JIFFY_IN_MS:
+        hud.update_time = pygame.time.get_ticks() - start
+        if (pygame.time.get_ticks() < next_tick + JIFFY_IN_MS
+            or pygame.time.get_ticks() > last_frame_time + 500):
+            start = pygame.time.get_ticks()
             screen.fill((0,0,0))
             viewport.keep_visible(world.ship.position, world.ship2.position)
             world.draw(viewport)
             hud.draw()
+            hud.draw_time = pygame.time.get_ticks() - start
             pygame.display.flip()
-            delay = next_tick - pygame.time.get_ticks()
+            last_frame_time = pygame.time.get_ticks()
+            delay = next_tick - last_frame_time
             if delay > 0:
                 pygame.time.wait(delay)
         next_tick += JIFFY_IN_MS
@@ -814,6 +890,7 @@ def profile():
     import hotshot
     p = hotshot.Profile('newton.hotshot')
     p.runcall(main)
+    print "Loading profiler results (takes a while)..."
     import hotshot.stats
     stats = hotshot.stats.load('newton.hotshot')
     stats.sort_stats('time')
@@ -821,7 +898,11 @@ def profile():
 
 if __name__ == '__main__':
     import sys
-    if '-p' in sys.argv:
+    if '-o' in sys.argv:
+        import psyco
+        psyco.full()
+        main()
+    elif '-p' in sys.argv:
         profile()
     else:
         main()
