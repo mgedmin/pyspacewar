@@ -491,6 +491,48 @@ class Ship(Body):
         return missile
 
 
+class ExperimentalSmartShip(Ship):
+
+    counter = 0
+    last_l_r = 1
+
+    def move(self, dt=1.0):
+        enemy = self.world.ship
+
+        target_vector = Vector(enemy.position[0] - self.position[0],
+                               enemy.position[1] - self.position[1])
+
+        moving_target_vector = target_vector + enemy.velocity - self.velocity
+
+        l_r = (self.direction_vector[0]*moving_target_vector[1] -
+               self.direction_vector[1]*moving_target_vector[0])
+
+        if l_r > 0:
+            if self.last_l_r < 0:
+                self.fire(length(target_vector))
+            self.left_thrust = 4
+            self.right_thrust = 0
+        else:
+            if self.last_l_r > 0:
+                self.fire(length(target_vector))
+            self.left_thrust = 0
+            self.right_thrust = 4
+
+        if length_sq(self.velocity) < 5.0:
+            self.forward_thrust = 1
+            self.rear_thrust = 0
+        else:
+            self.velocity *= 0.95
+
+        self.last_l_r = l_r
+        Ship.move(self, dt)
+
+    def fire(self, distance):
+        if not self.world.ship.dead:
+            if 0 == random.randrange(0, int(distance / 30) + 1):
+                self.world.add(self.shoot(MISSILE_SPEED))
+
+
 class Debris(Body):
 
     important_for_collision_detection = False  # avoid n-square problem
@@ -624,7 +666,7 @@ def make_world():
     while True:
         pos = Vector.from_polar(random.randrange(0, 360),
                                 random.randrange(0, 600))
-        ship = Ship(pos, color=(0x7f, 0xff, 0), direction=180)
+        ship = ExperimentalSmartShip(pos, color=(0x7f, 0xff, 0), direction=180)
         if not world.collides(ship, 0.1):
             break
     ship.pin()
