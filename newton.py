@@ -498,6 +498,16 @@ class ExperimentalSmartShip(Ship):
     last_l_r = 1
     ai = True
 
+    def getClosestToObject(self, object):
+        distance = 90000
+        closest = None
+        for obj in self.world.massive_objects:
+            dst = length_sq(Vector(object.position - obj.position))
+            if dst < distance:
+                closest = obj
+                distance = dst
+        return closest
+
     def move(self, dt=1.0):
         if self.ai:
             self.think()
@@ -533,7 +543,26 @@ class ExperimentalSmartShip(Ship):
         else:
             self.velocity *= 0.95
 
+        self.evade()
         self.last_l_r = l_r
+
+    def evade(self):
+        planet = self.getClosestToObject(self)
+        if not planet:
+            return
+
+        evade_vector = Vector(planet.position[0] - self.position[0],
+                              planet.position[1] - self.position[1])
+
+        moving_target_vector = evade_vector - self.velocity
+
+        l_r = (self.direction_vector[0]*moving_target_vector[1] -
+               self.direction_vector[1]*moving_target_vector[0])
+
+        if l_r < 0:
+            self.left_thrust += 1
+        else:
+            self.right_thrust += 1
 
     def fire(self, enemy, distance):
         if not enemy.dead:
