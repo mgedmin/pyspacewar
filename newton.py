@@ -891,6 +891,7 @@ class HUD(object):
                        HUDCompass.BLUE_COLORS),
             HUDCompass(surface, world, world.ship2, 0, 1,
                        HUDCompass.GREEN_COLORS),
+            HUDTitle(surface),
         ]
 
     def reset_fps(self):
@@ -1049,6 +1050,23 @@ class HUDCompass(object):
         self.real_surface.blit(self.surface, self.pos)
 
 
+class HUDTitle(object):
+
+    def __init__(self, surface):
+        self.surface = surface
+        self.title_img = pygame.image.load('title.png')
+        self.title_alpha = 255
+
+    def draw(self):
+        if self.title_alpha < 1:
+            return
+        x = (self.surface.get_width() - self.title_img.get_width()) / 2
+        y = (self.surface.get_height() - self.title_img.get_height()) / 2
+        self.title_img.set_alpha(int(self.title_alpha)) # XXX doesn't really work the way I want
+        self.surface.blit(self.title_img, (x, y))
+        self.title_alpha *= 0.9
+
+
 class InputControl(object):
 
     bgcolor = (0x01, 0x02, 0x08)
@@ -1130,7 +1148,7 @@ def text_input(surface, prompt, text=''):
 
 def main():
     pygame.init()
-    pygame.display.set_caption('Newtonian Gravity')
+    pygame.display.set_caption('PySpace War')
     pygame.mouse.set_visible(False)
 
     if '-s' in sys.argv:
@@ -1157,6 +1175,7 @@ def main():
         world = make_world()
     viewport.origin = (world.ship.position + world.ship2.position) * 0.5
     hud = HUD(screen, world)
+
     last_frame_time = pygame.time.get_ticks()
     next_tick = pygame.time.get_ticks() + JIFFY_IN_MS
     while True:
