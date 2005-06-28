@@ -14,6 +14,8 @@ from pygame.locals import *
 
 GRAVITY = 0.01 # constant of gravitation
 
+FONT = '/usr/share/fonts/truetype/msttcorefonts/Verdana.ttf'
+
 FPS = 20
 JIFFY_IN_MS = 1000 / FPS            # 1 jiffy in ms
 DELTA_TIME = 2.0                    # world time units in one jiffy
@@ -340,6 +342,9 @@ class Planet(Body):
 
 class Ship(Body):
 
+    last_angle = 0
+    last_speed = MISSILE_SPEED
+
     def __init__(self, position, size=10, color=(255, 255, 255), direction=0):
         Body.__init__(self, position, 0)
         self.radius = size * 0.6
@@ -473,11 +478,14 @@ class Ship(Body):
             pt1, pt2 = map(viewport.screen_pos, [pt1, pt2])
             pygame.draw.aaline(viewport.surface, (255, 120, 20), pt1, pt2)
 
-    def shoot(self, extra_speed, recoil=MISSILE_RECOIL):
-        missile = Missile(self.position + self.direction_vector * self.size,
-                          self.velocity + self.direction_vector * extra_speed,
+    def shoot(self, extra_speed, angle=None, recoil=MISSILE_RECOIL):
+        if angle is None:
+            angle = self.direction
+        direction_vector = Vector.from_polar(angle)
+        missile = Missile(self.position + direction_vector * self.size,
+                          self.velocity + direction_vector * extra_speed,
                           self.color, launched_by=self)
-        self.velocity -= self.direction_vector * extra_speed * recoil
+        self.velocity -= direction_vector * extra_speed * recoil
         return missile
 
 
@@ -683,11 +691,11 @@ class HUDInfoPanel(object):
     STD_COLORS = [(0xff, 0xff, 0xff), (0xcc, 0xff, 0xff)]
     GREEN_COLORS = [(0x7f, 0xff, 0x00), (0xcc, 0xff, 0xff)]
 
-    def __init__(self, surface, nrows, xalign=0, yalign=0, colors=STD_COLORS):
+    def __init__(self, surface, ncols, nrows, xalign=0, yalign=0, colors=STD_COLORS):
         self.surface = surface
-        self.font = pygame.font.Font(None, 14)
-        self.width = 70
-        self.row_height = 11
+        self.font = pygame.font.Font(FONT, 14)
+        self.width = self.font.size('x')[0] * ncols
+        self.row_height = self.font.get_linesize()
         self.height = nrows * self.row_height
         self.xalign = xalign
         self.yalign = yalign
@@ -711,7 +719,7 @@ class HUDShipInfo(HUDInfoPanel):
 
     def __init__(self, surface, ship, xalign=0, yalign=0,
                  colors=HUDInfoPanel.STD_COLORS):
-        HUDInfoPanel.__init__(self, surface, 4.5, xalign, yalign, colors)
+        HUDInfoPanel.__init__(self, surface, 10, 4.5, xalign, yalign, colors)
         self.ship = ship
 
     def draw(self):
@@ -731,7 +739,7 @@ class HUDWorldInfo(HUDInfoPanel):
 
     def __init__(self, surface, world, xalign=0, yalign=0,
                  colors=HUDInfoPanel.STD_COLORS):
-        HUDInfoPanel.__init__(self, surface, 3, xalign, yalign, colors)
+        HUDInfoPanel.__init__(self, surface, 10, 3, xalign, yalign, colors)
         self.world = world
         self.fps = FPSCounter()
 
@@ -746,7 +754,7 @@ class HUDDebugInfo(HUDInfoPanel):
 
     def __init__(self, surface, hud, xalign=0, yalign=0,
                  colors=HUDInfoPanel.STD_COLORS):
-        HUDInfoPanel.__init__(self, surface, 3, xalign, yalign, colors)
+        HUDInfoPanel.__init__(self, surface, 20, 3, xalign, yalign, colors)
         self.hud = hud
 
     def draw(self):
@@ -822,6 +830,85 @@ class HUDCompass(object):
         self.real_surface.blit(self.surface, self.pos)
 
 
+class InputControl(object):
+
+    bgcolor = (0x01, 0x02, 0x08)
+    color1 = (0x80, 0xcc, 0xff)
+    color2 = (0xee, 0xee, 0xee)
+    alpha = int(0.8 * 255)
+
+    def __init__(self, surface, x, y, width, height, prompt, text=''):
+        self.surface = surface
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.prompt = prompt
+        self.text = text
+        self.backing_store = pygame.Surface((width, height))
+        self.buffer = pygame.Surface((width, height))
+        self.font = pygame.font.Font(FONT, 16)
+        self.visible = False
+
+    def show(self):
+        if not self.visible:
+            self.backing_store.blit(self.surface, (0, 0),
+                                    (self.x, self.y, self.width, self.height))
+            self.visible = True
+        self.draw()
+
+    def hide(self):
+        if self.visible:
+            self.backing_store.set_alpha(255)
+            self.surface.blit(self.backing_store, (self.x, self.y))
+            self.visible = False
+
+    def draw(self):
+        self.buffer.fill(self.bgcolor)
+        self.backing_store.set_alpha(255-self.alpha)
+        self.buffer.blit(self.backing_store, (0, 0))
+        img = self.font.render(self.prompt, True, self.color1)
+        margin = (self.height - img.get_height()) / 2
+        self.buffer.blit(img, (margin, margin))
+        img2 = self.font.render(self.text, True, self.color2)
+        self.buffer.blit(img2, (margin+img.get_width(), margin))
+        self.surface.blit(self.buffer, (self.x, self.y))
+
+    def key(self, event):
+        if event.unicode.isdigit() or event.unicode in '-.':
+            self.text += event.unicode
+            self.draw()
+            pygame.display.flip()
+        if event.key == K_BACKSPACE:
+            self.text = self.text[:-1]
+            self.draw()
+            pygame.display.flip()
+
+
+def text_input(surface, prompt, text=''):
+    x = 10
+    y = surface.get_height() - 150
+    width = surface.get_width() - 2*x
+    height = 20
+    ctrl = InputControl(surface, x, y, width, height, prompt, text)
+    ctrl.show()
+    pygame.display.flip()
+    while True:
+        event = pygame.event.wait()
+        if event.type == QUIT:
+            break
+        if event.type == KEYDOWN:
+            if event.key == K_RETURN:
+                break
+            if event.key == K_ESCAPE:
+                ctrl.text = None
+                break
+            ctrl.key(event)
+    ctrl.hide()
+    pygame.display.flip()
+    return ctrl.text
+
+
 def main():
     pygame.init()
     pygame.display.set_caption('Newtonian Gravity')
@@ -877,6 +964,32 @@ def main():
                     world.ship.velocity = Vector(0, 0)
                 else:
                     world.ship.velocity *= 0.95
+            if event.key in (K_l, K_c):
+                if event.key == K_l:
+                    ship = world.ship
+                else:
+                    ship = world.ship2
+                if not ship.dead:
+                    angle = speed = None
+                    angle = text_input(screen, "Angle (%s): " % ship.last_angle)
+                    if angle == '': angle = ship.last_angle
+                    try:
+                        angle = float(angle)
+                    except (TypeError, ValueError):
+                        pass
+                    if angle is not None:
+                        speed = text_input(screen, "Speed (%s): " % ship.last_speed)
+                        if speed == '': speed = ship.last_speed
+                        try:
+                            speed = float(speed)
+                        except (TypeError, ValueError):
+                            pass
+                    next_tick = pygame.time.get_ticks() + JIFFY_IN_MS
+                    hud.reset_fps()
+                    if angle is not None and speed is not None:
+                        ship.last_speed = speed
+                        ship.last_angle = angle
+                        world.add(ship.shoot(speed, angle, recoil=0))
 
             if event.key == K_LCTRL:
                 world.add(world.ship2.shoot(MISSILE_SPEED))
@@ -888,7 +1001,7 @@ def main():
 
             if event.key == K_6:
                 for n in range(1, 50):
-                    world.add(world.ship.shoot(n, 0))
+                    world.add(world.ship.shoot(n, angle=random.randrange(360), recoil=0))
 
         if pygame.key.get_pressed()[K_EQUALS]:
             viewport.scale *= SCALE_FACTOR
