@@ -92,6 +92,7 @@ class Viewport(object):
     show_orbits = True
     autoscale_factor = 1.001
     visibility_margin = 100
+    preferred_scale_factor = 1.0
 
     def __init__(self, surface):
         self.surface = surface
@@ -152,6 +153,13 @@ class Viewport(object):
             w = max(xs) - min(xs)
             h = max(ys) - min(ys)
             xmin, ymin, xmax, ymax = self.world_inner_bounds
+            # XXX: this bit is bad for two reasons:
+            #    1. *really* suboptimal
+            #    2. doesn't let the user control zoom
+##          if xmax - xmin > w and ymax - ymin > h:
+##              self.scale = self.preferred_scale_factor
+##              xmin, ymin, xmax, ymax = self.world_inner_bounds
+            # XXX: this bit is not optimal
             while (xmax - xmin) < w:
                 self.scale /= self.autoscale_factor
                 xmin, ymin, xmax, ymax = self.world_inner_bounds
