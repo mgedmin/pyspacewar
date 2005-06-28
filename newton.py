@@ -7,6 +7,8 @@ Consider this game GPLed.
 
 $Id$
 """
+
+import os
 import math
 import random
 import glob
@@ -17,6 +19,8 @@ from pygame.locals import *
 GRAVITY = 0.01 # constant of gravitation
 
 FONT = '/usr/share/fonts/truetype/msttcorefonts/Verdana.ttf'
+if not os.path.exists(FONT):
+    FONT = None
 
 FPS = 20
 JIFFY_IN_MS = 1000 / FPS            # 1 jiffy in ms
