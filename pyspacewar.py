@@ -1293,7 +1293,6 @@ def main():
             or pygame.time.get_ticks() > last_frame_time + 500):
             start = pygame.time.get_ticks()
             screen.fill((0,0,0))
-##          viewport.keep_visible(world.ship.position, world.ship2.position)
             viewport.keep_visible(*[s.position for s in world.ships])
             world.draw(viewport)
             hud.draw()
