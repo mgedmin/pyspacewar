@@ -40,6 +40,11 @@ COLLISSION_DAMAGE = 0.05
 EXTRA_AI_PLAYERS = 0
 
 
+def find(filespec):
+    basedir = os.path.dirname(__file__)
+    return os.path.join(basedir, filespec)
+
+
 class Vector(tuple):
 
     x = property(lambda self: self[0])
@@ -752,7 +757,7 @@ def make_simple_world():
 
 
 def make_world(world_radius=600):
-    images = map(pygame.image.load, glob.glob('planet*.png'))
+    images = map(pygame.image.load, glob.glob(find('planet*.png')))
     world = World()
     n_planets = random.randrange(2, 20)
     for n in range(n_planets):
@@ -811,7 +816,7 @@ def make_world(world_radius=600):
 
 
 def make_gravitating_world(world_radius=600):
-    images = map(pygame.image.load, glob.glob('planet*.png'))
+    images = map(pygame.image.load, glob.glob(find('planet*.png')))
     world = World()
     n_planets = random.randrange(1, 5)
     for n in range(n_planets):
@@ -1057,7 +1062,7 @@ class HUDTitle(object):
 
     def __init__(self, surface):
         self.surface = surface
-        self.title_img = pygame.image.load('title.png')
+        self.title_img = pygame.image.load(find('title.png'))
         self.title_alpha = 255
         self.mask = pygame.surfarray.array_alpha(self.title_img).astype(Numeric.Int)
 
