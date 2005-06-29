@@ -10,6 +10,11 @@ just launching missiles at a specified angle and speed in turns.
 
 Web page: http://mg.pov.lt/pyspacewar
 
+Requirements:
+ * Python (http://www.python.org/)
+ * PyGame (http://www.pygame.org/)
+ * NumPy (http://numpy.sourceforge.net/)
+
 
 Player 1 Controls
 -----------------
