@@ -3,6 +3,8 @@
 A game based on Newtonian gravity (loosely).
 
 Copyright (c) 2005 Marius Gedminas <marius@pov.lt>
+                   and Ignas Mikalajunas <ignas@pov.lt>
+
 Consider this game GPLed.
 
 $Id$
@@ -1199,7 +1201,8 @@ def main():
                     event = pygame.event.wait()
                     if event.type in (QUIT, MOUSEBUTTONUP):
                         break
-                    if event.type == KEYDOWN and event.key not in (K_LALT, K_RALT) and event.mod == 0:
+                    if event.type == KEYDOWN and event.key not in (K_LALT,
+                       K_RALT, K_LSHIFT, K_RSHIFT) and event.mod == 0:
                         break
                 next_tick = pygame.time.get_ticks() + JIFFY_IN_MS
                 hud.reset_fps()
