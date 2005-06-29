@@ -14,6 +14,7 @@ import random
 import glob
 import pygame
 from pygame.locals import *
+import Numeric
 
 
 GRAVITY = 0.01 # constant of gravitation
@@ -1056,15 +1057,21 @@ class HUDTitle(object):
         self.surface = surface
         self.title_img = pygame.image.load('title.png')
         self.title_alpha = 255
+        self.mask = pygame.surfarray.array_alpha(self.title_img).astype(Numeric.Int)
+
+    def resize_screen(self):
+        pass
 
     def draw(self):
         if self.title_alpha < 1:
             return
         x = (self.surface.get_width() - self.title_img.get_width()) / 2
         y = (self.surface.get_height() - self.title_img.get_height()) / 2
-        self.title_img.set_alpha(int(self.title_alpha)) # XXX doesn't really work the way I want
+        array = pygame.surfarray.pixels_alpha(self.title_img)
+        array[:] = (self.mask * self.title_alpha / 255).astype(Numeric.UnsignedInt8)
+        del array
         self.surface.blit(self.title_img, (x, y))
-        self.title_alpha *= 0.9
+        self.title_alpha *= 0.95
 
 
 class InputControl(object):
