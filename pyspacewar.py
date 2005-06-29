@@ -1305,11 +1305,11 @@ def main():
 
 def profile():
     import hotshot
-    p = hotshot.Profile('newton.hotshot')
+    p = hotshot.Profile('pyspacewar.hotshot')
     p.runcall(main)
     print "Loading profiler results (takes a while)..."
     import hotshot.stats
-    stats = hotshot.stats.load('newton.hotshot')
+    stats = hotshot.stats.load('pyspacewar.hotshot')
     stats.sort_stats('time')
     stats.print_stats(20)
 
