@@ -155,6 +155,12 @@ class Viewport(object):
         y = self.screen_y - world_pos[1] * self._scale
         return (int(x), int(y))
 
+    def screen_pos_array(self, world_pos):
+        world_pos = Numeric.array(world_pos)
+        xs = self.screen_x + world_pos[:,0] * self._scale
+        ys = self.screen_y - world_pos[:,1] * self._scale
+        return zip(xs.astype(Numeric.Int32), ys.astype(Numeric.Int32))
+
     def in_screen(self, world_pos):
         xmin, ymin, xmax, ymax = self.world_bounds
         return xmin <= world_pos[0] <= xmax and ymin <= world_pos[1] <= ymax
@@ -592,10 +598,10 @@ class Missile(Body):
                 a = 0.1
                 b = 0.7 / len(self.orbit)
                 f = a
-                for pt in self.orbit:
+                points = viewport.screen_pos_array(self.orbit)
+                for pt in points:
                     color = (red*f, green*f, blue*f)
-                    if viewport.in_screen(pt):
-                        viewport.surface.set_at(viewport.screen_pos(pt), color)
+                    viewport.surface.set_at(pt, color)
                     f += b
         if not self.dying:
             viewport.surface.set_at(viewport.screen_pos(self.position), self.color)
