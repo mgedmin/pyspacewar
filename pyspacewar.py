@@ -109,7 +109,7 @@ class Viewport(object):
 
     show_orbits = True
     autoscale_factor = 1.001
-    visibility_margin = 100
+    visibility_margin = 120
     preferred_scale_factor = 1.0
 
     def __init__(self, surface):
