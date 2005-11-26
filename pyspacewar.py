@@ -383,6 +383,7 @@ class Ship(Body):
         self.health = 1.0
         self.dead = False
         self.frags = 0
+        self.born_again = False
 
     def collision(self, other):
         # XXX this is ugly, I should use multimethods
@@ -431,6 +432,7 @@ class Ship(Body):
                 break
 
     def move(self, dt=1.0):
+        self.born_again = False
         if self.dead:
             self.left_thrust = 0
             self.right_thrust = 0
@@ -439,6 +441,7 @@ class Ship(Body):
             self.dead_timer -= dt
             if self.dead_timer < 0:
                 self.respawn()
+                self.born_again = True
         self.draw_forward_thrust = self.forward_thrust
         self.draw_rear_thrust = self.rear_thrust
         self.draw_left_thrust = self.left_thrust
@@ -1293,6 +1296,9 @@ def main():
 
         start = pygame.time.get_ticks()
         world.update(DELTA_TIME)
+        for s in world.ships:
+            if s.born_again:
+                viewport.scale = 1.0
         hud.update_time = pygame.time.get_ticks() - start
         if (pygame.time.get_ticks() < next_tick + JIFFY_IN_MS
             or pygame.time.get_ticks() > last_frame_time + 500):
