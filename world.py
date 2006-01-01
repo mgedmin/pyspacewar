@@ -230,16 +230,24 @@ class World(object):
         and a ``radius`` attribute, used for collision detection.
         """
         if self._in_update:
-            self._add_queue.append(obj)
+            if obj in self._remove_queue:
+                self._remove_queue.remove(obj)
+            else:
+                self._add_queue.append(obj)
         else:
             self.objects.append(obj)
+            obj.world = self
 
     def remove(self, obj):
         """Remove an object from the universe."""
         if self._in_update:
-            self._remove_queue.append(obj)
+            if obj in self._add_queue:
+                self._add_queue.remove(obj)
+            else:
+                self._remove_queue.append(obj)
         else:
             self.objects.remove(obj)
+            obj.world = None
 
     def update(self, dt):
         """Make time happen (dt time units of it).
@@ -267,11 +275,12 @@ class World(object):
                     obj2.collision(obj1)
         self._in_update = False
         if self._add_queue:
-            self.objects += self._add_queue
+            for obj in self._add_queue:
+                self.add(obj)
             self._add_queue = []
         if self._remove_queue:
             for obj in self._remove_queue:
-                self.objects.remove(obj)
+                self.remove(obj)
             self._remove_queue = []
 
     def collide(self, obj1, obj2):

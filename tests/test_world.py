@@ -57,6 +57,8 @@ def doctest_World():
         >>> w.remove(o)
         >>> w.objects
         []
+        >>> o.world is None
+        True
 
     All the interesting things happen when time ticks
 
@@ -149,6 +151,9 @@ def doctest_World_death_and_birth_in_update():
         >>> w.objects
         [o1, o2, o3, o4, o5]
 
+        >>> o5.world is w
+        True
+
     You can remove objects in the middle of an update.
 
         >>> o2.move = orig_move
@@ -184,7 +189,14 @@ def doctest_World_death_and_birth_in_update():
         Moving o5 for 1.0 time units
 
         >>> w.objects
-        [o3, o5, o4, o1]
+        [o1, o3, o5, o4]
+
+        >>> o1.world is w
+        True
+        >>> o2.world is None
+        True
+        >>> o4.world is w
+        True
 
     """
 
