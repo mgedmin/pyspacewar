@@ -87,7 +87,7 @@ def doctest_Game_randomly_place():
         >>> from game import Game
         >>> g = Game()
         >>> for n in range(100):
-        ...     g.randomly_place(Brick(radius=10))
+        ...     g.randomly_place(Brick(radius=10), 200)
         >>> len(g.world.objects)
         100
         >>> g.world.update(1)
@@ -109,24 +109,24 @@ def doctest_Game_wait_for_tick():
 
         >>> g.wait_for_tick()
         >>> g.wait_for_tick()
-        Tick (0.2)
+        Tick (2.0)
         Waiting for 11
         >>> g.wait_for_tick()
-        Tick (0.2)
+        Tick (2.0)
         Waiting for 21
         >>> g.wait_for_tick()
-        Tick (0.2)
+        Tick (2.0)
         Waiting for 31
 
     The waiting time is independent of outside delays
 
         >>> ts.counter += 5
         >>> g.wait_for_tick()
-        Tick (0.2)
+        Tick (2.0)
         Waiting for 41
         >>> ts.counter += 105
         >>> g.wait_for_tick()
-        Tick (0.2)
+        Tick (2.0)
         Waiting for 51
 
     """
