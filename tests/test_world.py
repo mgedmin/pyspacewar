@@ -214,6 +214,57 @@ def doctest_World_collision_detection():
     """
 
 
+def doctest_Ship_direction():
+    """Tests for Ship.direction property.
+
+        >>> from world import Ship, Vector
+        >>> ship = Ship(Vector(0, 0), size=10, direction=45)
+        >>> ship.direction
+        45
+
+        >>> ship.direction -= 90
+        >>> ship.direction
+        315
+        >>> print ship.direction_vector
+        (0.707, -0.707)
+
+        >>> ship.direction += 45
+        >>> ship.direction
+        0
+        >>> print ship.direction_vector
+        (1.000, 0.000)
+
+    """
+
+
+def doctest_Ship_movement():
+    """Tests for Ship.move.
+
+        >>> from world import Ship, Vector
+        >>> ship = Ship(Vector(0, 0), 10, 45)
+        >>> ship.left_thrust = 10
+        >>> ship.right_thrust = 5
+        >>> ship.forward_thrust = 8
+        >>> ship.rear_thrust = 2
+
+        >>> ship.move(1.0)
+        >>> ship.direction
+        50.0
+        >>> ship.velocity.length()
+        6.0
+        >>> ship.velocity.direction()
+        50.0
+        >>> print ship.position
+        (3.857, 4.596)
+
+        >>> ship.left_thrust, ship.right_thrust
+        (0, 0)
+        >>> ship.forward_thrust, ship.rear_thrust
+        (0, 0)
+
+    """
+
+
 def test_suite():
     path = os.path.join(os.path.dirname(__file__), os.path.pardir)
     if path not in sys.path:

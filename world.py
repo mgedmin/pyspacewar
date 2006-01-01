@@ -203,7 +203,8 @@ class World(object):
 
     """
 
-    GRAVITY = 0.01 # constant of gravitation
+    GRAVITY = 0.01          # constant of gravitation
+    BOUNCE_SPEED_LOSS = 0.1 # lose 10% speed when bouncing off something
 
     def __init__(self):
         self.time = 0.0
@@ -241,7 +242,11 @@ class World(object):
             self.objects.remove(obj)
 
     def update(self, dt):
-        """Make time happen (dt time units of it)."""
+        """Make time happen (dt time units of it).
+
+        Calculates gravity effects, moves the objects around, checks for
+        collisions.
+        """
         self._in_update = True
         self.time += dt
         # Gravity: affects velocities, but not positions
@@ -371,7 +376,7 @@ class Object(object):
     def collision(self, other):
         """Handle a collision with another object.
 
-        The default implementation is bouncing.
+        The default implementation is bouncing off things.
         """
         self.bounce(other)
 
@@ -382,6 +387,7 @@ class Object(object):
             ...                   mass=14, radius=2)
             >>> tincan = Object(Vector(0.5, 4), velocity=Vector(1.5, -0.3),
             ...                 mass=1, radius=1)
+            >>> tincan.world = World()
 
             >>> tincan.bounce(asteroid)
             >>> print tincan.velocity
@@ -390,14 +396,116 @@ class Object(object):
             (0.000, 4.000)
 
         The bounce is not physically realistic (e.g. total energy/momentum
-        is not preserved)
+        is not preserved).
         """
         normal = (self.position - other.position).scaled()
         delta = normal.x * self.velocity.x + normal.y * self.velocity.y
         self.velocity -= normal.scaled(2 * delta)
-        # Let's lose 10% speed
-        self.velocity *= 0.9
+        # Let's lose some speed
+        self.velocity *= 1 - self.world.BOUNCE_SPEED_LOSS
         # Let's also make sure the objects do not overlap
         collision_distance = other.radius + self.radius
         self.position = other.position + normal.scaled(collision_distance)
 
+
+class Planet(Object):
+    """A planet in the game universe.
+
+    Planets have mass and attract other things.  Planets themselves are not
+    affected by gravity (computing stable orbits for N planets is too
+    difficult, especially with the numeric approximations I take).
+    """
+
+    def gravitate(self, massive_object, dt):
+        """Don't react to gravity."""
+        pass
+
+    def collision(self, other):
+        """Handle a collision: nothing happens to a planet."""
+        pass
+
+
+class Ship(Object):
+    """A powered ship.
+
+        >>> ship = Ship(Vector(0, 0), size=10, direction=45)
+        >>> ship.size
+        10
+        >>> ship.radius
+        6.0
+
+        >>> ship.health
+        1.0
+
+    You tell the ship what to do, and the ship does it
+
+        >>> ship.turn_left(15)
+        >>> ship.accelerate(10)
+        >>> ship.move(1.0)
+        >>> ship.direction
+        60.0
+        >>> ship.velocity.length()
+        10.0
+
+    """
+
+    SIZE_TO_RADIUS = 0.6    # Ships aren't circular.  To simulate more or
+                            # less convincing collisions we need to have a
+                            # collision radius smaller than ship size.
+
+    def __init__(self, position, size, direction=0):
+        Object.__init__(self, position, radius=size * self.SIZE_TO_RADIUS)
+        self.size = size
+        self.direction = direction
+        self.forward_thrust = 0
+        self.rear_thrust = 0
+        self.left_thrust = 0
+        self.right_thrust = 0
+        self.health = 1.0
+
+    def _set_direction(self, direction):
+        """Set the direction of the ship.
+
+        The direction is given in angles.  It will be normalized so that
+        0 <= direction < 360.
+
+        The direction_vector attribute is also set.
+        """
+        direction = direction % 360
+        if direction < 0: direction += 360
+        self._direction = direction
+        self.direction_vector = Vector.from_polar(direction)
+
+    direction = property(lambda self: self._direction, _set_direction)
+
+    def turn_left(self, how_much):
+        """Tell the ship to turn left."""
+        self.left_thrust += how_much
+
+    def turn_right(self, how_much):
+        """Tell the ship to turn right."""
+        self.right_thrust += how_much
+
+    def accelerate(self, how_much):
+        """Tell the ship to accelerate in the direction of the ship."""
+        self.forward_thrust += how_much
+
+    def backwards(self, how_much):
+        """Tell the ship to accelerate in the opposite direction."""
+        self.rear_thrust += how_much
+
+    def move(self, dt):
+        """Apply thrusters and move in the universe."""
+        if self.left_thrust:
+            self.direction += self.left_thrust * dt
+            self.left_thrust = 0
+        if self.right_thrust:
+            self.direction -= self.right_thrust * dt
+            self.right_thrust = 0
+        if self.forward_thrust:
+            self.velocity += self.direction_vector * self.forward_thrust * dt
+            self.forward_thrust = 0
+        if self.rear_thrust:
+            self.velocity -= self.direction_vector * self.rear_thrust * dt
+            self.rear_thrust = 0
+        Object.move(self, dt)
