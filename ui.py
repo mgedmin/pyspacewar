@@ -230,12 +230,14 @@ class HUDCompass(HUDElement):
     )
 
     radius = 50
-    radar_scale = 0.1
+    radar_scale = 0.05
     velocity_scale = 50
 
-    def __init__(self, world, ship, xalign=0, yalign=1, colors=BLUE_COLORS):
+    def __init__(self, world, ship, viewport, xalign=0, yalign=1,
+                 colors=BLUE_COLORS):
         self.world = world
         self.ship = ship
+        self.viewport = viewport
         self.width = self.height = 2*self.radius
         self.surface = pygame.Surface((self.width,
                                        self.height)).convert_alpha()
@@ -250,14 +252,23 @@ class HUDCompass(HUDElement):
         pygame.draw.circle(self.surface, self.bgcolor, (x, y), self.radius)
         self.surface.set_at((x, y), self.fgcolor1)
 
+        scale = self.radar_scale * self.viewport.scale
         for body in self.world.objects:
             if body.mass == 0:
                 continue
-            pos = (body.position - self.ship.position) * self.radar_scale
+            pos = (body.position - self.ship.position) * scale
             if pos.length() > self.radius:
                 continue
-            self.surface.set_at((x + int(pos.x), y - int(pos.y)),
-                                self.fgcolor3)
+            radius = max(0, int(body.radius * scale))
+            px = x + int(pos.x)
+            py = y - int(pos.y)
+            if radius < 1:
+                self.surface.set_at((px, py), self.fgcolor3)
+            elif radius == 1:
+                self.surface.fill(self.fgcolor3, (px, py, 2, 2))
+            else:
+                pygame.draw.circle(self.surface, self.fgcolor3, (px, py),
+                                   radius)
 
         d = self.ship.direction_vector
         d = d.scaled(self.radius * 0.9)
@@ -356,9 +367,9 @@ class GameUI(object):
             HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
             HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
                         HUDShipInfo.GREEN_COLORS),
-            HUDCompass(self.game.world, self.ships[0], 1, 1,
+            HUDCompass(self.game.world, self.ships[0], self.viewport, 1, 1,
                        HUDCompass.BLUE_COLORS),
-            HUDCompass(self.game.world, self.ships[1], 0, 1,
+            HUDCompass(self.game.world, self.ships[1], self.viewport, 0, 1,
                        HUDCompass.GREEN_COLORS),
         ]
 

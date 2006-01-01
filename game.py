@@ -75,7 +75,8 @@ class Game(object):
             self.time_source.wait(self._next_tick)
             self._next_tick += self.time_source.delta
 
-    def new(cls, ships=2, planet_kinds=1, world_radius=600, rng=None):
+    def new(cls, ships=2, planet_kinds=1, world_radius=1200,
+            ship_start_radius=300, rng=None):
         """Create a new random game."""
         game = cls(rng)
         rng = game.rng
@@ -94,7 +95,7 @@ class Game(object):
             ship.rotation_speed = cls.ROTATION_SPEED
             ship.forward_power = cls.FRONT_THRUST
             ship.backward_power = cls.REAR_THRUST
-            game.randomly_place(ship, world_radius)
+            game.randomly_place(ship, ship_start_radius)
         return game
 
     new = classmethod(new)
