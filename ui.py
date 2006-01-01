@@ -9,7 +9,7 @@ import glob
 import pygame
 from pygame.locals import *
 
-from world import Vector
+from world import Vector, Ship
 from game import Game
 
 
@@ -33,6 +33,8 @@ class Viewport(object):
         ``scale`` -- ratio of pixels to world coordinate units.
 
     """
+
+    AUTOSCALE_FACTOR = 1.001
 
     def __init__(self, surface):
         self.surface = surface
@@ -73,6 +75,63 @@ class Viewport(object):
         y = self._screen_y - world_pos.y * self._scale
         return (int(x), int(y))
 
+    def world_pos(self, screen_pos):
+        """Convert screen coordinates into world coordinates."""
+        x = (screen_pos[0] - self._screen_x) / self._scale
+        y = -(screen_pos[1] - self._screen_y) / self._scale
+        return (x, y)
+
+    def keep_visible(self, points, margin):
+        """Adjust origin and scale to keep all specified points visible.
+
+        Postcondition:
+
+            margin <= x <= screen_w - margin
+
+              and
+
+            margin <= y <= screen_h - margin
+
+              for x, y in [self.screen_pos(pt) for pt in points]
+
+        """
+        if len(points) > 1:
+            xs = [pt.x for pt in points]
+            ys = [pt.y for pt in points]
+            w = max(xs) - min(xs)
+            h = max(ys) - min(ys)
+            while True:
+                xmin, ymin, xmax, ymax = self.world_inner_bounds(margin)
+                if w <= xmax - xmin and h <= ymax - ymin:
+                    break
+                self.scale /= self.AUTOSCALE_FACTOR
+
+        for pt in points:
+            xmin, ymin, xmax, ymax = self.world_inner_bounds(margin)
+            if pt.x < xmin:
+                self.origin -= Vector(xmin - pt.x, 0)
+            elif pt.x > xmax:
+                self.origin -= Vector(xmax - pt.x, 0)
+            if pt.y < ymin:
+                self.origin -= Vector(0, ymin - pt.y)
+            elif pt.y > ymax:
+                self.origin -= Vector(0, ymax - pt.y)
+
+    def world_inner_bounds(self, margin):
+        """Calculate the rectange in world coordinates that fits inside a
+        given margin in the screen.
+
+        Returns (xmin, ymin, xmax, ymax).
+
+        For all points (x, y) where (xmin <= x <= xmax and ymin <= y <= ymax)
+        it is true, that margin <= sx <= screen_w - margin and
+        margin <= sy <= screen_h - margin; here sx, sy == screen_pos(x, y)
+        """
+        surface_w, surface_h = self.surface.get_size()
+        x1, y1 = self.world_pos((margin, margin))
+        x2, y2 = self.world_pos((surface_w - margin, surface_h - margin))
+        return min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
+
 
 class GameUI(object):
     """User interface for the game."""
@@ -83,6 +142,8 @@ class GameUI(object):
         (255, 255, 255),     # Player 1 has a white ship
         (127, 255, 0),       # Player 2 has a green ship
     ]
+
+    visibility_margin = 120  # Keep ships at least 120px from screen edges
 
     def init(self):
         """Initialize the user interface."""
@@ -125,6 +186,17 @@ class GameUI(object):
         """Start a new game."""
         self.game = Game.new(ships=2,
                              planet_kinds=len(self.planet_images))
+        self.ships = sorted([obj for obj in self.game.world.objects
+                             if isinstance(obj, Ship)],
+                            key=lambda ship: ship.appearance)
+        self.viewport.origin = (self.ships[0].position +
+                                self.ships[1].position) / 2
+        self.viewport.scale = 1
+
+    def _keep_ships_visible(self):
+        """Update viewport origin/scale so that all ships are on screen."""
+        self.viewport.keep_visible([s.position for s in self.ships],
+                                   self.visibility_margin)
 
     def _init_keymap(self):
         """Initialize the keymap."""
@@ -148,6 +220,7 @@ class GameUI(object):
 
     def draw(self):
         """Draw the state of the game"""
+        self._keep_ships_visible()
         self.screen.fill((0, 0, 0))
         for obj in self.game.world.objects:
             getattr(self, 'draw_' + obj.__class__.__name__)(obj)

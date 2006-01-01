@@ -48,6 +48,15 @@ def doctest_Viewport():
         >>> viewport.screen_pos(Vector(106, 199))
         (401, 300)
 
+    ``world_pos`` converts screen coordinates to world coordinates
+
+        >>> viewport.world_pos((400, 300))
+        (100.0, 200.0)
+        >>> viewport.world_pos((410, 290))
+        (150.0, 250.0)
+        >>> viewport.world_pos((401, 300))
+        (105.0, 200.0)
+
     """
 
 
@@ -74,6 +83,63 @@ def doctest_Viewport_screen_size_change():
 
     """
 
+
+def doctest_Viewport_keep_visible():
+    """Tests for Viewport.keep_visible.
+
+        >>> from world import Vector
+        >>> from ui import Viewport
+        >>> viewport = Viewport(SurfaceStub())
+
+    Points that are already visible change nothing
+
+        >>> viewport.keep_visible([Vector(0, 0)], 10)
+        >>> viewport.keep_visible([Vector(100, 100)], 10)
+        >>> viewport.keep_visible([Vector(-200, -100)], 10)
+        >>> print viewport.origin, viewport.scale
+        (0.000, 0.000) 1.0
+
+    We can see the range of points that are inside the view margin, for
+    a given margin size
+
+        >>> viewport.world_inner_bounds(0)
+        (-400.0, -300.0, 400.0, 300.0)
+        >>> viewport.world_inner_bounds(10)
+        (-390.0, -290.0, 390.0, 290.0)
+
+    Points that are off-screen cause scrolling
+
+        >>> viewport.keep_visible([Vector(600, 200)], 10)
+        >>> print viewport.origin, viewport.scale
+        (210.000, 0.000) 1.0
+
+        >>> viewport.keep_visible([Vector(300, 700)], 10)
+        >>> print viewport.origin, viewport.scale
+        (210.000, 410.000) 1.0
+
+        >>> viewport.keep_visible([Vector(-300, -100)], 10)
+        >>> print viewport.origin, viewport.scale
+        (90.000, 190.000) 1.0
+
+        >>> viewport.world_inner_bounds(10)
+        (-300.0, -100.0, 480.0, 480.0)
+
+    If you specify several widely-separated points, they may cause a scale
+    change
+
+        >>> viewport.keep_visible([Vector(-300, -100),
+        ...                        Vector(500, 400)], 10)
+
+        >>> print viewport.origin, round(viewport.scale, 3)
+        (99.732, 190.000) 0.974
+
+        >>> xmin, ymin, xmax, ymax = viewport.world_inner_bounds(10)
+        >>> xmin <= -300 and 500 <= xmax
+        True
+        >>> ymin <= -100 and 400 <= ymax
+        True
+
+    """
 
 
 def test_suite():
