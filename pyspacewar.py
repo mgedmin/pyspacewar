@@ -26,7 +26,7 @@ if not os.path.exists(FONT):
     FONT = None
 
 FPS = 20
-JIFFY_IN_MS = 1000 / FPS            # 1 jiffy in ms
+JIFFY_IN_MS = 1000 / FPS            # 1 jiffy == JIFFY_IN_MS milliseconds
 DELTA_TIME = 2.0                    # world time units in one jiffy
 SCALE_FACTOR = 1.25                 # scale factor per jiffy for +/-
 ROTATION_SPEED = 10 / DELTA_TIME    # angles per time for left/right
