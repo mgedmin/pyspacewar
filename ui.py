@@ -133,6 +133,63 @@ class Viewport(object):
         return min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
 
 
+class HUDInfoPanel(object):
+    """Heads-up status display base class."""
+
+    STD_COLORS = [(0xff, 0xff, 0xff), (0xcc, 0xff, 0xff)]
+    GREEN_COLORS = [(0x7f, 0xff, 0x00), (0xcc, 0xff, 0xff)]
+
+    def __init__(self, font, ncols, nrows, xalign=0, yalign=0,
+                 colors=STD_COLORS):
+        self.font = font
+        self.width = self.font.size('x')[0] * ncols
+        self.row_height = self.font.get_linesize()
+        self.height = nrows * self.row_height
+        self.xalign = xalign
+        self.yalign = yalign
+        self.color1, self.color2 = colors
+
+    def position(self, surface, margin=10):
+        """Calculate screen position for the panel."""
+        surface_w, surface_h = surface.get_size()
+        x = margin + self.xalign * (surface_w - self.width - 2 * margin)
+        y = margin + self.yalign * (surface_h - self.height - 2 * margin)
+        return int(x), int(y)
+
+    def draw_rows(self, surface, *rows):
+        """Draw some information.
+
+        ``rows`` is a list of 2-tuples.
+        """
+        x, y = self.position(surface)
+        for a, b in rows:
+            img = self.font.render(str(a), True, self.color1)
+            surface.blit(img, (x, y))
+            img = self.font.render(str(b), True, self.color2)
+            surface.blit(img, (x + self.width - img.get_width(), y))
+            y += self.row_height
+
+
+class HUDShipInfo(HUDInfoPanel):
+    """Heads-up ship status display."""
+
+    def __init__(self, ship, font, xalign=0, yalign=0,
+                 colors=HUDInfoPanel.STD_COLORS):
+        HUDInfoPanel.__init__(self, font, 10, 4.5, xalign, yalign, colors)
+        self.ship = ship
+
+    def draw(self, surface):
+        self.draw_rows(surface,
+                ('direction', '%d' % self.ship.direction),
+                ('heading', '%d' % self.ship.velocity.direction()),
+                ('speed', '%.1f' % self.ship.velocity.length()),)
+        x, y = self.position(surface)
+        y += self.height - 2
+        w = max(0, int((self.width - 2) * self.ship.health))
+        pygame.draw.rect(surface, self.color2, (x, y, self.width, 4), 1)
+        surface.fill(self.color1, (x+1, y+1, w, 2))
+
+
 class GameUI(object):
     """User interface for the game."""
 
@@ -151,6 +208,7 @@ class GameUI(object):
         """Initialize the user interface."""
         self._init_pygame()
         self._load_planet_images()
+        self._init_fonts()
         self._init_keymap()
         self._set_mode()
         self.viewport = Viewport(self.screen)
@@ -184,6 +242,17 @@ class GameUI(object):
         if not self.planet_images:
             raise RuntimeError("Could not find planet bitmaps")
 
+    def _init_fonts(self):
+        """Load fonts."""
+        self.hud_font = self._load_font('Verdana', 14)
+
+    def _load_font(self, name, size):
+        """Try to load a font."""
+        filename = '/usr/share/fonts/truetype/msttcorefonts/%s.ttf' % name
+        if not os.path.exists(filename):
+            filename = None
+        return pygame.font.Font(filename, size)
+
     def _new_game(self):
         """Start a new game."""
         self.game = Game.new(ships=2,
@@ -194,6 +263,15 @@ class GameUI(object):
         self.viewport.origin = (self.ships[0].position +
                                 self.ships[1].position) / 2
         self.viewport.scale = 1
+        self._init_hud()
+
+    def _init_hud(self):
+        """Initialize the heads-up display."""
+        self.hud = [
+            HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
+            HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
+                        HUDShipInfo.GREEN_COLORS),
+        ]
 
     def _keep_ships_visible(self):
         """Update viewport origin/scale so that all ships are on screen."""
@@ -261,6 +339,8 @@ class GameUI(object):
         self.screen.fill((0, 0, 0))
         for obj in self.game.world.objects:
             getattr(self, 'draw_' + obj.__class__.__name__)(obj)
+        for drawable in self.hud:
+            drawable.draw(self.screen)
         pygame.display.flip()
 
     def draw_Planet(self, planet):
