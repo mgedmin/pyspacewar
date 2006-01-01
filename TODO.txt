@@ -1,0 +1,16 @@
+Features still missing:
+
+- HUD
+- missiles
+- missile trails (togglable)
+- explosions
+- debris
+- health, death and respawning
+- pause
+- AI
+- fullscreen mode
+- determine largest screen mode
+- braking
+- computed missile launch
+- keep free space around planets (margin arg for collision detection)
+- frame dropping
