@@ -95,6 +95,9 @@ class Vector(tuple):
             >>> Vector(1.5, 7.5) / 3
             Vector(0.5, 2.5)
 
+            >>> print Vector(1, 2) / 3
+            (0.333, 0.667)
+
         """
         return Vector(self.x / float(divisor), self.y / float(divisor))
 
@@ -193,10 +196,14 @@ class World(object):
         w.add(planet)
         w.add(ship)
         while True:
+            # Tell the ship what to do during the next update
+            # Draw the state of the world
             w.update(0.1)
             time.sleep(0.1)
 
     """
+
+    GRAVITY = 0.01 # constant of gravitation
 
     def __init__(self):
         self.time = 0.0
@@ -206,7 +213,21 @@ class World(object):
         self._remove_queue = []
 
     def add(self, obj):
-        """Add a new object to the universe."""
+        """Add a new object to the universe.
+
+        Objects living in the universe must have the following methods:
+
+            gravitate(massive_object, delta_time)
+                react to gravity from massive_object for a particular time
+            move(delta_time)
+                move for a particular time
+            collission(other_object)
+                handle a collision
+            distanceTo(other_object)
+                calculate the distance to another object
+
+        and a ``radius`` attribute, used for collision detection.
+        """
         if self._in_update:
             self._add_queue.append(obj)
         else:
@@ -220,7 +241,7 @@ class World(object):
             self.objects.remove(obj)
 
     def update(self, dt):
-        """Make time happen."""
+        """Make time happen (dt time units of it)."""
         self._in_update = True
         self.time += dt
         # Gravity: affects velocities, but not positions
@@ -252,4 +273,131 @@ class World(object):
         """Check whether two objects collide."""
         collision_distance = obj1.radius + obj2.radius
         return obj1.distanceTo(obj2) < collision_distance
+
+
+class Object(object):
+    """A material object in the game universe.
+
+        >>> o = Object(Vector(45.0, 110.0))
+        >>> o.position
+        Vector(45.0, 110.0)
+        >>> o.velocity
+        Vector(0.0, 0.0)
+        >>> o.mass
+        0
+        >>> o.radius
+        0
+
+    """
+
+    def __init__(self, position, velocity=Vector(0.0, 0.0), mass=0, radius=0):
+        self.position = position
+        self.mass = mass
+        self.radius = radius
+        self.velocity = velocity
+
+    def distanceTo(self, other):
+        """Calculate the distance to another object.
+
+            >>> sun = Object(Vector(30, 40))
+            >>> tincan = Object(Vector(0, 0))
+            >>> tincan.distanceTo(sun)
+            50.0
+            >>> sun.distanceTo(tincan)
+            50.0
+
+        """
+        return (self.position - other.position).length()
+
+    def gravitate(self, massive_object, dt):
+        """React to gravity from massive_object for a particular time.
+
+            >>> sun = Object(Vector(0, 10), mass=200)
+            >>> tincan = Object(Vector(0, 0))
+            >>> tincan.world = World()
+            >>> tincan.gravitate(sun, 1.0)
+            >>> print tincan.velocity
+            (0.000, 0.020)
+
+            >>> tincan.gravitate(sun, 1.0)
+            >>> print tincan.velocity
+            (0.000, 0.040)
+
+            >>> tincan.gravitate(sun, .5)
+            >>> print tincan.velocity
+            (0.000, 0.050)
+
+        """
+        # Newton's laws of motion:
+        #   F = G * m1 * m2 / r**2
+        #   a = F / m1 = G * m2 / r ** 2
+        # where
+        #   F is force of attraction
+        #   G is the constant of gravitation
+        #   m1 and m2 are the masses of interacting bodies
+        #   r is the distance between interacting bodies
+        #   a is the acceleration of the body with mass m1
+        # We consider time t from t0 to t1 where t1 = t0 + dt
+        #   v(t1) = v(t0) + integral(t=t0..t1, a(t)dt)
+        #   a(t) = G * m2 / r(t) ** 2
+        # For simplicity's sake let's assume r(t) is constant.  Then a(t) is
+        # also constant, and
+        #   v(t1) = v(t0) + a * dt
+        vector = massive_object.position - self.position
+        sq_of_distance = vector.length() ** 2
+        magnitude = self.world.GRAVITY * massive_object.mass / sq_of_distance
+        acceleration = vector.scaled(magnitude * dt)
+        self.velocity += acceleration
+
+    def move(self, dt):
+        """Move for a particular time.
+
+            >>> tincan = Object(Vector(0, 0), velocity=Vector(0.5, 1.0))
+            >>> tincan.move(1.0)
+            >>> tincan.position
+            Vector(0.5, 1.0)
+
+            >>> tincan.move(1.0)
+            >>> tincan.position
+            Vector(1.0, 2.0)
+
+            >>> tincan.move(2.0)
+            >>> tincan.position
+            Vector(2.0, 4.0)
+
+        """
+        self.position += self.velocity * dt
+
+    def collision(self, other):
+        """Handle a collision with another object.
+
+        The default implementation is bouncing.
+        """
+        self.bounce(other)
+
+    def bounce(self, other):
+        """Bounce from another object.
+
+            >>> asteroid = Object(Vector(3, 4), velocity=Vector(0.1, 0.2),
+            ...                   mass=14, radius=2)
+            >>> tincan = Object(Vector(0.5, 4), velocity=Vector(1.5, -0.3),
+            ...                 mass=1, radius=1)
+
+            >>> tincan.bounce(asteroid)
+            >>> print tincan.velocity
+            (-1.350, -0.270)
+            >>> print tincan.position
+            (0.000, 4.000)
+
+        The bounce is not physically realistic (e.g. total energy/momentum
+        is not preserved)
+        """
+        normal = (self.position - other.position).scaled()
+        delta = normal.x * self.velocity.x + normal.y * self.velocity.y
+        self.velocity -= normal.scaled(2 * delta)
+        # Let's lose 10% speed
+        self.velocity *= 0.9
+        # Let's also make sure the objects do not overlap
+        collision_distance = other.radius + self.radius
+        self.position = other.position + normal.scaled(collision_distance)
 
