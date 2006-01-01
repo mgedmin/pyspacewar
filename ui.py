@@ -133,7 +133,24 @@ class Viewport(object):
         return min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
 
 
-class HUDInfoPanel(object):
+class HUDElement(object):
+    """Heads-up status display widget."""
+
+    def __init__(self, width, height, xalign, yalign):
+        self.width = width
+        self.height = height
+        self.xalign = xalign
+        self.yalign = yalign
+
+    def position(self, surface, margin=10):
+        """Calculate screen position for the widget."""
+        surface_w, surface_h = surface.get_size()
+        x = margin + self.xalign * (surface_w - self.width - 2 * margin)
+        y = margin + self.yalign * (surface_h - self.height - 2 * margin)
+        return int(x), int(y)
+
+
+class HUDInfoPanel(HUDElement):
     """Heads-up status display base class."""
 
     STD_COLORS = [(0xff, 0xff, 0xff), (0xcc, 0xff, 0xff)]
@@ -148,13 +165,6 @@ class HUDInfoPanel(object):
         self.xalign = xalign
         self.yalign = yalign
         self.color1, self.color2 = colors
-
-    def position(self, surface, margin=10):
-        """Calculate screen position for the panel."""
-        surface_w, surface_h = surface.get_size()
-        x = margin + self.xalign * (surface_w - self.width - 2 * margin)
-        y = margin + self.yalign * (surface_h - self.height - 2 * margin)
-        return int(x), int(y)
 
     def draw_rows(self, surface, *rows):
         """Draw some information.
@@ -183,11 +193,80 @@ class HUDShipInfo(HUDInfoPanel):
                 ('direction', '%d' % self.ship.direction),
                 ('heading', '%d' % self.ship.velocity.direction()),
                 ('speed', '%.1f' % self.ship.velocity.length()),)
+        # TODO: show frags
         x, y = self.position(surface)
         y += self.height - 2
         w = max(0, int((self.width - 2) * self.ship.health))
         pygame.draw.rect(surface, self.color2, (x, y, self.width, 4), 1)
         surface.fill(self.color1, (x+1, y+1, w, 2))
+
+
+class HUDCompass(HUDElement):
+    """Heads-up ship compass display.
+
+    Shows two vectors: direction of the ship, and the current velocity.
+    """
+
+    alpha = int(0.9*255)
+
+    BLUE_COLORS = (
+        (0x00, 0x11, 0x22, alpha),
+        (0x99, 0xaa, 0xff, alpha),
+        (0x44, 0x55, 0x66, alpha),
+        (0xaa, 0x77, 0x66, alpha),
+    )
+
+    GREEN_COLORS = (
+        (0x00, 0x22, 0x11, alpha),
+        (0x99, 0xff, 0xaa, alpha),
+        (0x44, 0x66, 0x55, alpha),
+        (0xaa, 0x66, 0x77, alpha),
+    )
+
+    radius = 50
+    radar_scale = 0.1
+    velocity_scale = 50
+
+    def __init__(self, world, ship, xalign=0, yalign=1, colors=BLUE_COLORS):
+        self.world = world
+        self.ship = ship
+        self.width = self.height = 2*self.radius
+        self.surface = pygame.Surface((self.width,
+                                       self.height)).convert_alpha()
+        self.bgcolor, self.fgcolor1, self.fgcolor2, self.fgcolor3 = colors
+        self.xalign = xalign
+        self.yalign = yalign
+
+    def draw(self, surface):
+        x = y = self.radius
+        self.surface.fill((0, 0, 0, 0))
+
+        pygame.draw.circle(self.surface, self.bgcolor, (x, y), self.radius)
+        self.surface.set_at((x, y), self.fgcolor1)
+
+        for body in self.world.objects:
+            if body.mass == 0:
+                continue
+            pos = (body.position - self.ship.position) * self.radar_scale
+            if pos.length() > self.radius:
+                continue
+            self.surface.set_at((x + int(pos.x), y - int(pos.y)),
+                                self.fgcolor3)
+
+        d = self.ship.direction_vector
+        d = d.scaled(self.radius * 0.9)
+        x2 = x + int(d.x)
+        y2 = y - int(d.y)
+        pygame.draw.aaline(self.surface, self.fgcolor2, (x, y), (x2, y2))
+
+        v = self.ship.velocity * self.velocity_scale
+        if v.length() > self.radius * 0.9:
+            v = v.scaled(self.radius * 0.9)
+        x2 = x + int(v.x)
+        y2 = y - int(v.y)
+        pygame.draw.aaline(self.surface, self.fgcolor1, (x, y), (x2, y2))
+
+        surface.blit(self.surface, self.position(surface))
 
 
 class GameUI(object):
@@ -271,6 +350,10 @@ class GameUI(object):
             HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
             HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
                         HUDShipInfo.GREEN_COLORS),
+            HUDCompass(self.game.world, self.ships[0], 1, 1,
+                       HUDCompass.BLUE_COLORS),
+            HUDCompass(self.game.world, self.ships[1], 0, 1,
+                       HUDCompass.GREEN_COLORS),
         ]
 
     def _keep_ships_visible(self):
