@@ -201,17 +201,28 @@ class World(object):
     def __init__(self):
         self.time = 0.0
         self.objects = []
+        self._in_update = False
+        self._add_queue = []
+        self._remove_queue = []
 
     def add(self, obj):
         """Add a new object to the universe."""
-        self.objects.append(obj)
+        if self._in_update:
+            self._add_queue.append(obj)
+        else:
+            self.objects.append(obj)
 
     def remove(self, obj):
         """Remove an object from the universe."""
-        self.objects.remove(obj)
+        if self._in_update:
+            self._remove_queue.append(obj)
+        else:
+            self.objects.remove(obj)
 
     def update(self, dt):
         """Make time happen."""
+        self._in_update = True
+        self.time += dt
         # Gravity: affects velocities, but not positions
         for massive_obj in self.objects:
             if not massive_obj.mass:
@@ -219,18 +230,26 @@ class World(object):
             for obj in self.objects:
                 if obj is not massive_obj:
                     obj.gravitate(massive_obj, dt)
-        # Movement: affects positions
+        # Movement: affects positions, may affect velocities
         for obj in self.objects:
             obj.move(dt)
-        # Collision detection
+        # Collision detection: may affect positions and velocities
         for n, obj1 in enumerate(self.objects):
             for obj2 in self.objects[n+1:]:
                 if self.collide(obj1, obj2):
-                    obj1.collision(obj1)
-                    obj2.collision(obj2)
-        self.time += dt
+                    obj1.collision(obj2)
+                    obj2.collision(obj1)
+        self._in_update = False
+        if self._add_queue:
+            self.objects += self._add_queue
+            self._add_queue = []
+        if self._remove_queue:
+            for obj in self._remove_queue:
+                self.objects.remove(obj)
+            self._remove_queue = []
 
     def collide(self, obj1, obj2):
         """Check whether two objects collide."""
-        return False
+        collision_distance = obj1.radius + obj2.radius
+        return obj1.distanceTo(obj2) < collision_distance
 

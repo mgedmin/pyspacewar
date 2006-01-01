@@ -8,12 +8,16 @@ import os
 
 class Object(object):
 
-    def __init__(self, name, mass=0):
+    def __init__(self, name, mass=0, radius=0):
         self.name = name
         self.mass = mass
+        self.radius = radius
 
     def __repr__(self):
         return self.name
+
+    def distanceTo(self, other):
+        return 1e100
 
     def gravitate(self, massive_obj, dt):
         print "%s attracts %s for %s time units" % (massive_obj.name,
@@ -21,6 +25,9 @@ class Object(object):
 
     def move(self, dt):
         print "Moving %s for %s time units" % (self.name, dt)
+
+    def collision(self, other):
+        print "%s collides with %s" % (self.name, other.name)
 
 
 def doctest_World():
@@ -91,16 +98,116 @@ def doctest_World():
     """
 
 
+def doctest_World_collision_detection_in_update():
+    """Tests for collicition detection
+
+        >>> from world import World, Vector
+        >>> w = World()
+
+        >>> o1, o2, o3 = map(Object, ['o1', 'o2', 'o3'])
+        >>> w.add(o1)
+        >>> w.add(o2)
+        >>> w.add(o3)
+
+        >>> w.collide = lambda a, b: a is o1 and b is o3
+        >>> w.update(1.0)
+        Moving o1 for 1.0 time units
+        Moving o2 for 1.0 time units
+        Moving o3 for 1.0 time units
+        o1 collides with o3
+        o3 collides with o1
+
+    """
+
+
+def doctest_World_death_and_birth_in_update():
+    """Test for spawning and removing objects during update
+
+        >>> from world import World, Vector
+        >>> w = World()
+
+        >>> o1, o2, o3, o4, o5 = map(Object, ['o1', 'o2', 'o3', 'o4', 'o5'])
+        >>> w.add(o1)
+        >>> w.add(o2)
+        >>> w.add(o3)
+
+    You can add new objects in the middle of an update.
+
+        >>> orig_move = o2.move
+        >>> def my_move(dt):
+        ...     orig_move(dt)
+        ...     w.add(o4)
+        ...     w.add(o5)
+        >>> o2.move = my_move
+        >>> w.update(1.0)
+        Moving o1 for 1.0 time units
+        Moving o2 for 1.0 time units
+        Moving o3 for 1.0 time units
+
+        >>> w.objects
+        [o1, o2, o3, o4, o5]
+
+    You can remove objects in the middle of an update.
+
+        >>> o2.move = orig_move
+        >>> orig_move = o3.move
+        >>> def my_move(dt):
+        ...     orig_move(dt)
+        ...     w.remove(o2)
+        ...     w.remove(o4)
+        >>> o3.move = my_move
+        >>> w.update(1.0)
+        Moving o1 for 1.0 time units
+        Moving o2 for 1.0 time units
+        Moving o3 for 1.0 time units
+        Moving o4 for 1.0 time units
+        Moving o5 for 1.0 time units
+
+        >>> w.objects
+        [o1, o3, o5]
+
+    You can even do insane combinations of addition and removal
+
+        >>> def my_move(dt):
+        ...     orig_move(dt)
+        ...     w.remove(o1)
+        ...     w.add(o2)
+        ...     w.add(o4)
+        ...     w.remove(o2)
+        ...     w.add(o1)
+        >>> o3.move = my_move
+        >>> w.update(1.0)
+        Moving o1 for 1.0 time units
+        Moving o3 for 1.0 time units
+        Moving o5 for 1.0 time units
+
+        >>> w.objects
+        [o3, o5, o4, o1]
+
+    """
+
+
 def doctest_World_collision_detection():
     """Tests for collision detection
 
-        >>> from world import World
+        >>> from world import World, Vector
         >>> w = World()
 
-    You can check whether to objects collide.
+    You can check whether two objects collide.  Collision detection is pretty
+    basic, and assumes all objects are circular.
 
-        >>> o1 = Object('o1')
-        >>> o2 = Object('o2')
+        >>> o1 = Object('o1', radius=1)
+        >>> o2 = Object('o2', radius=2)
+
+        >>> o1.distanceTo = lambda o2: 3.5
+        >>> w.collide(o1, o2)
+        False
+
+        >>> o1.distanceTo = lambda o2: 2.5
+        >>> w.collide(o1, o2)
+        True
+
+        >>> o1.distanceTo = lambda o2: 3.0
         >>> w.collide(o1, o2)
         False
 
