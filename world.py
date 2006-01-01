@@ -134,17 +134,6 @@ class Vector(tuple):
         """
         return math.hypot(*self)
 
-    def length_sq(self):
-        """Compute the square of the length of the vector.
-
-            >>> Vector(3.0, 4.0).length_sq()
-            25.0
-
-        Contrary to your expectations, this function is 2x *slower* than
-        ``length``.  I measured with ``timeit``.
-        """
-        return self.x**2 + self.y**2
-
     def direction(self):
         """Compute the direction of the vector (in degrees).
 
@@ -194,4 +183,54 @@ class Vector(tuple):
         """
         return self * new_length / self.length()
 
+
+class World(object):
+    """The game universe.
+
+    Example:
+
+        w = World()
+        w.add(planet)
+        w.add(ship)
+        while True:
+            w.update(0.1)
+            time.sleep(0.1)
+
+    """
+
+    def __init__(self):
+        self.time = 0.0
+        self.objects = []
+
+    def add(self, obj):
+        """Add a new object to the universe."""
+        self.objects.append(obj)
+
+    def remove(self, obj):
+        """Remove an object from the universe."""
+        self.objects.remove(obj)
+
+    def update(self, dt):
+        """Make time happen."""
+        # Gravity: affects velocities, but not positions
+        for massive_obj in self.objects:
+            if not massive_obj.mass:
+                continue
+            for obj in self.objects:
+                if obj is not massive_obj:
+                    obj.gravitate(massive_obj, dt)
+        # Movement: affects positions
+        for obj in self.objects:
+            obj.move(dt)
+        # Collision detection
+        for n, obj1 in enumerate(self.objects):
+            for obj2 in self.objects[n+1:]:
+                if self.collide(obj1, obj2):
+                    obj1.collision(obj1)
+                    obj2.collision(obj2)
+        self.time += dt
+
+    def collide(self, obj1, obj2):
+        """Check whether two objects collide."""
+        return False
 
