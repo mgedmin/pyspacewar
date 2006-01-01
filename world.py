@@ -294,7 +294,7 @@ class World(object):
 class Object(object):
     """A material object in the game universe.
 
-        >>> o = Object(Vector(45.0, 110.0))
+        >>> o = Object(Vector(45.0, 110.0), appearance=42)
         >>> o.position
         Vector(45.0, 110.0)
         >>> o.velocity
@@ -304,13 +304,21 @@ class Object(object):
         >>> o.radius
         0
 
+    Appearance is an opaque field that user interface code can use to
+    distinguish between different objects of the same kind.
+
+        >>> o.appearance
+        42
+
     """
 
-    def __init__(self, position, velocity=Vector(0.0, 0.0), mass=0, radius=0):
+    def __init__(self, position=Vector(0.0, 0.0), velocity=Vector(0.0, 0.0),
+                 mass=0, radius=0, appearance=0):
         self.position = position
         self.mass = mass
         self.radius = radius
         self.velocity = velocity
+        self.appearance = appearance
 
     def distanceTo(self, other):
         """Calculate the distance to another object.
@@ -464,8 +472,10 @@ class Ship(Object):
                             # less convincing collisions we need to have a
                             # collision radius smaller than ship size.
 
-    def __init__(self, position, size, direction=0):
-        Object.__init__(self, position, radius=size * self.SIZE_TO_RADIUS)
+    def __init__(self, position=Vector(0, 0), size=10, direction=0,
+                 appearance=0):
+        Object.__init__(self, position, radius=size * self.SIZE_TO_RADIUS,
+                        appearance=appearance)
         self.size = size
         self.direction = direction
         self.forward_thrust = 0
