@@ -136,14 +136,16 @@ class Viewport(object):
 class GameUI(object):
     """User interface for the game."""
 
-    fullscreen = False
+    ZOOM_FACTOR = 1.25      # Keyboard zoom factor
+
+    fullscreen = False      # Start in windowed mode
 
     ship_colors = [
-        (255, 255, 255),     # Player 1 has a white ship
-        (127, 255, 0),       # Player 2 has a green ship
+        (255, 255, 255),    # Player 1 has a white ship
+        (127, 255, 0),      # Player 2 has a green ship
     ]
 
-    visibility_margin = 120  # Keep ships at least 120px from screen edges
+    visibility_margin = 120 # Keep ships at least 120px from screen edges
 
     def init(self):
         """Initialize the user interface."""
@@ -200,9 +202,12 @@ class GameUI(object):
 
     def _init_keymap(self):
         """Initialize the keymap."""
-        self._keymap = {}
-        self._keymap[K_ESCAPE] = self.quit
-        self._keymap[K_q] = self.quit
+        self._keymap_once = {}
+        self._keymap_repeat = {}
+        self._keymap_once[K_ESCAPE] = self.quit
+        self._keymap_once[K_q] = self.quit
+        self._keymap_repeat[K_EQUALS] = self.zoom_in
+        self._keymap_repeat[K_MINUS] = self.zoom_out
 
     def interact(self):
         """Process pending keyboard/mouse events."""
@@ -210,13 +215,25 @@ class GameUI(object):
             if event.type == QUIT:
                 self.quit()
             elif event.type == KEYDOWN:
-                handler = self._keymap.get(event.key)
+                handler = self._keymap_once.get(event.key)
                 if handler:
                     handler(event)
+        pressed = pygame.key.get_pressed()
+        for key, handler in self._keymap_repeat.items():
+            if pressed[key]:
+                handler()
 
     def quit(self, event=None):
         """Exit the game."""
         sys.exit(0)
+
+    def zoom_in(self, event=None):
+        """Zoom in."""
+        self.viewport.scale *= self.ZOOM_FACTOR
+
+    def zoom_out(self, event=None):
+        """Zoom in."""
+        self.viewport.scale /= self.ZOOM_FACTOR
 
     def draw(self):
         """Draw the state of the game"""
