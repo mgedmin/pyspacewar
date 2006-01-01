@@ -228,6 +228,8 @@ class World(object):
                 calculate the distance to another object
 
         and a ``radius`` attribute, used for collision detection.
+
+        Objects added to a universe will get a ``world`` attribute.
         """
         if self._in_update:
             if obj in self._remove_queue:
