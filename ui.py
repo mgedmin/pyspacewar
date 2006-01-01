@@ -202,12 +202,32 @@ class GameUI(object):
 
     def _init_keymap(self):
         """Initialize the keymap."""
+        self.clear_keymap()
+        self.on_key(K_ESCAPE, self.quit)
+        self.on_key(K_q, self.quit)
+        self.while_key(K_EQUALS, self.zoom_in)
+        self.while_key(K_MINUS, self.zoom_out)
+        self.while_key(K_LEFT, lambda *a: self.ships[0].turn_left())
+        self.while_key(K_RIGHT, lambda *a: self.ships[0].turn_right())
+        self.while_key(K_UP, lambda *a: self.ships[0].accelerate())
+        self.while_key(K_DOWN, lambda *a: self.ships[0].backwards())
+        self.while_key(K_a, lambda *a: self.ships[1].turn_left())
+        self.while_key(K_d, lambda *a: self.ships[1].turn_right())
+        self.while_key(K_w, lambda *a: self.ships[1].accelerate())
+        self.while_key(K_s, lambda *a: self.ships[1].backwards())
+
+    def clear_keymap(self):
+        """Clear all key mappings."""
         self._keymap_once = {}
         self._keymap_repeat = {}
-        self._keymap_once[K_ESCAPE] = self.quit
-        self._keymap_once[K_q] = self.quit
-        self._keymap_repeat[K_EQUALS] = self.zoom_in
-        self._keymap_repeat[K_MINUS] = self.zoom_out
+
+    def on_key(self, key, handler):
+        """Install a handler to be called once when a key is pressed."""
+        self._keymap_once[key] = handler
+
+    def while_key(self, key, handler):
+        """Install a handler to be called repeatedly while a key is pressed."""
+        self._keymap_repeat[key] = handler
 
     def interact(self):
         """Process pending keyboard/mouse events."""
@@ -261,7 +281,24 @@ class GameUI(object):
         pt3 = ship.position - direction_vector - side_vector * 0.5
         points = map(self.viewport.screen_pos, [pt1, pt2, pt3])
         pygame.draw.aalines(self.screen, color, False, points)
-        # TODO: draw thrusters
+        thrust_lines = []
+        if ship.forward_thrust:
+            thrust_lines.append(((-0.1, -0.9), (-0.1, -1.2)))
+            thrust_lines.append(((+0.1, -0.9), (+0.1, -1.2)))
+        if ship.rear_thrust:
+            thrust_lines.append(((-0.6, -0.2), (-0.6, +0.1)))
+            thrust_lines.append(((+0.6, -0.2), (+0.6, +0.1)))
+        if ship.left_thrust:
+            thrust_lines.append(((-0.2, +0.8), (-0.4, +0.8)))
+            thrust_lines.append(((+0.8, -0.8), (+0.6, -0.8)))
+        if ship.right_thrust:
+            thrust_lines.append(((+0.2, +0.8), (+0.4, +0.8)))
+            thrust_lines.append(((-0.8, -0.8), (-0.6, -0.8)))
+        for (s1, d1), (s2, d2) in thrust_lines:
+            pt1 = ship.position + direction_vector * d1 + side_vector * s1
+            pt2 = ship.position + direction_vector * d2 + side_vector * s2
+            pt1, pt2 = map(self.viewport.screen_pos, [pt1, pt2])
+            pygame.draw.aaline(self.screen, (255, 120, 20), pt1, pt2)
 
     def wait_for_tick(self):
         """Wait for the next game time tick.  World moves during this time."""

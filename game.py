@@ -39,8 +39,11 @@ class Game(object):
 
     """
 
-    TICKS_PER_SECOND = 20           # Number of game ticks per second
-    DELTA_TIME = 0.2                # World time units per game tick
+    TICKS_PER_SECOND = 20               # Number of game ticks per second
+    DELTA_TIME = 0.2                    # World time units per game tick
+    ROTATION_SPEED = 10 / DELTA_TIME    # Rotation angle per time unit
+    FRONT_THRUST = 0.2 / DELTA_TIME     # Forward acceleration
+    REAR_THRUST = 0.1 / DELTA_TIME      # Backward acceleration
 
     def __init__(self, rng=None):
         if rng is None:
@@ -75,18 +78,22 @@ class Game(object):
 
     def new(cls, ships=2, planet_kinds=1, rng=None):
         """Create a new random game."""
-        game = Game(rng)
+        game = cls(rng)
         rng = game.rng
         n_planets = rng.randrange(2, 20)
         for n in range(n_planets):
             appearance = rng.randrange(planet_kinds)
             radius = rng.uniform(5, 40)
             mass = radius ** 3 * rng.uniform(2, 6)
-            game.randomly_place(Planet(appearance=appearance,
-                                       radius=radius, mass=mass))
+            planet = Planet(appearance=appearance, radius=radius, mass=mass)
+            game.randomly_place(planet)
         for n in range(ships):
-            game.randomly_place(Ship(appearance=n,
-                                     direction=rng.randrange(360)))
+            ship = Ship(appearance=n, direction=rng.randrange(360))
+            # Install a standard engine
+            ship.rotation_speed = cls.ROTATION_SPEED
+            ship.forward_power = cls.FRONT_THRUST
+            ship.backward_power = cls.REAR_THRUST
+            game.randomly_place(ship)
         return game
 
     new = classmethod(new)

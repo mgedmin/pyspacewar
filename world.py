@@ -458,19 +458,23 @@ class Ship(Object):
 
     You tell the ship what to do, and the ship does it
 
-        >>> ship.turn_left(15)
-        >>> ship.accelerate(10)
+        >>> ship.turn_left()
+        >>> ship.accelerate()
         >>> ship.move(1.0)
         >>> ship.direction
-        60.0
-        >>> ship.velocity.length()
-        10.0
+        50.0
+        >>> print ship.velocity.length()
+        0.1
 
     """
 
     SIZE_TO_RADIUS = 0.6    # Ships aren't circular.  To simulate more or
                             # less convincing collisions we need to have a
                             # collision radius smaller than ship size.
+
+    forward_power = 0.1     # Default engine power for forward thrust
+    backward_power = 0.05   # Default engine power for backward thrust
+    rotation_speed = 5      # Lateral thruster power (angles per time unit)
 
     def __init__(self, position=Vector(0, 0), size=10, direction=0,
                  appearance=0):
@@ -499,21 +503,21 @@ class Ship(Object):
 
     direction = property(lambda self: self._direction, _set_direction)
 
-    def turn_left(self, how_much):
+    def turn_left(self):
         """Tell the ship to turn left."""
-        self.left_thrust += how_much
+        self.left_thrust = self.rotation_speed
 
-    def turn_right(self, how_much):
+    def turn_right(self):
         """Tell the ship to turn right."""
-        self.right_thrust += how_much
+        self.right_thrust = self.rotation_speed
 
-    def accelerate(self, how_much):
+    def accelerate(self):
         """Tell the ship to accelerate in the direction of the ship."""
-        self.forward_thrust += how_much
+        self.forward_thrust = self.forward_power
 
-    def backwards(self, how_much):
+    def backwards(self):
         """Tell the ship to accelerate in the opposite direction."""
-        self.rear_thrust += how_much
+        self.rear_thrust = self.backward_power
 
     def move(self, dt):
         """Apply thrusters and move in the universe."""
