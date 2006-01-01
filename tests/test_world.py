@@ -49,6 +49,8 @@ def doctest_World():
         >>> w.add(o)
         >>> w.objects
         [o]
+        >>> o.world is w
+        True
 
     You can remove objects
 
