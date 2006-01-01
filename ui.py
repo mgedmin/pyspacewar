@@ -159,12 +159,15 @@ class HUDInfoPanel(HUDElement):
     def __init__(self, font, ncols, nrows, xalign=0, yalign=0,
                  colors=STD_COLORS):
         self.font = font
-        self.width = self.font.size('x')[0] * ncols
+        self.width = int(self.font.size('x')[0] * ncols)
         self.row_height = self.font.get_linesize()
-        self.height = nrows * self.row_height
+        self.height = int(nrows * self.row_height)
         self.xalign = xalign
         self.yalign = yalign
         self.color1, self.color2 = colors
+        self.surface = pygame.Surface((self.width, self.height))
+        self.surface.fill((8, 8, 8))
+        self.surface.set_alpha(int(255 * 0.8))
 
     def draw_rows(self, surface, *rows):
         """Draw some information.
@@ -172,11 +175,14 @@ class HUDInfoPanel(HUDElement):
         ``rows`` is a list of 2-tuples.
         """
         x, y = self.position(surface)
+        surface.blit(self.surface, (x, y))
+        x += 1
+        y += 1
         for a, b in rows:
             img = self.font.render(str(a), True, self.color1)
             surface.blit(img, (x, y))
             img = self.font.render(str(b), True, self.color2)
-            surface.blit(img, (x + self.width - img.get_width(), y))
+            surface.blit(img, (x + self.width - 2 - img.get_width(), y))
             y += self.row_height
 
 
@@ -185,7 +191,7 @@ class HUDShipInfo(HUDInfoPanel):
 
     def __init__(self, ship, font, xalign=0, yalign=0,
                  colors=HUDInfoPanel.STD_COLORS):
-        HUDInfoPanel.__init__(self, font, 10, 4.5, xalign, yalign, colors)
+        HUDInfoPanel.__init__(self, font, 12, 3.5, xalign, yalign, colors)
         self.ship = ship
 
     def draw(self, surface):
