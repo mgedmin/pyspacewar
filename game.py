@@ -40,7 +40,7 @@ class Game(object):
     """
 
     TICKS_PER_SECOND = 20               # Number of game ticks per second
-    DELTA_TIME = 0.2                    # World time units per game tick
+    DELTA_TIME = 2.0                    # World time units per game tick
     ROTATION_SPEED = 10 / DELTA_TIME    # Rotation angle per time unit
     FRONT_THRUST = 0.2 / DELTA_TIME     # Forward acceleration
     REAR_THRUST = 0.1 / DELTA_TIME      # Backward acceleration
