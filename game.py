@@ -53,9 +53,8 @@ class Game(object):
         self.time_source = PythonTimeSource(self.TICKS_PER_SECOND)
         self._next_tick = None
 
-    def randomly_place(self, obj):
+    def randomly_place(self, obj, world_radius):
         """Place ``obj`` in a randomly chosen location."""
-        world_radius = 600
         while True:
             obj.position = Vector.from_polar(random.uniform(0, 360),
                                              random.uniform(0, world_radius))
@@ -76,7 +75,7 @@ class Game(object):
             self.time_source.wait(self._next_tick)
             self._next_tick += self.time_source.delta
 
-    def new(cls, ships=2, planet_kinds=1, rng=None):
+    def new(cls, ships=2, planet_kinds=1, world_radius=600, rng=None):
         """Create a new random game."""
         game = cls(rng)
         rng = game.rng
@@ -86,14 +85,16 @@ class Game(object):
             radius = rng.uniform(5, 40)
             mass = radius ** 3 * rng.uniform(2, 6)
             planet = Planet(appearance=appearance, radius=radius, mass=mass)
-            game.randomly_place(planet)
+            game.randomly_place(planet, world_radius)
         for n in range(ships):
-            ship = Ship(appearance=n, direction=rng.randrange(360))
+            granularity = cls.ROTATION_SPEED
+            direction = rng.randrange(360 / granularity) * granularity
+            ship = Ship(appearance=n, direction=direction)
             # Install a standard engine
             ship.rotation_speed = cls.ROTATION_SPEED
             ship.forward_power = cls.FRONT_THRUST
             ship.backward_power = cls.REAR_THRUST
-            game.randomly_place(ship)
+            game.randomly_place(ship, world_radius)
         return game
 
     new = classmethod(new)

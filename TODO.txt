@@ -1,6 +1,6 @@
 Features still missing:
 
-- HUD
+- keep free space around planets (margin arg for collision detection)
 - missiles
 - missile trails (togglable)
 - explosions
@@ -12,5 +12,6 @@ Features still missing:
 - determine largest screen mode
 - braking
 - computed missile launch
-- keep free space around planets (margin arg for collision detection)
 - frame dropping
+- HUD debug info (fps etc)
+- fading out title
