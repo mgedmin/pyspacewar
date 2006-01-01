@@ -519,6 +519,10 @@ class Ship(Object):
         """Tell the ship to accelerate in the opposite direction."""
         self.rear_thrust = self.backward_power
 
+    def gravitate(self, massive_object, dt):
+        """Don't react to gravity.  Because of, um, anti-gravity engines."""
+        pass
+
     def move(self, dt):
         """Apply thrusters and move in the universe."""
         if self.left_thrust:
