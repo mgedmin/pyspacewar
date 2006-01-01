@@ -475,6 +475,8 @@ class Ship(Object):
     forward_power = 0.1     # Default engine power for forward thrust
     backward_power = 0.05   # Default engine power for backward thrust
     rotation_speed = 5      # Lateral thruster power (angles per time unit)
+    launch_speed = 3.0      # Missile launch speed
+    missile_time_limit = 1200 # Missile self-destruct timer
 
     def __init__(self, position=Vector(0, 0), size=10, direction=0,
                  appearance=0):
@@ -538,3 +540,38 @@ class Ship(Object):
             self.velocity -= self.direction_vector * self.rear_thrust * dt
             self.rear_thrust = 0
         Object.move(self, dt)
+
+    def launch(self):
+        """Launch a missile."""
+        direction_vector = self.direction_vector
+        missile = Missile(self.position + direction_vector * self.size,
+                          self.velocity + direction_vector * self.launch_speed,
+                          self.appearance, launched_by=self,
+                          time_limit=self.missile_time_limit)
+        self.world.add(missile)
+
+
+class Missile(Object):
+    """A missile.
+
+    Ships fire missiles.  Missiles are unpowered and cannot manoeuvre.
+    Missiles explode on contact and self-destruct after a set time limit.
+    """
+
+    def __init__(self, position=Vector(0, 0), velocity=Vector(0, 0),
+                 appearance=0, launched_by=None, time_limit=1e1000):
+        Object.__init__(self, position=position, velocity=velocity,
+                        appearance=appearance)
+        self.launched_by = launched_by
+        self.time_limit = time_limit
+
+    def move(self, dt):
+        """Move in the universe.  Check the self-destruct timer."""
+        Object.move(self, dt)
+        self.time_limit -= dt
+        if self.time_limit < 0:
+            self.selfdestruct()
+
+    def selfdestruct(self):
+        """Self-destruct."""
+        self.world.remove(self)

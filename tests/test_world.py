@@ -279,6 +279,50 @@ def doctest_Ship_movement():
     """
 
 
+def doctest_Ship_launch():
+    """Tests for Ship.launch.
+
+        >>> from world import Ship, Vector, World
+        >>> ship = Ship(velocity=Vector(10, 20), direction=90)
+        >>> ship.world = World()
+        >>> ship.launch()
+
+        >>> missile, = ship.world.objects
+        >>> missile.velocity
+        Vector(10, 23)
+
+    """
+
+
+def doctest_Missile_movement():
+    """Tests for Missile.move.
+
+        >>> from world import Missile, Vector, World
+        >>> missile = Missile(velocity=Vector(1, 0), time_limit=3)
+        >>> world = World()
+        >>> world.add(missile)
+
+        >>> missile.move(1.0)
+        >>> missile.position
+        Vector(1.0, 0.0)
+        >>> missile.move(1.0)
+        >>> missile.position
+        Vector(2.0, 0.0)
+        >>> missile in world.objects
+        True
+        >>> missile.time_limit
+        1.0
+
+        >>> missile.move(1.5)
+        >>> missile.position
+        Vector(3.5, 0.0)
+
+        >>> missile in world.objects
+        False
+
+    """
+
+
 def test_suite():
     path = os.path.join(os.path.dirname(__file__), os.path.pardir)
     if path not in sys.path:

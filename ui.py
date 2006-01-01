@@ -385,14 +385,18 @@ class GameUI(object):
         self.on_key(K_q, self.quit)
         self.while_key(K_EQUALS, self.zoom_in)
         self.while_key(K_MINUS, self.zoom_out)
+        # Player 1
         self.while_key(K_LEFT, lambda *a: self.ships[0].turn_left())
         self.while_key(K_RIGHT, lambda *a: self.ships[0].turn_right())
         self.while_key(K_UP, lambda *a: self.ships[0].accelerate())
         self.while_key(K_DOWN, lambda *a: self.ships[0].backwards())
+        self.on_key(K_RCTRL, lambda *a: self.ships[0].launch())
+        # Player 2
         self.while_key(K_a, lambda *a: self.ships[1].turn_left())
         self.while_key(K_d, lambda *a: self.ships[1].turn_right())
         self.while_key(K_w, lambda *a: self.ships[1].accelerate())
         self.while_key(K_s, lambda *a: self.ships[1].backwards())
+        self.on_key(K_LCTRL, lambda *a: self.ships[1].launch())
 
     def clear_keymap(self):
         """Clear all key mappings."""
@@ -479,6 +483,12 @@ class GameUI(object):
             pt2 = ship.position + direction_vector * d2 + side_vector * s2
             pt1, pt2 = map(self.viewport.screen_pos, [pt1, pt2])
             pygame.draw.aaline(self.screen, (255, 120, 20), pt1, pt2)
+
+    def draw_Missile(self, missile):
+        """Draw a missile."""
+        color = self.ship_colors[missile.appearance]
+        self.screen.set_at(self.viewport.screen_pos(missile.position), color)
+        # TODO: draw orbit trail
 
     def wait_for_tick(self):
         """Wait for the next game time tick.  World moves during this time."""
