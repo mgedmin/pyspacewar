@@ -148,6 +148,39 @@ class Viewport(object):
         return min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
 
 
+class FrameRateCounter(object):
+    """Frame rate counter."""
+
+    avg_last_n_frames = 10  # calculate average FPS for 10 frames
+
+    def __init__(self):
+        self.frames = []
+
+    def frame(self):
+        """Tell the counter that a new frame has just been drawn."""
+        self.frames.append(pygame.time.get_ticks())
+        if len(self.frames) > self.avg_last_n_frames:
+            del self.frames[0]
+
+    def reset(self):
+        """Tell the counter that we stopped drawing frames for a while.
+
+        Call this method if you pause the game for a time.
+        """
+        self.frames = []
+
+    def fps(self):
+        """Calculate the frame rate.
+
+        Returns 0 if not enough frames have been drawn yet.
+        """
+        if len(self.frames) < 2:
+            return 0
+        ms = self.frames[-1] - self.frames[0]
+        frames = len(self.frames) - 1
+        return frames * 1000.0 / ms
+
+
 class HUDElement(object):
     """Heads-up status display widget."""
 

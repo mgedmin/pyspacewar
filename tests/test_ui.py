@@ -142,6 +142,80 @@ def doctest_Viewport_keep_visible():
     """
 
 
+def doctest_FrameRateCounter_frame():
+    """Tests for FrameRateCounter.frame
+
+        >>> from ui import FrameRateCounter
+        >>> frc = FrameRateCounter()
+
+        >>> frc.frame()
+        >>> len(frc.frames)
+        1
+        >>> frc.frame()
+        >>> len(frc.frames)
+        2
+
+        >>> frc.frames = range(frc.avg_last_n_frames - 1)
+        >>> frc.frame()
+        >>> len(frc.frames) == frc.avg_last_n_frames
+        True
+        >>> frc.frame()
+        >>> len(frc.frames) == frc.avg_last_n_frames
+        True
+        >>> frc.frame()
+        >>> len(frc.frames) == frc.avg_last_n_frames
+        True
+
+        >>> frc.frames[:3]
+        [2, 3, 4]
+
+    """
+
+
+def doctest_FrameRateCounter_reset():
+    """Tests for FrameRateCounter.reset
+
+        >>> from ui import FrameRateCounter
+        >>> frc = FrameRateCounter()
+        >>> frc.frames = range(15)
+        >>> frc.reset()
+        >>> frc.frames
+        []
+
+    """
+
+
+def doctest_FrameRateCounter_fps():
+    """Tests for FrameRateCounter.fps
+
+        >>> from ui import FrameRateCounter
+        >>> frc = FrameRateCounter()
+        >>> frc.frames = []
+        >>> frc.fps()
+        0
+
+        >>> frc.frames = [1000]
+        >>> frc.fps()
+        0
+
+        >>> frc.frames += [1005]
+
+    5 ms per frame corresponds to 200 frames per second.
+
+        >>> frc.fps()
+        200.0
+
+        >>> frc.frames += [1020]
+
+    The first frame took 5 ms, the next one 15 ms.  Average is 10 ms per frame,
+    and this corresponds to 100 frames per second.
+
+        >>> frc.fps()
+        100.0
+
+    """
+
+
 def test_suite():
     path = os.path.join(os.path.dirname(__file__), os.path.pardir)
     if path not in sys.path:
