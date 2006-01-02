@@ -9,7 +9,7 @@ import glob
 import pygame
 from pygame.locals import *
 
-from world import Vector, Ship
+from world import Vector, Ship, Missile
 from game import Game
 
 
@@ -356,6 +356,7 @@ class GameUI(object):
         self.ships = sorted([obj for obj in self.game.world.objects
                              if isinstance(obj, Ship)],
                             key=lambda ship: ship.appearance)
+        self.missile_trails = {}
         self.viewport.origin = (self.ships[0].position +
                                 self.ships[1].position) / 2
         self.viewport.scale = 1
@@ -441,11 +442,13 @@ class GameUI(object):
         """Draw the state of the game"""
         self._keep_ships_visible()
         self.screen.fill((0, 0, 0))
+        self.draw_missile_trails()
         for obj in self.game.world.objects:
             getattr(self, 'draw_' + obj.__class__.__name__)(obj)
         for drawable in self.hud:
             drawable.draw(self.screen)
         pygame.display.flip()
+        self.update_missile_trails()
 
     def draw_Planet(self, planet):
         """Draw a planet."""
@@ -483,6 +486,37 @@ class GameUI(object):
             pt2 = ship.position + direction_vector * d2 + side_vector * s2
             pt1, pt2 = map(self.viewport.screen_pos, [pt1, pt2])
             pygame.draw.aaline(self.screen, (255, 120, 20), pt1, pt2)
+
+    def update_missile_trails(self):
+        """Update missile trails."""
+        for missile, trail in self.missile_trails.items():
+            if missile.world is None:
+                del trail[:2]
+                if not trail:
+                    del self.missile_trails[missile]
+            else:
+                trail.append(missile.position)
+                if len(trail) > 100:
+                    del trail[0]
+        for obj in self.game.world.objects:
+            if isinstance(obj, Missile) and obj not in self.missile_trails:
+                self.missile_trails[obj] = [obj.position]
+
+    def draw_missile_trails(self):
+        """Draw missile trails."""
+        for missile, trail in self.missile_trails.items():
+            self.draw_missile_trail(missile, trail)
+
+    def draw_missile_trail(self, missile, trail):
+        """Draw a missile orbit trail."""
+        red, green, blue = self.ship_colors[missile.appearance]
+        a = 0.1
+        b = 0.7 / len(trail)
+        f = a
+        for pt in trail:
+            color = (red*f, green*f, blue*f)
+            self.screen.set_at(self.viewport.screen_pos(pt), color)
+            f += b
 
     def draw_Missile(self, missile):
         """Draw a missile."""
