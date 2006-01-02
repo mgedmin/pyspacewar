@@ -1,6 +1,6 @@
 Features still missing:
 
-- missiles
+- missile recoil (on launch and collisions)
 - missile trails (togglable)
 - explosions
 - debris

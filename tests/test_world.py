@@ -255,7 +255,7 @@ def doctest_Ship_movement():
     """Tests for Ship.move.
 
         >>> from world import Ship, Vector
-        >>> ship = Ship(Vector(0, 0), 10, 45)
+        >>> ship = Ship(Vector(0, 0), size=10, direction=45)
         >>> ship.left_thrust = 10
         >>> ship.right_thrust = 5
         >>> ship.forward_thrust = 8
@@ -279,6 +279,38 @@ def doctest_Ship_movement():
     """
 
 
+def doctest_Ship_collision():
+    """Tests for Ship.collision.
+
+        >>> from world import Ship, Vector, Planet, Debris, Missile, World
+        >>> ship = Ship(position=Vector(3, 5), velocity=Vector(10, 10))
+        >>> ship.world = World()
+
+    Debris is easily deflected
+
+        >>> ship.collision(Debris())
+        >>> print ship.health
+        1.0
+
+    Missiles cause more damage, but no bouncing
+
+        >>> ship.collision(Missile())
+        >>> print ship.health
+        0.4
+        >>> print ship.velocity
+        (10.000, 10.000)
+
+    Other objects cause slight damage and bouncing
+
+        >>> ship.collision(Planet())
+        >>> print ship.health
+        0.35
+        >>> print ship.velocity
+        (-3.706, -12.176)
+
+    """
+
+
 def doctest_Ship_launch():
     """Tests for Ship.launch.
 
@@ -289,7 +321,7 @@ def doctest_Ship_launch():
 
         >>> missile, = ship.world.objects
         >>> missile.velocity
-        Vector(10, 23)
+        Vector(10.0, 23.0)
 
     """
 

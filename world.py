@@ -478,10 +478,13 @@ class Ship(Object):
     rotation_speed = 5      # Lateral thruster power (angles per time unit)
     launch_speed = 3.0      # Missile launch speed
     missile_time_limit = 1200 # Missile self-destruct timer
+    missile_damage = 0.6    # Damage done by the missile
+    collision_damage = 0.05 # Damage done by a collision
 
-    def __init__(self, position=Vector(0, 0), size=10, direction=0,
-                 appearance=0):
-        Object.__init__(self, position, radius=size * self.SIZE_TO_RADIUS,
+    def __init__(self, position=Vector(0, 0), velocity=Vector(0, 0), size=10,
+                 direction=0, appearance=0):
+        Object.__init__(self, position, velocity=velocity,
+                        radius=size * self.SIZE_TO_RADIUS,
                         appearance=appearance)
         self.size = size
         self.direction = direction
@@ -541,6 +544,17 @@ class Ship(Object):
             self.velocity -= self.direction_vector * self.rear_thrust * dt
             self.rear_thrust = 0
         Object.move(self, dt)
+
+    def collision(self, other):
+        """Handle a collision."""
+        if isinstance(other, Debris):
+            return
+        elif isinstance(other, Missile):
+            self.health -= self.missile_damage
+        else:
+            self.health -= self.collision_damage
+            self.bounce(other)
+        # TODO: death
 
     def launch(self):
         """Launch a missile."""
