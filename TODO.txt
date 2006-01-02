@@ -1,10 +1,8 @@
 Features still missing:
 
-- missile recoil (on launch and collisions)
-- missile trails (togglable)
-- explosions
-- debris
 - health, death and respawning
+- ship explosions
+- missile recoil (on launch and collisions)
 - pause
 - AI
 - fullscreen mode

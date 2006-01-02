@@ -191,7 +191,7 @@ class HUDShipInfo(HUDInfoPanel):
 
     def __init__(self, ship, font, xalign=0, yalign=0,
                  colors=HUDInfoPanel.STD_COLORS):
-        HUDInfoPanel.__init__(self, font, 12, 3.5, xalign, yalign, colors)
+        HUDInfoPanel.__init__(self, font, 12, 3.75, xalign, yalign, colors)
         self.ship = ship
 
     def draw(self, surface):
@@ -201,9 +201,10 @@ class HUDShipInfo(HUDInfoPanel):
                 ('speed', '%.1f' % self.ship.velocity.length()),)
         # TODO: show frags
         x, y = self.position(surface)
-        y += self.height - 2
-        w = max(0, int((self.width - 2) * self.ship.health))
-        pygame.draw.rect(surface, self.color2, (x, y, self.width, 4), 1)
+        x += 1
+        y += self.height - 5
+        w = max(0, int((self.width - 4) * self.ship.health))
+        pygame.draw.rect(surface, self.color2, (x, y, self.width-2, 4), 1)
         surface.fill(self.color1, (x+1, y+1, w, 2))
 
 
