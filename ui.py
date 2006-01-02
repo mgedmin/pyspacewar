@@ -289,13 +289,14 @@ class HUDCompass(HUDElement):
 class GameUI(object):
     """User interface for the game."""
 
-    ZOOM_FACTOR = 1.25      # Keyboard zoom factor
+    ZOOM_FACTOR = 1.25              # Keyboard zoom factor
 
-    fullscreen = False      # Start in windowed mode
+    fullscreen = False              # Start in windowed mode
+    show_missile_trails = True      # Show missile trails by default
 
     ship_colors = [
-        (255, 255, 255),    # Player 1 has a white ship
-        (127, 255, 0),      # Player 2 has a green ship
+        (255, 255, 255),            # Player 1 has a white ship
+        (127, 255, 0),              # Player 2 has a green ship
     ]
 
     visibility_margin = 120 # Keep ships at least 120px from screen edges
@@ -384,6 +385,7 @@ class GameUI(object):
         self.clear_keymap()
         self.on_key(K_ESCAPE, self.quit)
         self.on_key(K_q, self.quit)
+        self.on_key(K_o, self.toggle_missile_orbits)
         self.while_key(K_EQUALS, self.zoom_in)
         self.while_key(K_MINUS, self.zoom_out)
         # Player 1
@@ -438,11 +440,16 @@ class GameUI(object):
         """Zoom in."""
         self.viewport.scale /= self.ZOOM_FACTOR
 
+    def toggle_missile_orbits(self, event=None):
+        """Show/hide missile trails."""
+        self.show_missile_trails = not self.show_missile_trails
+
     def draw(self):
         """Draw the state of the game"""
         self._keep_ships_visible()
         self.screen.fill((0, 0, 0))
-        self.draw_missile_trails()
+        if self.show_missile_trails:
+            self.draw_missile_trails()
         for obj in self.game.world.objects:
             getattr(self, 'draw_' + obj.__class__.__name__)(obj)
         for drawable in self.hud:
