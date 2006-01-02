@@ -197,6 +197,9 @@ class HUDElement(object):
         y = margin + self.yalign * (surface_h - self.height - 2 * margin)
         return int(x), int(y)
 
+    def draw(self, surface):
+        """Draw the element."""
+
 
 class HUDInfoPanel(HUDElement):
     """Heads-up status display base class."""
@@ -205,7 +208,7 @@ class HUDInfoPanel(HUDElement):
     GREEN_COLORS = [(0x7f, 0xff, 0x00), (0xcc, 0xff, 0xff)]
 
     def __init__(self, font, ncols, nrows, xalign=0, yalign=0,
-                 colors=STD_COLORS):
+                 colors=STD_COLORS, content=None):
         self.font = font
         self.width = int(self.font.size('x')[0] * ncols)
         self.row_height = self.font.get_linesize()
@@ -216,6 +219,7 @@ class HUDInfoPanel(HUDElement):
         self.surface = pygame.Surface((self.width, self.height))
         self.surface.fill((8, 8, 8))
         self.surface.set_alpha(int(255 * 0.8))
+        self.content = content or []
 
     def draw_rows(self, surface, *rows):
         """Draw some information.
@@ -232,6 +236,19 @@ class HUDInfoPanel(HUDElement):
             img = self.font.render(str(b), True, self.color2)
             surface.blit(img, (x + self.width - 2 - img.get_width(), y))
             y += self.row_height
+
+    def draw(self, surface):
+        """Draw the panel."""
+        rows = []
+        for content_row in self.content:
+            row = []
+            for value in content_row:
+                if callable(value):
+                    row.append(value())
+                else:
+                    row.append(unicode(value))
+            rows.append(row)
+        self.draw_rows(surface, *rows)
 
 
 class HUDShipInfo(HUDInfoPanel):
@@ -359,6 +376,7 @@ class GameUI(object):
         self._set_mode()
         self.viewport = Viewport(self.screen)
         self._new_game()
+        self.frame_counter = FrameRateCounter()
 
     def _init_pygame(self):
         """Initialize pygame, but don't create an output window just yet."""
@@ -422,6 +440,9 @@ class GameUI(object):
                        HUDCompass.BLUE_COLORS),
             HUDCompass(self.game.world, self.ships[1], self.viewport, 0, 1,
                        HUDCompass.GREEN_COLORS),
+            HUDInfoPanel(self.hud_font, 10, 2, xalign=0.5, yalign=0,
+                content=[('objects', lambda: len(self.game.world.objects)),
+                         ('fps', lambda: '%.0f' % self.frame_counter.fps())]),
         ]
 
     def _keep_ships_visible(self):
@@ -504,6 +525,7 @@ class GameUI(object):
         for drawable in self.hud:
             drawable.draw(self.screen)
         pygame.display.flip()
+        self.frame_counter.frame()
         self.update_missile_trails()
 
     def draw_Planet(self, planet):
