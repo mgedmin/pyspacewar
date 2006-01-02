@@ -3,6 +3,7 @@ The world of PySpaceWar
 """
 
 import math
+import random
 
 
 class Vector(tuple):
@@ -575,3 +576,41 @@ class Missile(Object):
     def selfdestruct(self):
         """Self-destruct."""
         self.world.remove(self)
+
+    def collision(self, other):
+        """Explode on collision."""
+        self.world.remove(self)
+        self.add_debris()
+
+    def add_debris(self, howmany=None, maxdistance=1.0, time=5.0):
+        """Add some debris."""
+        if not howmany:
+            howmany = random.randrange(3, 6)
+        for n in range(howmany):
+            color = (random.randrange(0xf0, 0xff),
+                     random.randrange(0x70, 0x90),
+                     random.randrange(0, 0x20))
+            velocity = self.velocity * 0.3
+            velocity += Vector.from_polar(random.uniform(0, 360),
+                                          random.uniform(0, maxdistance))
+            debris = Debris(self.position, velocity, appearance=color,
+                            time_limit=time)
+            self.world.add(debris)
+
+
+class Debris(Object):
+    """Debris is what remains when something explodes."""
+
+    def __init__(self, position=Vector(0, 0), velocity=Vector(0, 0),
+                 appearance=0, time_limit=10):
+        Object.__init__(self, position, velocity=velocity,
+                        appearance=appearance)
+        self.time_limit = time_limit
+
+    def move(self, dt):
+        """Move in the universe.  Check the time left to live."""
+        Object.move(self, dt)
+        self.time_limit -= dt
+        if self.time_limit < 0:
+            self.world.remove(self)
+

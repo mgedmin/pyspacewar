@@ -488,7 +488,11 @@ class GameUI(object):
         """Draw a missile."""
         color = self.ship_colors[missile.appearance]
         self.screen.set_at(self.viewport.screen_pos(missile.position), color)
-        # TODO: draw orbit trail
+
+    def draw_Debris(self, debris):
+        """Draw debris."""
+        self.screen.set_at(self.viewport.screen_pos(debris.position),
+                           debris.appearance)
 
     def wait_for_tick(self):
         """Wait for the next game time tick.  World moves during this time."""

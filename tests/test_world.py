@@ -323,6 +323,9 @@ def doctest_Missile_movement():
     """
 
 
+# TODO: test Missile.collision, add_debris, Debris
+
+
 def test_suite():
     path = os.path.join(os.path.dirname(__file__), os.path.pardir)
     if path not in sys.path:
