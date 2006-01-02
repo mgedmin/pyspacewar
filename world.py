@@ -587,15 +587,27 @@ class Ship(Object):
         if self.health < 0 and not self.dead:
             self.die(killed_by)
 
-    def die(self, killed_by):
-        """The ship has received terminal damage"""
+    def die(self, killed_by=None):
+        """The ship has received terminal damage."""
         self.dead = True
+        self.forward_thrust = 0
+        self.rear_thrust = 0
+        self.left_thrust = 0
+        self.right_thrust = 0
         if killed_by is None or killed_by is self:
             self.frags -= 1
         else:
             killed_by.frags += 1
         self.add_debris(time=50, maxdistance=self.size * 0.5,
                         howmany=random.randrange(9, 21))
+
+    def respawn(self, position, direction):
+        """Respawn back into the world."""
+        self.dead = False
+        self.health = 1.0
+        self.position = position
+        self.velocity = Vector(0, 0)
+        self.direction = direction
 
     def launch(self):
         """Launch a missile."""

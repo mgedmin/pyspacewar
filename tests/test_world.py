@@ -456,6 +456,43 @@ def doctest_Ship_death():
         >>> len(ship.world.objects) > 1
         True
 
+    A dying ship cannot not fire its engines
+
+        >>> ship = Ship()
+        >>> ship.world = World()
+        >>> ship.turn_left()
+        >>> ship.accelerate()
+        >>> ship.die()
+        >>> ship.forward_thrust
+        0
+        >>> ship.left_thrust
+        0
+
+    """
+
+
+def doctest_Ship_rebirth():
+    """Tests for Ship.respawn.
+
+        >>> from world import Ship, Vector
+        >>> ship = Ship(Vector(10, 20), velocity=Vector(1, 2), direction=90)
+        >>> ship.dead = True
+        >>> ship.health = -0.3
+
+    A dead ship can come back to life (to make the game more interesting)
+
+        >>> ship.respawn(Vector(-4, 5), 130)
+        >>> ship.dead
+        False
+        >>> ship.health
+        1.0
+        >>> ship.position
+        Vector(-4, 5)
+        >>> ship.velocity
+        Vector(0, 0)
+        >>> ship.direction
+        130
+
     """
 
 
