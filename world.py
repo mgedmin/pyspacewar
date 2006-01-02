@@ -207,7 +207,10 @@ class World(object):
     GRAVITY = 0.01          # constant of gravitation
     BOUNCE_SPEED_LOSS = 0.1 # lose 10% speed when bouncing off something
 
-    def __init__(self):
+    def __init__(self, rng=None):
+        if rng is None:
+            rng = random.Random()
+        self.rng = rng
         self.time = 0.0
         self.objects = []
         self._in_update = False
@@ -429,16 +432,16 @@ class Object(object):
 
     def add_debris(self, howmany=None, maxdistance=1.0, time=5.0):
         """Add some debris."""
-        # TODO: use self.world.rng
+        rng = self.world.rng
         if not howmany:
-            howmany = random.randrange(3, 6)
+            howmany = rng.randrange(3, 6)
         for n in range(howmany):
-            color = (random.randrange(0xf0, 0xff),
-                     random.randrange(0x70, 0x90),
-                     random.randrange(0, 0x20))
+            color = (rng.randrange(0xf0, 0xff),
+                     rng.randrange(0x70, 0x90),
+                     rng.randrange(0, 0x20))
             velocity = self.velocity * 0.3
-            velocity += Vector.from_polar(random.uniform(0, 360),
-                                          random.uniform(0, maxdistance))
+            velocity += Vector.from_polar(rng.uniform(0, 360),
+                                          rng.uniform(0, maxdistance))
             debris = Debris(self.position, velocity, appearance=color,
                             time_limit=time)
             self.world.add(debris)

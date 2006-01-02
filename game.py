@@ -52,7 +52,7 @@ class Game(object):
         if rng is None:
             rng = random.Random()
         self.rng = rng
-        self.world = World()
+        self.world = World(rng)
         self.ships = []
         self.timers = {}
         self.time_source = PythonTimeSource(self.TICKS_PER_SECOND)

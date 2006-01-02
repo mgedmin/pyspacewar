@@ -1,9 +1,8 @@
 Features still missing:
 
-- respawning
-- pause
 - AI
 - frame dropping
+- pause
 - braking
 - missile recoil (on launch and collisions)
 - fullscreen mode
