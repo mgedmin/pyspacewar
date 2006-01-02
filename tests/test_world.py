@@ -481,17 +481,11 @@ def doctest_Ship_rebirth():
 
     A dead ship can come back to life (to make the game more interesting)
 
-        >>> ship.respawn(Vector(-4, 5), 130)
+        >>> ship.respawn()
         >>> ship.dead
         False
         >>> ship.health
         1.0
-        >>> ship.position
-        Vector(-4, 5)
-        >>> ship.velocity
-        Vector(0, 0)
-        >>> ship.direction
-        130
 
     """
 

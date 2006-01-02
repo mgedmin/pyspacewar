@@ -601,13 +601,10 @@ class Ship(Object):
         self.add_debris(time=50, maxdistance=self.size * 0.5,
                         howmany=random.randrange(9, 21))
 
-    def respawn(self, position, direction):
+    def respawn(self):
         """Respawn back into the world."""
         self.dead = False
         self.health = 1.0
-        self.position = position
-        self.velocity = Vector(0, 0)
-        self.direction = direction
 
     def launch(self):
         """Launch a missile."""
