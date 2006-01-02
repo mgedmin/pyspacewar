@@ -631,6 +631,7 @@ class Missile(Object):
                         appearance=appearance)
         self.launched_by = launched_by
         self.time_limit = time_limit
+        self.dead = False
 
     def move(self, dt):
         """Move in the universe.  Check the self-destruct timer."""
@@ -641,8 +642,10 @@ class Missile(Object):
 
     def explode(self):
         """Self-destruct."""
-        self.add_debris()
-        self.world.remove(self)
+        if not self.dead:
+            self.dead = True
+            self.add_debris()
+            self.world.remove(self)
 
     def collision(self, other):
         """Explode on collision."""

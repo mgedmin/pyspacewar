@@ -561,6 +561,15 @@ def doctest_Missile_explode():
         >>> len(world.objects) > 0
         True
 
+    A missile may not explode more than once (this can happen if a missile
+    collides with two objects at the same time; or collides with an object
+    at the same time when its self-destruct timer activates).
+
+        >>> num_debris = len(world.objects)
+        >>> missile.explode()
+        >>> num_debris == len(world.objects)
+        True
+
     """
 
 
