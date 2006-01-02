@@ -1,15 +1,22 @@
 Features still missing:
 
-- health, death and respawning
-- ship explosions
-- missile recoil (on launch and collisions)
+- respawning
 - pause
 - AI
+- frame dropping
+- braking
+- missile recoil (on launch and collisions)
 - fullscreen mode
 - determine largest screen mode
-- braking
 - computed missile launch
 - keep free space around planets (margin arg for collision detection)
-- frame dropping
 - HUD debug info (fps etc)
 - fading out title
+
+Planned features that were not present in the old version
+
+- recording/playback
+- multiplayer mode
+- hyperspace (move to a new planet system)
+- game menu (start new game, quit, etc.)
+- customizable key bindings

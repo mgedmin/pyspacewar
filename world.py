@@ -427,6 +427,22 @@ class Object(object):
         collision_distance = other.radius + self.radius
         self.position = other.position + normal.scaled(collision_distance)
 
+    def add_debris(self, howmany=None, maxdistance=1.0, time=5.0):
+        """Add some debris."""
+        # TODO: use self.world.rng
+        if not howmany:
+            howmany = random.randrange(3, 6)
+        for n in range(howmany):
+            color = (random.randrange(0xf0, 0xff),
+                     random.randrange(0x70, 0x90),
+                     random.randrange(0, 0x20))
+            velocity = self.velocity * 0.3
+            velocity += Vector.from_polar(random.uniform(0, 360),
+                                          random.uniform(0, maxdistance))
+            debris = Debris(self.position, velocity, appearance=color,
+                            time_limit=time)
+            self.world.add(debris)
+
 
 class Planet(Object):
     """A planet in the game universe.
@@ -578,6 +594,8 @@ class Ship(Object):
             self.frags -= 1
         else:
             killed_by.frags += 1
+        self.add_debris(time=50, maxdistance=self.size * 0.5,
+                        howmany=random.randrange(9, 21))
 
     def launch(self):
         """Launch a missile."""
@@ -620,21 +638,6 @@ class Missile(Object):
     def collision(self, other):
         """Explode on collision."""
         self.explode()
-
-    def add_debris(self, howmany=None, maxdistance=1.0, time=5.0):
-        """Add some debris."""
-        if not howmany:
-            howmany = random.randrange(3, 6)
-        for n in range(howmany):
-            color = (random.randrange(0xf0, 0xff),
-                     random.randrange(0x70, 0x90),
-                     random.randrange(0, 0x20))
-            velocity = self.velocity * 0.3
-            velocity += Vector.from_polar(random.uniform(0, 360),
-                                          random.uniform(0, maxdistance))
-            debris = Debris(self.position, velocity, appearance=color,
-                            time_limit=time)
-            self.world.add(debris)
 
 
 class Debris(Object):

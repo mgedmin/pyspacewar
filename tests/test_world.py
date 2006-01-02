@@ -416,11 +416,12 @@ def doctest_Ship_collision():
 def doctest_Ship_death():
     """Tests for Ship.die.
 
-        >>> from world import Ship
+        >>> from world import Ship, World
 
     A ship can die from natural causes
 
         >>> ship = Ship()
+        >>> ship.world = World()
         >>> ship.die(None)
         >>> ship.dead
         True
@@ -430,6 +431,7 @@ def doctest_Ship_death():
     or from stupidity
 
         >>> ship = Ship()
+        >>> ship.world = World()
         >>> ship.die(ship)
         >>> ship.dead
         True
@@ -439,6 +441,7 @@ def doctest_Ship_death():
     or be killed by another ship
 
         >>> ship = Ship()
+        >>> ship.world = World()
         >>> attacker = Ship()
         >>> ship.die(attacker)
         >>> ship.dead
@@ -447,6 +450,11 @@ def doctest_Ship_death():
         0
         >>> attacker.frags
         1
+
+    A dying ship leaves some debris behind
+
+        >>> len(ship.world.objects) > 1
+        True
 
     """
 
@@ -525,11 +533,11 @@ def doctest_Missile_explode():
     """
 
 
-def doctest_Missile_add_debris():
-    """Tests for Missile.add_debris.
+def doctest_Object_add_debris():
+    """Tests for Object.add_debris.
 
-        >>> from world import Missile, World, Debris, Vector
-        >>> missile = Missile(Vector(100, 200), velocity=Vector(50, -20))
+        >>> from world import Object, World, Debris, Vector
+        >>> missile = Object(Vector(100, 200), velocity=Vector(50, -20))
         >>> missile.world = World()
         >>> missile.add_debris(time=5.0, maxdistance=3.0)
 
