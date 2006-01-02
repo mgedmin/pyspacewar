@@ -493,6 +493,8 @@ class Ship(Object):
         self.left_thrust = 0
         self.right_thrust = 0
         self.health = 1.0
+        self.frags = 0
+        self.dead = False
 
     def _set_direction(self, direction):
         """Set the direction of the ship.
@@ -511,23 +513,33 @@ class Ship(Object):
 
     def turn_left(self):
         """Tell the ship to turn left."""
+        if self.dead:
+            return
         self.left_thrust = self.rotation_speed
 
     def turn_right(self):
         """Tell the ship to turn right."""
+        if self.dead:
+            return
         self.right_thrust = self.rotation_speed
 
     def accelerate(self):
         """Tell the ship to accelerate in the direction of the ship."""
+        if self.dead:
+            return
         self.forward_thrust = self.forward_power
 
     def backwards(self):
         """Tell the ship to accelerate in the opposite direction."""
+        if self.dead:
+            return
         self.rear_thrust = self.backward_power
 
     def gravitate(self, massive_object, dt):
         """Don't react to gravity.  Because of, um, anti-gravity engines."""
-        pass
+        if not self.dead:
+            return
+        Object.gravitate(self, massive_object, dt)
 
     def move(self, dt):
         """Apply thrusters and move in the universe."""
@@ -547,17 +559,30 @@ class Ship(Object):
 
     def collision(self, other):
         """Handle a collision."""
+        killed_by = None
         if isinstance(other, Debris):
             return
         elif isinstance(other, Missile):
             self.health -= self.missile_damage
+            killed_by = other.launched_by
         else:
             self.health -= self.collision_damage
             self.bounce(other)
-        # TODO: death
+        if self.health < 0 and not self.dead:
+            self.die(killed_by)
+
+    def die(self, killed_by):
+        """The ship has received terminal damage"""
+        self.dead = True
+        if killed_by is None or killed_by is self:
+            self.frags -= 1
+        else:
+            killed_by.frags += 1
 
     def launch(self):
         """Launch a missile."""
+        if self.dead:
+            return
         direction_vector = self.direction_vector
         missile = Missile(self.position + direction_vector * self.size,
                           self.velocity + direction_vector * self.launch_speed,

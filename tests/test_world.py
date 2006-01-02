@@ -251,6 +251,67 @@ def doctest_Ship_direction():
     """
 
 
+def doctest_Ship_controls():
+    """Tests for Ship.turn_left, turn_right, accelerate, backwards.
+
+        >>> from world import Ship
+        >>> ship = Ship()
+        >>> ship.left_thrust, ship.right_thrust
+        (0, 0)
+        >>> ship.forward_thrust, ship.rear_thrust
+        (0, 0)
+
+    You can tell the ship what to do
+
+        >>> ship.turn_right()
+        >>> print ship.left_thrust, ship.right_thrust
+        0 5
+
+    You can do several things simultaneously
+
+        >>> ship.accelerate()
+        >>> print ship.left_thrust, ship.right_thrust
+        0 5
+        >>> print ship.forward_thrust, ship.rear_thrust
+        0.1 0
+
+        >>> ship.turn_left()
+        >>> print ship.left_thrust, ship.right_thrust
+        5 5
+        >>> print ship.forward_thrust, ship.rear_thrust
+        0.1 0
+
+        >>> ship.backwards()
+        >>> print ship.left_thrust, ship.right_thrust
+        5 5
+        >>> print ship.forward_thrust, ship.rear_thrust
+        0.1 0.05
+
+    These commands are remembered and executed when you call ``move``, not
+    immediatelly.
+
+        >>> ship.velocity
+        Vector(0, 0)
+        >>> ship.direction
+        0
+
+    You cannot control a dead ship
+
+        >>> ship = Ship()
+        >>> ship.dead = True
+
+        >>> ship.accelerate()
+        >>> ship.backwards()
+        >>> ship.turn_left()
+        >>> ship.turn_right()
+        >>> print ship.left_thrust, ship.right_thrust
+        0 0
+        >>> print ship.forward_thrust, ship.rear_thrust
+        0 0
+
+    """
+
+
 def doctest_Ship_movement():
     """Tests for Ship.move.
 
@@ -278,6 +339,29 @@ def doctest_Ship_movement():
 
     """
 
+
+def doctest_Ship_gravity():
+    """Tests for Ship.gravitate.
+
+        >>> from world import Ship, Planet, World, Vector
+        >>> ship = Ship()
+        >>> ship.world = World()
+        >>> sun = Planet(position=Vector(10, 15), mass=200)
+
+    Ships come with equipped with anti-gravity engines
+
+        >>> ship.gravitate(sun, 1.0)
+        >>> ship.velocity
+        Vector(0, 0)
+
+    When a ship is killed, the engine stops working
+
+        >>> ship.dead = True
+        >>> ship.gravitate(sun, 1.0)
+        >>> print ship.velocity
+        (0.003, 0.005)
+
+    """
 
 def doctest_Ship_collision():
     """Tests for Ship.collision.
@@ -308,6 +392,62 @@ def doctest_Ship_collision():
         >>> print ship.velocity
         (-3.706, -12.176)
 
+    When health falls under 0, the ship dies
+
+        >>> def croak(who):
+        ...     print "Ship died"
+        >>> ship.die = croak
+
+        >>> ship.collision(Missile())
+        Ship died
+        >>> print ship.health
+        -0.25
+
+    A ship can die only once
+
+        >>> ship.dead = True
+        >>> ship.collision(Missile())
+        >>> print ship.health
+        -0.85
+
+    """
+
+
+def doctest_Ship_death():
+    """Tests for Ship.die.
+
+        >>> from world import Ship
+
+    A ship can die from natural causes
+
+        >>> ship = Ship()
+        >>> ship.die(None)
+        >>> ship.dead
+        True
+        >>> ship.frags
+        -1
+
+    or from stupidity
+
+        >>> ship = Ship()
+        >>> ship.die(ship)
+        >>> ship.dead
+        True
+        >>> ship.frags
+        -1
+
+    or be killed by another ship
+
+        >>> ship = Ship()
+        >>> attacker = Ship()
+        >>> ship.die(attacker)
+        >>> ship.dead
+        True
+        >>> ship.frags
+        0
+        >>> attacker.frags
+        1
+
     """
 
 
@@ -319,9 +459,18 @@ def doctest_Ship_launch():
         >>> ship.world = World()
         >>> ship.launch()
 
+        >>> len(ship.world.objects)
+        1
         >>> missile, = ship.world.objects
         >>> missile.velocity
         Vector(10.0, 23.0)
+
+    Dead ships launch no missiles
+
+        >>> ship.dead = True
+        >>> ship.launch()
+        >>> len(ship.world.objects)
+        1
 
     """
 

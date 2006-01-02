@@ -19,6 +19,21 @@ def find(filespec):
     return os.path.join(basedir, filespec)
 
 
+def colorblend(col1, col2, alpha=0.5):
+    """Blend two colors.
+
+    For example, let's blend 25% black and 75% white
+
+        >>> colorblend((0, 0, 0), (255, 255, 255), 0.25)
+        (191, 191, 191)
+
+    """
+    r1, g1, b1 = col1
+    r2, g2, b2 = col2
+    beta = 1-alpha
+    return (int(alpha*r1+beta*r2), int(alpha*g1+beta*g2), int(alpha*b1+beta*b2))
+
+
 class Viewport(object):
     """A viewport to the universe.
 
@@ -191,15 +206,15 @@ class HUDShipInfo(HUDInfoPanel):
 
     def __init__(self, ship, font, xalign=0, yalign=0,
                  colors=HUDInfoPanel.STD_COLORS):
-        HUDInfoPanel.__init__(self, font, 12, 3.75, xalign, yalign, colors)
+        HUDInfoPanel.__init__(self, font, 12, 4.75, xalign, yalign, colors)
         self.ship = ship
 
     def draw(self, surface):
         self.draw_rows(surface,
                 ('direction', '%d' % self.ship.direction),
                 ('heading', '%d' % self.ship.velocity.direction()),
-                ('speed', '%.1f' % self.ship.velocity.length()),)
-        # TODO: show frags
+                ('speed', '%.1f' % self.ship.velocity.length()),
+                ('frags', '%d' % self.ship.frags),)
         x, y = self.position(surface)
         x += 1
         y += self.height - 5
@@ -469,6 +484,8 @@ class GameUI(object):
     def draw_Ship(self, ship):
         """Draw a ship."""
         color = self.ship_colors[ship.appearance]
+        if ship.dead:
+            color = colorblend(color, (0x20, 0x20, 0x20), 0.2)
         direction_vector = ship.direction_vector * ship.size
         side_vector = direction_vector.perpendicular()
         pt1 = ship.position - direction_vector + side_vector * 0.5
