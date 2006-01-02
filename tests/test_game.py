@@ -72,7 +72,7 @@ def doctest_Game():
     """
 
 
-def doctest_Game_randomly_place():
+def doctest_Game_randomly_place_and_position():
     """Tests for Game.randomly_place
 
     Let us create a screaming brick for this test
@@ -91,6 +91,80 @@ def doctest_Game_randomly_place():
         >>> len(g.world.objects)
         100
         >>> g.world.update(1)
+
+    If you do not want to add the object to the world, use randomly_position
+    instead.
+
+        >>> good_place = Brick()
+        >>> g.randomly_position(good_place, 100)
+        >>> len(g.world.objects)
+        100
+
+        >>> g.world.add(good_place)
+        >>> g.world.update(1)
+
+    """
+
+
+def doctest_Game_respawn():
+    """Tests for Game.respawn
+
+        >>> from game import Game
+        >>> from world import Ship, Vector
+        >>> g = Game()
+        >>> ship = Ship(velocity=Vector(3, 5))
+        >>> ship.dead = True
+
+    A dead ship can come back to life in a new randomly selected place
+
+        >>> g.respawn(ship)
+        >>> ship.velocity
+        Vector(0, 0)
+        >>> ship.direction % g.ROTATION_SPEED
+        0.0
+        >>> ship.position.length() <= g.respawn_radius
+        True
+        >>> ship.dead
+        False
+        >>> ship.health
+        1.0
+
+    """
+
+
+def doctest_Game_auto_respawn():
+    """Tests for Game.auto_respawn
+
+        >>> from game import Game
+        >>> from world import Ship
+        >>> g = Game()
+        >>> ship1 = Ship()
+        >>> ship2 = Ship()
+        >>> ship2.dead = True
+        >>> g.ships = [ship1, ship2]
+
+    The game keeps track of dead ships.
+
+        >>> g.auto_respawn()
+        >>> g.timers.keys() == [ship2]
+        True
+        >>> g.timers[ship2] == g.respawn_time
+        True
+
+    The timer ticks and ticks
+
+        >>> g.auto_respawn()
+        >>> g.timers[ship2] == g.respawn_time - g.DELTA_TIME
+        True
+
+    and when it reaches zero, the ship comes back to life
+
+        >>> g.timers[ship2] = g.DELTA_TIME
+        >>> g.auto_respawn()
+        >>> g.timers.keys()
+        []
+        >>> ship2.dead
+        False
 
     """
 
@@ -128,6 +202,21 @@ def doctest_Game_wait_for_tick():
         >>> g.wait_for_tick()
         Tick (2.0)
         Waiting for 51
+
+    After the game world is updated, wait_for_tick also takes care to
+    look for dead ships.
+
+        >>> from world import Ship
+        >>> ship = Ship()
+        >>> ship.dead = True
+        >>> g.ships.append(ship)
+
+        >>> g.wait_for_tick()
+        Tick (2.0)
+        Waiting for 61
+
+        >>> g.timers.keys() == [ship]
+        True
 
     """
 

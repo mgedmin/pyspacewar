@@ -45,26 +45,57 @@ class Game(object):
     FRONT_THRUST = 0.2 / DELTA_TIME     # Forward acceleration
     REAR_THRUST = 0.1 / DELTA_TIME      # Backward acceleration
 
+    respawn_radius = 600                # Locale for respawning ships
+    respawn_time = 100                  # Time before a dead ship respawns
+
     def __init__(self, rng=None):
         if rng is None:
             rng = random.Random()
         self.rng = rng
         self.world = World()
+        self.ships = []
+        self.timers = {}
         self.time_source = PythonTimeSource(self.TICKS_PER_SECOND)
         self._next_tick = None
 
-    def randomly_place(self, obj, world_radius):
-        """Place ``obj`` in a randomly chosen location."""
+    def randomly_position(self, obj, world_radius):
+        """Pick a random location for ``obj``."""
         while True:
-            obj.position = Vector.from_polar(random.uniform(0, 360),
-                                             random.uniform(0, world_radius))
+            obj.position = Vector.from_polar(self.rng.uniform(0, 360),
+                                             self.rng.uniform(0, world_radius))
             for other in self.world.objects:
-                if self.world.collide(obj, other):
+                if other is not obj and self.world.collide(obj, other):
                     break
             else:
                 break
             world_radius *= 1.1
+
+    def randomly_place(self, obj, world_radius):
+        """Place ``obj`` in a randomly chosen location."""
+        self.randomly_position(obj, world_radius)
         self.world.add(obj)
+        if isinstance(obj, Ship):
+            self.ships.append(obj)
+
+    def respawn(self, ship):
+        """Respawn a ship."""
+        self.randomly_position(ship, self.respawn_radius)
+        ship.velocity = Vector(0, 0)
+        granularity = self.ROTATION_SPEED
+        ship.direction = self.rng.randrange(360 / granularity) * granularity
+        ship.respawn()
+
+    def auto_respawn(self):
+        """Respawn dead ships after a timeout."""
+        for ship in self.ships:
+            if ship.dead:
+                if ship not in self.timers:
+                    self.timers[ship] = self.respawn_time
+                else:
+                    self.timers[ship] -= self.DELTA_TIME
+                    if self.timers[ship] <= 0:
+                        del self.timers[ship]
+                        self.respawn(ship)
 
     def wait_for_tick(self):
         """Wait for the next game time tick."""
@@ -72,13 +103,15 @@ class Game(object):
             self._next_tick = self.time_source.now() + self.time_source.delta
         else:
             self.world.update(self.DELTA_TIME)
+            self.auto_respawn()
             self.time_source.wait(self._next_tick)
             self._next_tick += self.time_source.delta
 
     def new(cls, ships=2, planet_kinds=1, world_radius=1200,
-            ship_start_radius=300, rng=None):
+            ship_start_radius=600, rng=None):
         """Create a new random game."""
         game = cls(rng)
+        game.respawn_radius = ship_start_radius
         rng = game.rng
         n_planets = rng.randrange(2, 20)
         for n in range(n_planets):
