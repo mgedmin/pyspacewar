@@ -610,16 +610,16 @@ class Missile(Object):
         Object.move(self, dt)
         self.time_limit -= dt
         if self.time_limit < 0:
-            self.selfdestruct()
+            self.explode()
 
-    def selfdestruct(self):
+    def explode(self):
         """Self-destruct."""
+        self.add_debris()
         self.world.remove(self)
 
     def collision(self, other):
         """Explode on collision."""
-        self.world.remove(self)
-        self.add_debris()
+        self.explode()
 
     def add_debris(self, howmany=None, maxdistance=1.0, time=5.0):
         """Add some debris."""

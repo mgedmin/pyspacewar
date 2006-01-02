@@ -494,6 +494,8 @@ def doctest_Missile_movement():
         >>> missile.time_limit
         1.0
 
+    When the time limit expires, the missile self-destructs
+
         >>> missile.move(1.5)
         >>> missile.position
         Vector(3.5, 0.0)
@@ -504,7 +506,73 @@ def doctest_Missile_movement():
     """
 
 
-# TODO: test Missile.collision, add_debris, Debris
+def doctest_Missile_explode():
+    """Tests for Missile.explode.
+
+        >>> from world import Missile, World
+        >>> missile = Missile()
+        >>> world = World()
+        >>> world.add(missile)
+
+    When a missile hits something, it explodes and leaves some debris behind.
+
+        >>> missile.explode()
+        >>> missile in world.objects
+        False
+        >>> len(world.objects) > 0
+        True
+
+    """
+
+
+def doctest_Missile_add_debris():
+    """Tests for Missile.add_debris.
+
+        >>> from world import Missile, World, Debris, Vector
+        >>> missile = Missile(Vector(100, 200), velocity=Vector(50, -20))
+        >>> missile.world = World()
+        >>> missile.add_debris(time=5.0, maxdistance=3.0)
+
+        >>> len(missile.world.objects) > 2
+        True
+        >>> for obj in missile.world.objects:
+        ...     assert isinstance(obj, Debris)
+        ...     assert (obj.velocity - missile.velocity * 0.3).length() <= 3.0
+        ...     assert obj.position == missile.position
+        ...     assert obj.time_limit == 5.0
+
+    """
+
+
+def doctest_Debris():
+    """Tests for Debris.
+
+        >>> from world import Debris, Vector, World
+        >>> junk = Debris(velocity=Vector(1, 0), time_limit=3)
+        >>> world = World()
+        >>> world.add(junk)
+
+        >>> junk.move(1.0)
+        >>> junk.position
+        Vector(1.0, 0.0)
+        >>> junk.move(1.0)
+        >>> junk.position
+        Vector(2.0, 0.0)
+        >>> junk in world.objects
+        True
+        >>> junk.time_limit
+        1.0
+
+    When the time limit expires, the debris disappears
+
+        >>> junk.move(1.5)
+        >>> junk.position
+        Vector(3.5, 0.0)
+
+        >>> junk in world.objects
+        False
+
+    """
 
 
 def test_suite():
