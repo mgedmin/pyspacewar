@@ -5,6 +5,7 @@ PySpaceWar benchmarks for optimisation work
 import sys
 import time
 import random
+import optparse
 
 from game import Game
 from world import Ship
@@ -67,8 +68,8 @@ def benchmark(seed=None, how_long=10):
     game.wait_for_tick() # first one does nothing serious
     stats = Stats()
     start = now = time.time()
-    limit = start + how_long
-    while now < limit:
+    limit = 100
+    while stats.ticks < limit:
         prev = now
         game.wait_for_tick()
         now = time.time()
@@ -82,12 +83,23 @@ def benchmark(seed=None, how_long=10):
     return stats
 
 
-if __name__ == '__main__':
-    seed = 0
-    if len(sys.argv) > 1:
-        seed = sys.argv[1]
-        print 'random seed: %r' % seed
-    stats = benchmark(seed)
+def main():
+    parser = optparse.OptionParser()
+    parser.add_option('-s', '--seed', default=0, action='store', dest='seed')
+    parser.add_option('--psyco', default=False, action='store_true',
+                      dest='psyco')
+    opts, args = parser.parse_args()
+    if opts.psyco:
+        try:
+            import psyco
+            import world
+            psyco.bind(world.update)
+        except:
+            print 'psyco not available'
+        else:
+            print 'using psyco'
+    print 'random seed: %r' % opts.seed
+    stats = benchmark(opts.seed)
     print 'ticks: %d' % stats.ticks
     print 'ticks per second: avg=%.3f' % stats.ticks_per_second
     print 'ms per tick: min=%.3f avg=%.3f max=%.3f' % (
@@ -99,3 +111,5 @@ if __name__ == '__main__':
                 stats.avg_objects,
                 stats.max_objects)
 
+if __name__ == '__main__':
+    main()
