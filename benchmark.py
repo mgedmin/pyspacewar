@@ -11,6 +11,15 @@ from world import Ship
 from ai import AIController
 
 
+class DummyAIController(object):
+
+    def __init__(self, ship):
+        self.ship = ship
+
+    def control(self):
+        if len(self.ship.world.objects) < 90:
+            self.ship.launch()
+
 class DummyTimeSource(object):
 
     delta = 0
@@ -54,7 +63,7 @@ def benchmark(seed=None, how_long=10):
     game = Game.new(ships=2, rng=random.Random(seed))
     game.time_source = DummyTimeSource()
     ships = [obj for obj in game.world.objects if isinstance(obj, Ship)]
-    game.controllers += map(AIController, ships)
+    game.controllers += map(DummyAIController, ships)
     game.wait_for_tick() # first one does nothing serious
     stats = Stats()
     start = now = time.time()
