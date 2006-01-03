@@ -603,7 +603,7 @@ class Ship(Object):
         else:
             killed_by.frags += 1
         self.add_debris(time=50, maxdistance=self.size * 0.5,
-                        howmany=random.randrange(9, 21))
+                        howmany=self.world.rng.randrange(9, 21))
 
     def respawn(self):
         """Respawn back into the world."""

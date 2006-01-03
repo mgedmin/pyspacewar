@@ -5,8 +5,6 @@ TODO: write unit tests and refactor this module.
       (I tried refactoring without tests, and broke the code horribly.)
 """
 
-import random
-
 from world import Ship
 
 
@@ -24,6 +22,7 @@ class AIController(object):
 
     def __init__(self, ship):
         self.ship = ship
+        self.rng = ship.world.rng
         self.last_l_r = 1
         self.enemy = None
 
@@ -74,18 +73,18 @@ class AIController(object):
         if l_r > 0:
             if self.last_l_r < 0:
                 self.maybe_fire(enemy, length(target_vector))
-            self.ship.left_thrust = random.randrange(turn_const, turn_const + 5)
+            self.ship.left_thrust = self.rng.randrange(turn_const, turn_const + 5)
             self.ship.right_thrust = 0
         else:
             if self.last_l_r > 0:
                 self.maybe_fire(enemy, length(target_vector))
             self.ship.left_thrust = 0
-            self.ship.right_thrust = random.randrange(turn_const, turn_const + 5)
+            self.ship.right_thrust = self.rng.randrange(turn_const, turn_const + 5)
 
         rel_velocity = length(self.ship.velocity - enemy.velocity)
         if rel_velocity < 3:
             rel_velocity = 3
-        if length_sq(self.ship.velocity) < random.randrange(int(rel_velocity * 0.8), int(rel_velocity * 1.5) + 1) + 1:
+        if length_sq(self.ship.velocity) < self.rng.randrange(int(rel_velocity * 0.8), int(rel_velocity * 1.5) + 1) + 1:
             self.ship.forward_thrust = 1 * thrust_const
             self.ship.rear_thrust = 0
         else:
@@ -142,5 +141,5 @@ class AIController(object):
 
     def maybe_fire(self, enemy, distance):
         if not enemy.dead:
-            if 0 == random.randrange(0, int(distance / 30) + 1):
+            if 0 == self.rng.randrange(0, int(distance / 30) + 1):
                 self.ship.launch()
