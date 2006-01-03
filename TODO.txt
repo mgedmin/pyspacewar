@@ -1,16 +1,17 @@
 Features still missing:
 
 - AI
-- frame dropping
 - pause
 - braking
-- missile recoil (on launch and collisions)
 - fullscreen mode
 - determine largest screen mode
-- computed missile launch
-- keep free space around planets (margin arg for collision detection)
-- HUD debug info (fps etc)
 - fading out title
+- keep free space around planets (margin arg for collision detection)
+- computed missile launch
+- missile recoil (on launch and collisions)
+- HUD debug info (draw time, update time)
+
+- optimize!
 
 Planned features that were not present in the old version
 
