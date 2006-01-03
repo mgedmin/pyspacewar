@@ -22,6 +22,10 @@ class Vector(tuple):
 
     """
 
+    # Nice accessories.  Sort of expensive, though: according to timeit,
+    # v.x is 5 times slower than v[0].  It would be possible to shave off
+    # 2.5 milliseconds off world update time by using [0], [1] instead of
+    # .x, .y everywhere.  Time to rewrite in C?
     x = property(lambda self: self[0])
     y = property(lambda self: self[1])
 
@@ -384,9 +388,9 @@ class Object(object):
         # also constant, and
         #   v(t1) = v(t0) + a * dt
         vector = massive_object.position - self.position
-        sq_of_distance = vector.length() ** 2
-        magnitude = self.world.GRAVITY * massive_object.mass / sq_of_distance
-        acceleration = vector.scaled(magnitude * dt)
+        distance = vector.length()
+        magnitude = self.world.GRAVITY * massive_object.mass / distance ** 2
+        acceleration = vector * (magnitude * dt / distance)
         self.velocity += acceleration
 
     def move(self, dt):

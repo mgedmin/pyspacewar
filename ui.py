@@ -76,6 +76,10 @@ class Viewport(object):
         # We want self.screen_pos(self.origin) == (surface_w/2, surface_h/2)
         self._screen_x = surface_w * 0.5 - self.origin.x * self.scale
         self._screen_y = surface_h * 0.5 + self.origin.y * self.scale
+        # Let's cache world_bounds
+        x1, y1 = self.world_pos((0, 0))
+        x2, y2 = self.world_pos((surface_w, surface_h))
+        self.world_bounds = min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2)
 
     def surface_size_changed(self):
         """Notify that surface size has changed."""
@@ -96,6 +100,11 @@ class Viewport(object):
         x = (screen_pos[0] - self._screen_x) / self._scale
         y = -(screen_pos[1] - self._screen_y) / self._scale
         return (x, y)
+
+    def in_screen(self, world_pos):
+        """Is a position visible on screen?"""
+        xmin, ymin, xmax, ymax = self.world_bounds
+        return xmin <= world_pos.x <= xmax and ymin <= world_pos.y <= ymax
 
     def keep_visible(self, points, margin):
         """Adjust origin and scale to keep all specified points visible.
@@ -656,7 +665,8 @@ class GameUI(object):
         f = a
         for pt in trail:
             color = (red*f, green*f, blue*f)
-            self.screen.set_at(self.viewport.screen_pos(pt), color)
+            if self.viewport.in_screen(pt):
+                self.screen.set_at(self.viewport.screen_pos(pt), color)
             f += b
 
     def draw_Missile(self, missile):
