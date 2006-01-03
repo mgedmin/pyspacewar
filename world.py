@@ -140,7 +140,7 @@ class Vector(tuple):
             5.0
 
         """
-        return math.hypot(*self)
+        return math.hypot(self[0], self[1])
 
     def direction(self):
         """Compute the direction of the vector (in degrees).
