@@ -20,10 +20,15 @@ class PythonTimeSource(object):
         return time.time()
 
     def wait(self, time_point):
-        """Wait until now() becomes >= time_point."""
+        """Wait until now() becomes >= time_point.
+
+        Returns True if we're on schedule; False if time_point was already
+        past when ``wait`` was called.
+        """
         time_to_sleep = time_point - self.now()
         if time_to_sleep > 0:
             time.sleep(time_to_sleep)
+        return time_to_sleep >= 0
 
 
 class Game(object):
@@ -101,11 +106,13 @@ class Game(object):
         """Wait for the next game time tick."""
         if self._next_tick is None: # first time!
             self._next_tick = self.time_source.now() + self.time_source.delta
+            on_schedule = True
         else:
             self.world.update(self.DELTA_TIME)
             self.auto_respawn()
-            self.time_source.wait(self._next_tick)
+            on_schedule = self.time_source.wait(self._next_tick)
             self._next_tick += self.time_source.delta
+        return on_schedule
 
     def new(cls, ships=2, planet_kinds=1, world_radius=1200,
             ship_start_radius=600, rng=None):

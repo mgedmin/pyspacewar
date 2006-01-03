@@ -19,7 +19,9 @@ class TimeSourceStub(object):
 
     def wait(self, time_point):
         print "Waiting for %s" % time_point
+        on_schedule = time_point >= self.counter
         self.counter = max(self.counter, time_point)
+        return on_schedule
 
 
 class Ticker(object):
@@ -47,6 +49,7 @@ def doctest_PythonTimeSource():
         >>> back_then = ts.now()
         >>> future = back_then + ts.delta
         >>> ts.wait(future)
+        True
         >>> now = ts.now()
         >>> eps = 0.01
         >>> now >= future - eps or 'error: %r < %r' % (now, future)
@@ -55,6 +58,7 @@ def doctest_PythonTimeSource():
     You can safely wait for the past
 
         >>> ts.wait(back_then)
+        False
 
     """
 
@@ -182,15 +186,19 @@ def doctest_Game_wait_for_tick():
     game world.
 
         >>> g.wait_for_tick()
+        True
         >>> g.wait_for_tick()
         Tick (2.0)
         Waiting for 11
+        True
         >>> g.wait_for_tick()
         Tick (2.0)
         Waiting for 21
+        True
         >>> g.wait_for_tick()
         Tick (2.0)
         Waiting for 31
+        True
 
     The waiting time is independent of outside delays
 
@@ -198,10 +206,12 @@ def doctest_Game_wait_for_tick():
         >>> g.wait_for_tick()
         Tick (2.0)
         Waiting for 41
+        True
         >>> ts.counter += 105
         >>> g.wait_for_tick()
         Tick (2.0)
         Waiting for 51
+        False
 
     After the game world is updated, wait_for_tick also takes care to
     look for dead ships.
@@ -214,6 +224,7 @@ def doctest_Game_wait_for_tick():
         >>> g.wait_for_tick()
         Tick (2.0)
         Waiting for 61
+        False
 
         >>> g.timers.keys() == [ship]
         True

@@ -360,12 +360,15 @@ class GameUI(object):
     fullscreen = False              # Start in windowed mode
     show_missile_trails = True      # Show missile trails by default
 
+    min_fps = 10                    # Minimum FPS
+
     ship_colors = [
         (255, 255, 255),            # Player 1 has a white ship
         (127, 255, 0),              # Player 2 has a green ship
     ]
 
     visibility_margin = 120 # Keep ships at least 120px from screen edges
+
 
     def init(self):
         """Initialize the user interface."""
@@ -377,6 +380,7 @@ class GameUI(object):
         self.viewport = Viewport(self.screen)
         self._new_game()
         self.frame_counter = FrameRateCounter()
+        self.framedrop_needed = False
 
     def _init_pygame(self):
         """Initialize pygame, but don't create an output window just yet."""
@@ -516,6 +520,8 @@ class GameUI(object):
 
     def draw(self):
         """Draw the state of the game"""
+        if self.framedrop_needed and self.frame_counter.fps() >= self.min_fps:
+            return
         self._keep_ships_visible()
         self.screen.fill((0, 0, 0))
         if self.show_missile_trails:
@@ -526,7 +532,6 @@ class GameUI(object):
             drawable.draw(self.screen)
         pygame.display.flip()
         self.frame_counter.frame()
-        self.update_missile_trails()
 
     def draw_Planet(self, planet):
         """Draw a planet."""
@@ -610,7 +615,8 @@ class GameUI(object):
 
     def wait_for_tick(self):
         """Wait for the next game time tick.  World moves during this time."""
-        self.game.wait_for_tick()
+        self.update_missile_trails()
+        self.framedrop_needed = not self.game.wait_for_tick()
 
 
 def main():
