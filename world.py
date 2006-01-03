@@ -323,6 +323,7 @@ class Object(object):
         self.radius = radius
         self.velocity = velocity
         self.appearance = appearance
+        self.world = None
 
     def distanceTo(self, other):
         """Calculate the distance to another object.
