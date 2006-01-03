@@ -62,6 +62,7 @@ class Game(object):
         self.timers = {}
         self.time_source = PythonTimeSource(self.TICKS_PER_SECOND)
         self._next_tick = None
+        self.controllers = []
 
     def randomly_position(self, obj, world_radius):
         """Pick a random location for ``obj``."""
@@ -110,6 +111,8 @@ class Game(object):
         else:
             self.world.update(self.DELTA_TIME)
             self.auto_respawn()
+            for controller in self.controllers:
+                controller.control()
             on_schedule = self.time_source.wait(self._next_tick)
             self._next_tick += self.time_source.delta
         return on_schedule

@@ -11,6 +11,7 @@ from pygame.locals import *
 
 from world import Vector, Ship, Missile
 from game import Game
+from ai import AIController
 
 
 def find(filespec):
@@ -431,6 +432,8 @@ class GameUI(object):
         self.ships = sorted([obj for obj in self.game.world.objects
                              if isinstance(obj, Ship)],
                             key=lambda ship: ship.appearance)
+        self.ai = map(AIController, self.ships)
+        self.ai_controlled = [False] * len(self.ships)
         self.missile_trails = {}
         self.viewport.origin = (self.ships[0].position +
                                 self.ships[1].position) / 2
@@ -439,6 +442,9 @@ class GameUI(object):
 
     def _init_hud(self):
         """Initialize the heads-up display."""
+        self.fps_hud = HUDInfoPanel(self.hud_font, 10, 2, xalign=0.5, yalign=0,
+                content=[('objects', lambda: len(self.game.world.objects)),
+                         ('fps', lambda: '%.0f' % self.frame_counter.fps())])
         self.hud = [
             HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
             HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
@@ -447,9 +453,7 @@ class GameUI(object):
                        HUDCompass.BLUE_COLORS),
             HUDCompass(self.game.world, self.ships[1], self.viewport, 0, 1,
                        HUDCompass.GREEN_COLORS),
-            HUDInfoPanel(self.hud_font, 10, 2, xalign=0.5, yalign=0,
-                content=[('objects', lambda: len(self.game.world.objects)),
-                         ('fps', lambda: '%.0f' % self.frame_counter.fps())]),
+            self.fps_hud,
         ]
 
     def _keep_ships_visible(self):
@@ -466,17 +470,19 @@ class GameUI(object):
         self.while_key(K_EQUALS, self.zoom_in)
         self.while_key(K_MINUS, self.zoom_out)
         # Player 1
-        self.while_key(K_LEFT, lambda *a: self.ships[0].turn_left())
-        self.while_key(K_RIGHT, lambda *a: self.ships[0].turn_right())
-        self.while_key(K_UP, lambda *a: self.ships[0].accelerate())
-        self.while_key(K_DOWN, lambda *a: self.ships[0].backwards())
-        self.on_key(K_RCTRL, lambda *a: self.ships[0].launch())
+        self.on_key(K_1, lambda *a: self.toggle_ai(0))
+        self.while_key(K_LEFT, lambda *a: self.turn_left(0))
+        self.while_key(K_RIGHT, lambda *a: self.turn_right(0))
+        self.while_key(K_UP, lambda *a: self.accelerate(0))
+        self.while_key(K_DOWN, lambda *a: self.backwards(0))
+        self.on_key(K_RCTRL, lambda *a: self.launch_missile(0))
         # Player 2
-        self.while_key(K_a, lambda *a: self.ships[1].turn_left())
-        self.while_key(K_d, lambda *a: self.ships[1].turn_right())
-        self.while_key(K_w, lambda *a: self.ships[1].accelerate())
-        self.while_key(K_s, lambda *a: self.ships[1].backwards())
-        self.on_key(K_LCTRL, lambda *a: self.ships[1].launch())
+        self.on_key(K_2, lambda *a: self.toggle_ai(1))
+        self.while_key(K_a, lambda *a: self.turn_left(1))
+        self.while_key(K_d, lambda *a: self.turn_right(1))
+        self.while_key(K_w, lambda *a: self.accelerate(1))
+        self.while_key(K_s, lambda *a: self.backwards(1))
+        self.on_key(K_LCTRL, lambda *a: self.launch_missile(1))
 
     def clear_keymap(self):
         """Clear all key mappings."""
@@ -521,9 +527,44 @@ class GameUI(object):
         """Show/hide missile trails."""
         self.show_missile_trails = not self.show_missile_trails
 
+    def toggle_ai(self, player_id):
+        """Toggle AI control for player."""
+        self.ai_controlled[player_id] = not self.ai_controlled[player_id]
+        if self.ai_controlled[player_id]:
+            self.game.controllers.append(self.ai[player_id])
+        else:
+            self.game.controllers.remove(self.ai[player_id])
+
+    def turn_left(self, player_id):
+        """Manual ship control: turn left."""
+        if not self.ai_controlled[player_id]:
+            self.ships[player_id].turn_left()
+
+    def turn_right(self, player_id):
+        """Manual ship control: turn right."""
+        if not self.ai_controlled[player_id]:
+            self.ships[player_id].turn_right()
+
+    def accelerate(self, player_id):
+        """Manual ship control: accelerate."""
+        if not self.ai_controlled[player_id]:
+            self.ships[player_id].accelerate()
+
+    def backwards(self, player_id):
+        """Manual ship control: accelerate backwards."""
+        if not self.ai_controlled[player_id]:
+            self.ships[player_id].backwards()
+
+    def launch_missile(self, player_id):
+        """Manual ship control: launch a missile."""
+        if not self.ai_controlled[player_id]:
+            self.ships[player_id].launch()
+
     def draw(self):
         """Draw the state of the game"""
         if self.framedrop_needed and self.frame_counter.fps() >= self.min_fps:
+            self.fps_hud.draw(self.screen)
+            pygame.display.flip()
             return
         self._keep_ships_visible()
         self.screen.fill((0, 0, 0))
