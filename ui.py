@@ -181,6 +181,17 @@ class FrameRateCounter(object):
         frames = len(self.frames) - 1
         return frames * 1000.0 / ms
 
+    def notional_fps(self):
+        """Calculate the frame rate assuming that I'm about to draw a frame.
+
+        Returns 0 if not enough frames have been drawn yet.
+        """
+        if len(self.frames) < 1:
+            return 0
+        ms = pygame.time.get_ticks() - self.frames[0]
+        frames = len(self.frames)
+        return frames * 1000.0 / ms
+
 
 class HUDElement(object):
     """Heads-up status display widget."""
@@ -562,7 +573,8 @@ class GameUI(object):
 
     def draw(self):
         """Draw the state of the game"""
-        if self.framedrop_needed and self.frame_counter.fps() >= self.min_fps:
+        if (self.framedrop_needed and
+            self.frame_counter.notional_fps() >= self.min_fps):
             self.fps_hud.draw(self.screen)
             pygame.display.flip()
             return
