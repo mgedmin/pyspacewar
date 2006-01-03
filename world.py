@@ -213,6 +213,8 @@ class World(object):
         self.rng = rng
         self.time = 0.0
         self.objects = []
+        self._objects_with_zero_radius = []
+        self._objects_with_nonzero_radius = []
         self._in_update = False
         self._add_queue = []
         self._remove_queue = []
@@ -243,6 +245,10 @@ class World(object):
         else:
             self.objects.append(obj)
             obj.world = self
+            if obj.radius:
+                self._objects_with_nonzero_radius.append(obj)
+            else:
+                self._objects_with_zero_radius.append(obj)
 
     def remove(self, obj):
         """Remove an object from the universe."""
@@ -254,6 +260,10 @@ class World(object):
         else:
             self.objects.remove(obj)
             obj.world = None
+            if obj.radius:
+                self._objects_with_nonzero_radius.remove(obj)
+            else:
+                self._objects_with_zero_radius.remove(obj)
 
     def update(self, dt):
         """Make time happen (dt time units of it).
@@ -274,8 +284,9 @@ class World(object):
         for obj in self.objects:
             obj.move(dt)
         # Collision detection: may affect positions and velocities
-        for n, obj1 in enumerate(self.objects):
-            for obj2 in self.objects[n+1:]:
+        for n, obj1 in enumerate(self._objects_with_nonzero_radius):
+            for obj2 in (self._objects_with_nonzero_radius[n+1:] +
+                         self._objects_with_zero_radius):
                 if self.collide(obj1, obj2):
                     obj1.collision(obj2)
                     obj2.collision(obj1)

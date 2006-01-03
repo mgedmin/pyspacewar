@@ -108,7 +108,7 @@ def doctest_World_collision_detection_in_update():
         >>> from world import World, Vector
         >>> w = World()
 
-        >>> o1, o2, o3 = map(Object, ['o1', 'o2', 'o3'])
+        >>> o1, o2, o3 = [Object(name, radius=1) for name in ['o1', 'o2', 'o3']]
         >>> w.add(o1)
         >>> w.add(o2)
         >>> w.add(o3)

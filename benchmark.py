@@ -88,6 +88,7 @@ if __name__ == '__main__':
         seed = sys.argv[1]
         print 'random seed: %r' % seed
     stats = benchmark(seed)
+    print 'ticks: %d' % stats.ticks
     print 'ticks per second: avg=%.3f' % stats.ticks_per_second
     print 'ms per tick: min=%.3f avg=%.3f max=%.3f' % (
                 stats.best_time * 1000.0,
