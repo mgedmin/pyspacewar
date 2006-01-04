@@ -7,6 +7,9 @@ import time
 import random
 import optparse
 
+import pygame
+from pygame.locals import *
+
 from game import Game
 from world import Ship
 from ai import AIController
@@ -61,17 +64,45 @@ class Stats(object):
         return self.time * 1000.0 / self.ticks
 
 
-def benchmark_logic(seed=None, how_long=100):
+def benchmark_logic(seed=None, how_long=100, ai_controller=DummyAIController):
     game = Game.new(ships=2, rng=random.Random(seed))
     game.time_source = DummyTimeSource()
     ships = [obj for obj in game.world.objects if isinstance(obj, Ship)]
-    game.controllers += map(DummyAIController, ships)
+    game.controllers += map(ai_controller, ships)
     game.wait_for_tick() # first one does nothing serious
     stats = Stats()
     start = now = time.time()
     while stats.ticks < how_long:
         prev = now
         game.wait_for_tick()
+        now = time.time()
+        stats.ticks += 1
+        stats.max_objects = max(stats.max_objects, len(game.world.objects))
+        stats.min_objects = min(stats.min_objects, len(game.world.objects))
+        stats.total_objects += len(game.world.objects)
+        stats.best_time = min(stats.best_time, now - prev)
+        stats.worst_time = max(stats.worst_time, now - prev)
+    stats.time = now - start
+    return stats
+
+
+def benchmark_ui(seed=None, how_long=100, ai_controller=DummyAIController):
+    ui = GameUI()
+    ui.rng = random.Random(seed)
+    ui.init()
+    for player_id, is_ai in enumerate(ui.ai_controlled):
+        if is_ai:
+            ui.toggle_ai(player_id)
+    game = ui.game
+    game.time_source = DummyTimeSource()
+    game.controllers += map(ai_controller, ui.ships)
+    game.wait_for_tick() # first one does nothing serious
+    stats = Stats()
+    start = now = time.time()
+    while stats.ticks < how_long:
+        prev = now
+        ui.wait_for_tick()
+        ui.draw()
         now = time.time()
         stats.ticks += 1
         stats.max_objects = max(stats.max_objects, len(game.world.objects))
@@ -89,36 +120,15 @@ def benchmark_logic(seed=None, how_long=100):
     return stats
 
 
-def benchmark_ui(seed=None, how_long=100):
-    ui = GameUI()
-    ui.rng = random.Random(seed)
-    ui.init()
-    for player_id, is_ai in enumerate(ui.ai_controlled):
-        if not is_ai:
-            ui.toggle_ai(player_id)
-    game = ui.game
-    game.time_source = DummyTimeSource()
-    game.wait_for_tick() # first one does nothing serious
-    stats = Stats()
-    start = now = time.time()
-    while stats.ticks < how_long:
-        prev = now
-        ui.wait_for_tick()
-        ui.draw()
-        now = time.time()
-        stats.ticks += 1
-        stats.max_objects = max(stats.max_objects, len(game.world.objects))
-        stats.min_objects = min(stats.min_objects, len(game.world.objects))
-        stats.total_objects += len(game.world.objects)
-        stats.best_time = min(stats.best_time, now - prev)
-        stats.worst_time = max(stats.worst_time, now - prev)
-    stats.time = now - start
-    return stats
-
-
 def main():
     parser = optparse.OptionParser()
-    parser.add_option('-s', '--seed', default=0, action='store', dest='seed')
+    parser.add_option('-s', '--seed', default=0, action='store', dest='seed',
+                      type='int')
+    parser.add_option('-t', '--ticks', default=100, action='store',
+                      dest='ticks', type='int')
+    parser.add_option('-a', '--ai', default=DummyAIController,
+                      action='store_const', const=AIController,
+                      dest='ai_controller')
     parser.add_option('-g', '--gui', default=benchmark_logic,
                       action='store_const', const=benchmark_ui,
                       dest='benchmark')
@@ -135,7 +145,7 @@ def main():
         else:
             print 'using psyco'
     print 'random seed: %r' % opts.seed
-    stats = opts.benchmark(opts.seed)
+    stats = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller)
     print 'ticks: %d' % stats.ticks
     print 'ticks per second: avg=%.3f' % stats.ticks_per_second
     print 'ms per tick: min=%.3f avg=%.3f max=%.3f' % (
