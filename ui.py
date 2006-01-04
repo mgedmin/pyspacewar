@@ -459,6 +459,7 @@ class GameUI(object):
                                 self.ships[1].position) / 2
         self.viewport.scale = 1
         self._init_hud()
+        self.toggle_ai(1)
 
     def _init_hud(self):
         """Initialize the heads-up display."""
