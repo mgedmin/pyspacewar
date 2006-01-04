@@ -103,6 +103,13 @@ class Game(object):
                         del self.timers[ship]
                         self.respawn(ship)
 
+    def time_to_respawn(self, ship):
+        """Return the time left before a dead ship will respawn.
+
+        Returns 0 if the ship is not dead.
+        """
+        return self.timers.get(ship, 0)
+
     def wait_for_tick(self):
         """Wait for the next game time tick."""
         if self._next_tick is None: # first time!

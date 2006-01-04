@@ -610,7 +610,9 @@ class GameUI(object):
         """Draw a ship."""
         color = self.ship_colors[ship.appearance]
         if ship.dead:
+            ratio = self.game.time_to_respawn(ship) / self.game.respawn_time
             color = colorblend(color, (0x20, 0x20, 0x20), 0.2)
+            color = colorblend(color, (0, 0, 0), ratio)
         direction_vector = ship.direction_vector * ship.size
         side_vector = direction_vector.perpendicular()
         pt1 = ship.position - direction_vector + side_vector * 0.5

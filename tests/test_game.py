@@ -173,6 +173,34 @@ def doctest_Game_auto_respawn():
     """
 
 
+def doctest_Game_time_to_respawn():
+    """Tests for Game.time_torespawn
+
+        >>> from game import Game
+        >>> from world import Ship
+        >>> g = Game()
+        >>> ship = Ship()
+
+    The game keeps track of dead ships, and keeps a respawn timer for each
+    of them.
+
+        >>> g.timers[ship] = 17.5
+
+    You can discover the value of the timer by calling time_to_respawn
+
+        >>> g.time_to_respawn(ship)
+        17.5
+
+    If there is no timer for a particular ship ('cause it is not dead),
+    you will get 0
+
+        >>> del g.timers[ship]
+        >>> g.time_to_respawn(ship)
+        0
+
+    """
+
+
 def doctest_Game_wait_for_tick():
     """Tests for Game.wait_for_tick
 
