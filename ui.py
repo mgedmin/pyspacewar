@@ -5,6 +5,7 @@ Graphical user interface for PySpaceWar
 import os
 import sys
 import glob
+import random
 
 import pygame
 from pygame.locals import *
@@ -393,6 +394,8 @@ class GameUI(object):
 
     visibility_margin = 120 # Keep ships at least 120px from screen edges
 
+    def __init__(self):
+        self.rng = random.Random()
 
     def init(self):
         """Initialize the user interface."""
@@ -448,7 +451,8 @@ class GameUI(object):
     def _new_game(self):
         """Start a new game."""
         self.game = Game.new(ships=2,
-                             planet_kinds=len(self.planet_images))
+                             planet_kinds=len(self.planet_images),
+                             rng=self.rng)
         self.ships = sorted([obj for obj in self.game.world.objects
                              if isinstance(obj, Ship)],
                             key=lambda ship: ship.appearance)
