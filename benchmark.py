@@ -17,6 +17,18 @@ from ai import AIController
 from ui import GameUI
 
 
+def get_cpu_speed():
+    try:
+        rows = [row for row in file('/proc/cpuinfo')
+                if row.startswith('cpu MHz')]
+    except IOError:
+        return 0
+    try:
+        return float(rows[0].split(':')[1])
+    except IndexError:
+        return 0
+
+
 class DummyAIController(object):
 
     def __init__(self, ship):
@@ -69,70 +81,80 @@ class Stats(object):
         return self.time * 1000.0 / self.ticks
 
 
-def benchmark_logic(seed=None, how_long=100, ai_controller=DummyAIController,
-                    warmup=0):
-    game = Game.new(ships=2, rng=random.Random(seed))
-    game.time_source = DummyTimeSource()
-    ships = [obj for obj in game.world.objects if isinstance(obj, Ship)]
-    game.controllers += map(ai_controller, ships)
-    game.wait_for_tick() # first one does nothing serious
-    for n in range(warmup):
-        game.wait_for_tick()
-    stats = Stats()
-    start = now = time.time()
-    while stats.ticks < how_long:
-        prev = now
-        game.wait_for_tick()
-        now = time.time()
-        stats.ticks += 1
-        stats.max_objects = max(stats.max_objects, len(game.world.objects))
-        stats.min_objects = min(stats.min_objects, len(game.world.objects))
-        stats.total_objects += len(game.world.objects)
-        stats.best_time = min(stats.best_time, now - prev)
-        stats.worst_time = max(stats.worst_time, now - prev)
-    stats.time = now - start
-    return stats
+class Benchmark(object):
+
+    def __init__(self, seed=None, how_long=100,
+                 ai_controller=DummyAIController, warmup_ticks=0):
+        self.seed = seed
+        self.how_long = how_long
+        self.ai_controller = ai_controller
+        self.warmup_ticks = warmup_ticks
+
+    def run(self):
+        self.init()
+        self.warmup()
+        return self.benchmark()
+
+    def warmup(self):
+        tick = 0
+        while tick < self.warmup_ticks:
+            self.cycle()
+            tick += 1
+
+    def benchmark(self):
+        game = self.game
+        stats = Stats()
+        start = now = time.time()
+        while stats.ticks < self.how_long:
+            prev = now
+            self.cycle()
+            now = time.time()
+            stats.ticks += 1
+            stats.max_objects = max(stats.max_objects, len(game.world.objects))
+            stats.min_objects = min(stats.min_objects, len(game.world.objects))
+            stats.total_objects += len(game.world.objects)
+            stats.best_time = min(stats.best_time, now - prev)
+            stats.worst_time = max(stats.worst_time, now - prev)
+            stats.time = now - start
+        return stats
 
 
-def benchmark_ui(seed=None, how_long=100, ai_controller=DummyAIController,
-                 warmup=0):
-    ui = GameUI()
-    ui.rng = random.Random(seed)
-    ui.init()
-    for player_id, is_ai in enumerate(ui.ai_controlled):
-        if is_ai:
-            ui.toggle_ai(player_id)
-    game = ui.game
-    game.time_source = DummyTimeSource()
-    game.controllers += map(ai_controller, ui.ships)
-    game.wait_for_tick() # first one does nothing serious
-    for n in range(warmup):
-        ui.wait_for_tick()
-        ui.draw()
+class LogicBenchmark(Benchmark):
+
+    def init(self):
+        game = Game.new(ships=2, rng=random.Random(self.seed))
+        game.time_source = DummyTimeSource()
+        ships = [obj for obj in game.world.objects if isinstance(obj, Ship)]
+        game.controllers += map(self.ai_controller, ships)
+        game.wait_for_tick() # first one does nothing serious
+        self.game = game
+        self.cycle = game.wait_for_tick
+
+
+class GameBenchmark(Benchmark):
+
+    def init(self):
+        ui = GameUI()
+        ui.rng = random.Random(self.seed)
+        ui.init()
+        for player_id, is_ai in enumerate(ui.ai_controlled):
+            if is_ai:
+                ui.toggle_ai(player_id)
+        game = ui.game
+        game.time_source = DummyTimeSource()
+        game.controllers += map(self.ai_controller, ui.ships)
+        game.wait_for_tick() # first one does nothing serious
+        self.ui = ui
+        self.game = game
+
+    def cycle(self):
+        self.ui.wait_for_tick()
+        self.ui.draw()
         event = pygame.event.poll()
         if (event.type == QUIT or
             (event.type == KEYDOWN and event.key in (K_ESCAPE, K_q))):
-            how_long = 0
-            break
-    stats = Stats()
-    start = now = time.time()
-    while stats.ticks < how_long:
-        prev = now
-        ui.wait_for_tick()
-        ui.draw()
-        now = time.time()
-        stats.ticks += 1
-        stats.max_objects = max(stats.max_objects, len(game.world.objects))
-        stats.min_objects = min(stats.min_objects, len(game.world.objects))
-        stats.total_objects += len(game.world.objects)
-        stats.best_time = min(stats.best_time, now - prev)
-        stats.worst_time = max(stats.worst_time, now - prev)
-        event = pygame.event.poll()
-        if (event.type == QUIT or
-            (event.type == KEYDOWN and event.key in (K_ESCAPE, K_q))):
-            break
-    stats.time = now - start
-    return stats
+            self.how_long = 0
+            self.warmup_ticks = 0
 
 
 def main():
@@ -150,9 +172,9 @@ def main():
                       help='use real AI logic [default: dumb logic]',
                       action='store_const', const=AIController,
                       dest='ai_controller')
-    parser.add_option('-g', '--gui', default=benchmark_logic,
+    parser.add_option('-g', '--gui', default=LogicBenchmark,
                       help='benchmark drawing and logic [default: just logic]',
-                      action='store_const', const=benchmark_ui,
+                      action='store_const', const=GameBenchmark,
                       dest='benchmark')
     parser.add_option('-p', '--profile', default=False,
                       help='enable profiling [default: %default]',
@@ -176,15 +198,15 @@ def main():
     print 'warmup: %d' % opts.warmup
     print 'ai: %s' % opts.ai_controller.__name__
     print 'benchmark: %s' % opts.benchmark.__name__
+    benchmark= opts.benchmark(opts.seed, opts.ticks, opts.ai_controller,
+                              opts.warmup)
     if opts.profile:
         from profile import Profile
         profiler = Profile()
-        stats = profiler.runcall(opts.benchmark, opts.seed, opts.ticks,
-                                 opts.ai_controller, opts.warmup)
+        stats = profiler.runcall(benchmark.run) 
     else:
         profiler = None
-        stats = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller,
-                               opts.warmup)
+        stats = benchmark.run()
     print
     print "=== Results ==="
     print
