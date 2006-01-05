@@ -92,9 +92,8 @@ class Viewport(object):
 
     def screen_pos(self, world_pos):
         """Convert world coordinates to screen coordinates."""
-        x = self._screen_x + world_pos.x * self._scale
-        y = self._screen_y - world_pos.y * self._scale
-        return (int(x), int(y))
+        return (int(self._screen_x + world_pos[0] * self._scale),
+                int(self._screen_y - world_pos[1] * self._scale))
 
     def world_pos(self, screen_pos):
         """Convert screen coordinates into world coordinates."""
@@ -105,7 +104,7 @@ class Viewport(object):
     def in_screen(self, world_pos):
         """Is a position visible on screen?"""
         xmin, ymin, xmax, ymax = self.world_bounds
-        return xmin <= world_pos.x <= xmax and ymin <= world_pos.y <= ymax
+        return xmin <= world_pos[0] <= xmax and ymin <= world_pos[1] <= ymax
 
     def keep_visible(self, points, margin):
         """Adjust origin and scale to keep all specified points visible.
