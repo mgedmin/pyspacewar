@@ -337,7 +337,9 @@ class Object(object):
             50.0
 
         """
-        return (self.position - other.position).length()
+        sp = self.position
+        op = other.position
+        return math.hypot(sp[0] - op[0], sp[1] - op[1])
 
     def gravitate(self, massive_object, dt):
         """React to gravity from massive_object for a particular time.
