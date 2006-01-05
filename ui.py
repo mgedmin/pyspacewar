@@ -674,8 +674,7 @@ class GameUI(object):
         f = a
         for pt in trail:
             color = (red*f, green*f, blue*f)
-            if in_screen(pt):
-                set_at(screen_pos(pt), color)
+            set_at(screen_pos(pt), color)
             f += b
 
     def draw_Missile(self, missile):
