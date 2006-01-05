@@ -23,6 +23,10 @@ class DummyAIController(object):
         self.ship = ship
 
     def control(self):
+        if self.ship.appearance % 2:
+            self.ship.turn_left()
+        else:
+            self.ship.turn_right()
         if len(self.ship.world.objects) < 90:
             self.ship.launch()
 
