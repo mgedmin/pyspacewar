@@ -1,6 +1,5 @@
 Features still missing:
 
-- AI
 - pause
 - braking
 - fullscreen mode
@@ -10,8 +9,6 @@ Features still missing:
 - computed missile launch
 - missile recoil (on launch and collisions)
 - HUD debug info (draw time, update time)
-
-- optimize!
 
 Planned features that were not present in the old version
 
