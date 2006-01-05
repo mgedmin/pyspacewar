@@ -209,10 +209,15 @@ def main():
         stats.sort_stats('time', 'calls')
         stats.print_stats(40)
         print
-        print "== Stats by cumulative time ==="
+        print "== Stats by number of calls, with callers ==="
+        print
+        stats.sort_stats('calls', 'time')
+        stats.print_callers(20)
+        print
+        print "== Stats by cumulative time, with calees ==="
         print
         stats.sort_stats('cumulative', 'calls')
-        stats.print_callees(25)
+        stats.print_callees(20)
 
 if __name__ == '__main__':
     main()
