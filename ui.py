@@ -237,12 +237,13 @@ class HUDInfoPanel(HUDElement):
         self.xalign = xalign
         self.yalign = yalign
         self.color1, self.color2 = colors
-        self.surface = pygame.Surface((self.width,
-                                       self.height)).convert_alpha()
-        self.surface.fill((8, 8, 8, int(255 * 0.8)))
+        self.surface = pygame.Surface((self.width, self.height))
+        self.surface.set_alpha(255 * 0.8)
+        self.surface.set_colorkey((1, 1, 1))
+        self.surface.fill((8, 8, 8))
         for x in (0, self.width-1):
             for y in (0, self.height-1):
-                self.surface.set_at((x, y), (0, 0, 0, 0))
+                self.surface.set_at((x, y), (1, 1, 1))
         self.content = content or []
 
     def draw_rows(self, surface, *rows):
