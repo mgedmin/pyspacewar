@@ -84,11 +84,13 @@ class Stats(object):
 class Benchmark(object):
 
     def __init__(self, seed=None, how_long=100,
-                 ai_controller=DummyAIController, warmup_ticks=0):
+                 ai_controller=DummyAIController, warmup_ticks=0,
+                 profile=False):
         self.seed = seed
         self.how_long = how_long
         self.ai_controller = ai_controller
         self.warmup_ticks = warmup_ticks
+        self.profile = profile
 
     def run(self):
         self.stats = Stats()
@@ -96,8 +98,14 @@ class Benchmark(object):
         self.stats.cpu_speed_before_warmup = get_cpu_speed()
         self.warmup()
         self.stats.cpu_speed_after_warmup = get_cpu_speed()
-        self.benchmark()
+        if self.profile:
+            from profile import Profile
+            profiler = Profile()
+            profiler.runcall(self.benchmark)
         self.stats.cpu_speed_after_benchmark = get_cpu_speed()
+        if self.profile:
+            import pstats
+            self.stats.profile_stats = pstats.Stats(profiler)
         return self.stats
 
     def warmup(self):
@@ -192,7 +200,6 @@ def main():
     if opts.psyco:
         try:
             import psyco
-            import world
             psyco.full()
         except:
             print 'psyco not available'
@@ -203,15 +210,9 @@ def main():
     print 'ai: %s' % opts.ai_controller.__name__
     print 'benchmark: %s' % opts.benchmark.__name__
     benchmark = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller,
-                               opts.warmup)
+                               opts.warmup, opts.profile)
     start_time = time.time()
-    if opts.profile:
-        from profile import Profile
-        profiler = Profile()
-        stats = profiler.runcall(benchmark.run) 
-    else:
-        profiler = None
-        stats = benchmark.run()
+    stats = benchmark.run()
     total_time = time.time() - start_time
     print
     print "=== CPU ==="
@@ -234,9 +235,8 @@ def main():
                 stats.ms_per_tick,
                 stats.worst_time * 1000.0)
 
-    if profiler is not None:
-        from pstats import Stats
-        stats = Stats(profiler)
+    if opts.profile:
+        stats = stats.profile_stats
         stats.strip_dirs()
         print
         print "== Stats by internal time ==="
