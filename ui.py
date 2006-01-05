@@ -307,17 +307,17 @@ class HUDCompass(HUDElement):
     alpha = int(0.9*255)
 
     BLUE_COLORS = (
-        (0x00, 0x11, 0x22, alpha),
-        (0x99, 0xaa, 0xff, alpha),
-        (0x44, 0x55, 0x66, alpha),
-        (0xaa, 0x77, 0x66, alpha),
+        (0x00, 0x11, 0x22),
+        (0x99, 0xaa, 0xff),
+        (0x44, 0x55, 0x66),
+        (0xaa, 0x77, 0x66),
     )
 
     GREEN_COLORS = (
-        (0x00, 0x22, 0x11, alpha),
-        (0x99, 0xff, 0xaa, alpha),
-        (0x44, 0x66, 0x55, alpha),
-        (0xaa, 0x66, 0x77, alpha),
+        (0x00, 0x22, 0x11),
+        (0x99, 0xff, 0xaa),
+        (0x44, 0x66, 0x55),
+        (0xaa, 0x66, 0x77),
     )
 
     radius = 50
@@ -330,15 +330,16 @@ class HUDCompass(HUDElement):
         self.ship = ship
         self.viewport = viewport
         self.width = self.height = 2*self.radius
-        self.surface = pygame.Surface((self.width,
-                                       self.height)).convert_alpha()
+        self.surface = pygame.Surface((self.width, self.height))
         self.bgcolor, self.fgcolor1, self.fgcolor2, self.fgcolor3 = colors
         self.xalign = xalign
         self.yalign = yalign
 
     def draw(self, surface):
         x = y = self.radius
-        self.surface.fill((0, 0, 0, 0))
+        self.surface.fill((1, 1, 1))
+        self.surface.set_colorkey((1, 1, 1))
+        self.surface.set_alpha(self.alpha)
 
         pygame.draw.circle(self.surface, self.bgcolor, (x, y), self.radius)
         self.surface.set_at((x, y), self.fgcolor1)
