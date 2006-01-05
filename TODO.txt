@@ -2,7 +2,6 @@ Features still missing:
 
 - pause
 - braking
-- fullscreen mode
 - determine largest screen mode
 - fading out title
 - keep free space around planets (margin arg for collision detection)
@@ -17,3 +16,5 @@ Planned features that were not present in the old version
 - hyperspace (move to a new planet system)
 - game menu (start new game, quit, etc.)
 - customizable key bindings
+- online help
+- automatic zoom in
