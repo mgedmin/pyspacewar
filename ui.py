@@ -497,32 +497,32 @@ class GameUI(object):
         self.while_key(K_EQUALS, self.zoom_in)
         self.while_key(K_MINUS, self.zoom_out)
         # Player 1
-        self.on_key(K_1, lambda *a: self.toggle_ai(0))
-        self.while_key(K_LEFT, lambda *a: self.turn_left(0))
-        self.while_key(K_RIGHT, lambda *a: self.turn_right(0))
-        self.while_key(K_UP, lambda *a: self.accelerate(0))
-        self.while_key(K_DOWN, lambda *a: self.backwards(0))
-        self.on_key(K_RCTRL, lambda *a: self.launch_missile(0))
+        self.on_key(K_1, self.toggle_ai, 0)
+        self.while_key(K_LEFT, self.turn_left, 0)
+        self.while_key(K_RIGHT, self.turn_right, 0)
+        self.while_key(K_UP, self.accelerate, 0)
+        self.while_key(K_DOWN, self.backwards, 0)
+        self.on_key(K_RCTRL, self.launch_missile, 0)
         # Player 2
-        self.on_key(K_2, lambda *a: self.toggle_ai(1))
-        self.while_key(K_a, lambda *a: self.turn_left(1))
-        self.while_key(K_d, lambda *a: self.turn_right(1))
-        self.while_key(K_w, lambda *a: self.accelerate(1))
-        self.while_key(K_s, lambda *a: self.backwards(1))
-        self.on_key(K_LCTRL, lambda *a: self.launch_missile(1))
+        self.on_key(K_2, self.toggle_ai, 1)
+        self.while_key(K_a, self.turn_left, 1)
+        self.while_key(K_d, self.turn_right, 1)
+        self.while_key(K_w, self.accelerate, 1)
+        self.while_key(K_s, self.backwards, 1)
+        self.on_key(K_LCTRL, self.launch_missile, 1)
 
     def clear_keymap(self):
         """Clear all key mappings."""
         self._keymap_once = {}
         self._keymap_repeat = {}
 
-    def on_key(self, key, handler):
+    def on_key(self, key, handler, *args):
         """Install a handler to be called once when a key is pressed."""
-        self._keymap_once[key] = handler
+        self._keymap_once[key] = handler, args
 
-    def while_key(self, key, handler):
+    def while_key(self, key, handler, *args):
         """Install a handler to be called repeatedly while a key is pressed."""
-        self._keymap_repeat[key] = handler
+        self._keymap_repeat[key] = handler, args
 
     def interact(self):
         """Process pending keyboard/mouse events."""
@@ -530,32 +530,33 @@ class GameUI(object):
             if event.type == QUIT:
                 self.quit()
             elif event.type == KEYDOWN:
-                handler = self._keymap_once.get(event.key)
-                if handler:
-                    handler(event)
+                handler_and_args = self._keymap_once.get(event.key)
+                if handler_and_args:
+                    handler, args = handler_and_args
+                    handler(*args)
         pressed = pygame.key.get_pressed()
-        for key, handler in self._keymap_repeat.items():
+        for key, (handler, args) in self._keymap_repeat.items():
             if pressed[key]:
-                handler()
+                handler(*args)
 
-    def quit(self, event=None):
+    def quit(self):
         """Exit the game."""
         sys.exit(0)
 
-    def toggle_fullscreen(self, event=None):
+    def toggle_fullscreen(self):
         """Toggle fullscreen mode."""
         self.fullscreen = not self.fullscreen
         self._set_mode()
 
-    def zoom_in(self, event=None):
+    def zoom_in(self):
         """Zoom in."""
         self.viewport.scale *= self.ZOOM_FACTOR
 
-    def zoom_out(self, event=None):
+    def zoom_out(self):
         """Zoom in."""
         self.viewport.scale /= self.ZOOM_FACTOR
 
-    def toggle_missile_orbits(self, event=None):
+    def toggle_missile_orbits(self):
         """Show/hide missile trails."""
         self.show_missile_trails = not self.show_missile_trails
 
