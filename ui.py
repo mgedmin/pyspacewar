@@ -665,14 +665,17 @@ class GameUI(object):
 
     def draw_missile_trail(self, missile, trail):
         """Draw a missile orbit trail."""
+        in_screen = self.viewport.in_screen
+        screen_pos = self.viewport.screen_pos
+        set_at = self.screen.set_at
         red, green, blue = self.ship_colors[missile.appearance]
         a = 0.1
         b = 0.7 / len(trail)
         f = a
         for pt in trail:
             color = (red*f, green*f, blue*f)
-            if self.viewport.in_screen(pt):
-                self.screen.set_at(self.viewport.screen_pos(pt), color)
+            if in_screen(pt):
+                set_at(screen_pos(pt), color)
             f += b
 
     def draw_Missile(self, missile):
