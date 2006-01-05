@@ -53,7 +53,7 @@ class AIController(object):
         if enemy is not None:
             self.target(enemy)
         else:
-            self.ship.velocity *= 0.95
+            self.ship.brake()
         self.evade(enemy)
 
     def target(self, enemy):
@@ -88,7 +88,7 @@ class AIController(object):
             self.ship.forward_thrust = 1 * thrust_const
             self.ship.rear_thrust = 0
         else:
-            self.ship.velocity *= 0.95
+            self.ship.brake()
 
         self.last_l_r = l_r
 
