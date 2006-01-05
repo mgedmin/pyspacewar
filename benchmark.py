@@ -162,6 +162,7 @@ def main():
                       action='store_true', dest='psyco')
     opts, args = parser.parse_args()
     print "=== Parameters ==="
+    print
     if opts.psyco:
         try:
             import psyco
@@ -184,16 +185,19 @@ def main():
         profiler = None
         stats = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller,
                                opts.warmup)
+    print
+    print "=== Results ==="
+    print
     print 'ticks: %d' % stats.ticks
+    print 'objects: min=%d avg=%.1f max=%d' % (
+                stats.min_objects,
+                stats.avg_objects,
+                stats.max_objects)
     print 'ticks per second: avg=%.3f' % stats.ticks_per_second
     print 'ms per tick: min=%.3f avg=%.3f max=%.3f' % (
                 stats.best_time * 1000.0,
                 stats.ms_per_tick,
                 stats.worst_time * 1000.0)
-    print 'objects: min=%d avg=%.1f max=%d' % (
-                stats.min_objects,
-                stats.avg_objects,
-                stats.max_objects)
 
     if profiler is not None:
         from pstats import Stats
