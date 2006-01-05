@@ -29,22 +29,8 @@ class Vector(tuple):
     x = property(lambda self: self[0])
     y = property(lambda self: self[1])
 
-    def __new__(cls, *args):
-        """Create a new vector.
-
-        You can use Vector(x, y) as well as Vector((x, y)).  In particular, if
-        ``v`` is a Vector, you can write Vector(v).
-
-            >>> v1 = Vector(3.5, -2.5)
-            >>> v2 = Vector(v1)
-            >>> v1 == v2
-            True
-
-        """
-        if len(args) == 2:
-            return tuple.__new__(cls, args)
-        else:
-            return tuple.__new__(cls, *args)
+    def __new__(cls, x, y):
+        return tuple.__new__(cls, (x, y))
 
     def from_polar(direction, magnitude=1.0):
         """Create a new vector from polar coordinates.
@@ -122,7 +108,7 @@ class Vector(tuple):
             Vector(2.0, -0.5)
 
         """
-        return Vector(self.x - other.x, self.y - other.y)
+        return Vector(self[0] - other[0], self[1] - other[1])
 
     def __neg__(self):
         """Multiply the vector by -1.
