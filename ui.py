@@ -493,6 +493,7 @@ class GameUI(object):
         self.on_key(K_ESCAPE, self.quit)
         self.on_key(K_q, self.quit)
         self.on_key(K_o, self.toggle_missile_orbits)
+        self.on_key(K_f, self.toggle_fullscreen)
         self.while_key(K_EQUALS, self.zoom_in)
         self.while_key(K_MINUS, self.zoom_out)
         # Player 1
@@ -540,6 +541,11 @@ class GameUI(object):
     def quit(self, event=None):
         """Exit the game."""
         sys.exit(0)
+
+    def toggle_fullscreen(self, event=None):
+        """Toggle fullscreen mode."""
+        self.fullscreen = not self.fullscreen
+        self._set_mode()
 
     def zoom_in(self, event=None):
         """Zoom in."""
