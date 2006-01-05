@@ -669,13 +669,18 @@ class GameUI(object):
         screen_pos = self.viewport.screen_pos
         set_at = self.screen.set_at
         red, green, blue = self.ship_colors[missile.appearance]
-        a = 0.1
-        b = 0.7 / len(trail)
-        f = a
+        r = red * 0.1
+        g = green * 0.1
+        b = blue * 0.1
+        n = len(trail)
+        dr = red * 0.7 / n
+        dg = green * 0.7 / n
+        db = blue * 0.7 / n
         for pt in trail:
-            color = (red*f, green*f, blue*f)
-            set_at(screen_pos(pt), color)
-            f += b
+            set_at(screen_pos(pt), (r, g, b))
+            r += dr
+            g += dg
+            b += db
 
     def draw_Missile(self, missile):
         """Draw a missile."""
