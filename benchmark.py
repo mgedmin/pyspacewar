@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 PySpaceWar benchmarks for optimisation work
 """
@@ -122,20 +123,26 @@ def benchmark_ui(seed=None, how_long=100, ai_controller=DummyAIController):
 
 def main():
     parser = optparse.OptionParser()
-    parser.add_option('-s', '--seed', default=0, action='store', dest='seed',
-                      type='int')
-    parser.add_option('-t', '--ticks', default=100, action='store',
-                      dest='ticks', type='int')
+    parser.add_option('-s', '--seed', default=0,
+                      help='specify random seed [default: %default]',
+                      action='store', dest='seed', type='int')
+    parser.add_option('-t', '--ticks', default=100,
+                      help='specify number of game ticks [default: %default]',
+                      action='store', dest='ticks', type='int')
     parser.add_option('-a', '--ai', default=DummyAIController,
+                      help='use real AI logic [default: dumb logic]',
                       action='store_const', const=AIController,
                       dest='ai_controller')
     parser.add_option('-g', '--gui', default=benchmark_logic,
+                      help='benchmark drawing and logic [default: just logic]',
                       action='store_const', const=benchmark_ui,
                       dest='benchmark')
-    parser.add_option('-p', '--profile', default=False, action='store_true',
-                      dest='profile')
-    parser.add_option('--psyco', default=False, action='store_true',
-                      dest='psyco')
+    parser.add_option('-p', '--profile', default=False,
+                      help='enable profiling [default: %default]',
+                      action='store_true', dest='profile')
+    parser.add_option('--psyco', default=False,
+                      help='use Psyco [default: %default]',
+                      action='store_true', dest='psyco')
     opts, args = parser.parse_args()
     if opts.psyco:
         try:
