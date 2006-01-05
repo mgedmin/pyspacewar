@@ -507,6 +507,8 @@ class Ship(Object):
 
     forward_power = 0.1     # Default engine power for forward thrust
     backward_power = 0.05   # Default engine power for backward thrust
+    brake_factor = 0.95     # Default brake effectiveness (lose 5% speed)
+    brake_threshold = 0.5   # Speed below which brakes are 100% efficient
     rotation_speed = 5      # Lateral thruster power (angles per time unit)
     launch_speed = 3.0      # Missile launch speed
     missile_time_limit = 1200 # Missile self-destruct timer
@@ -524,6 +526,7 @@ class Ship(Object):
         self.rear_thrust = 0
         self.left_thrust = 0
         self.right_thrust = 0
+        self.engage_brakes = False
         self.health = 1.0
         self.frags = 0
         self.dead = False
@@ -567,6 +570,13 @@ class Ship(Object):
             return
         self.rear_thrust = self.backward_power
 
+    def brake(self):
+        """Tell the ship to brake."""
+        if self.dead:
+            return
+        if self.velocity != (0, 0):
+            self.engage_brakes = True
+
     def gravitate(self, massive_object, dt):
         """Don't react to gravity.  Because of, um, anti-gravity engines."""
         if not self.dead:
@@ -587,6 +597,12 @@ class Ship(Object):
         if self.rear_thrust:
             self.velocity -= self.direction_vector * self.rear_thrust * dt
             self.rear_thrust = 0
+        if self.engage_brakes:
+            if self.velocity.length() <= self.brake_threshold:
+                self.velocity = Vector(0.0, 0.0)
+            else:
+                self.velocity *= self.brake_factor
+            self.engage_brakes = False
         Object.move(self, dt)
 
     def collision(self, other):

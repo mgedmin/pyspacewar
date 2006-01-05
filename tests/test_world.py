@@ -260,6 +260,8 @@ def doctest_Ship_controls():
         (0, 0)
         >>> ship.forward_thrust, ship.rear_thrust
         (0, 0)
+        >>> ship.engage_brakes
+        False
 
     You can tell the ship what to do
 
@@ -295,6 +297,21 @@ def doctest_Ship_controls():
         >>> ship.direction
         0
 
+    You cannot brake when your speed is already 0
+
+        >>> ship = Ship()
+        >>> ship.brake()
+        >>> ship.engage_brakes
+        False
+
+        >>> from world import Vector
+        >>> ship.velocity = Vector(0.5, 3.25)
+        >>> ship.brake()
+        >>> ship.engage_brakes
+        True
+        >>> ship.velocity
+        Vector(0.5, 3.25)
+
     You cannot control a dead ship
 
         >>> ship = Ship()
@@ -304,10 +321,13 @@ def doctest_Ship_controls():
         >>> ship.backwards()
         >>> ship.turn_left()
         >>> ship.turn_right()
+        >>> ship.brake()
         >>> print ship.left_thrust, ship.right_thrust
         0 0
         >>> print ship.forward_thrust, ship.rear_thrust
         0 0
+        >>> ship.engage_brakes
+        False
 
     """
 
@@ -336,6 +356,21 @@ def doctest_Ship_movement():
         (0, 0)
         >>> ship.forward_thrust, ship.rear_thrust
         (0, 0)
+
+    Braking removes 5% speed, or stops completely if the speed was low enough.
+
+        >>> ship.brake()
+        >>> ship.move(1.0)
+        >>> print ship.velocity.length()
+        5.7
+        >>> ship.engage_brakes
+        False
+
+        >>> ship.velocity = ship.velocity.scaled(0.5)
+        >>> ship.brake()
+        >>> ship.move(1.0)
+        >>> print ship.velocity.length()
+        0.0
 
     """
 

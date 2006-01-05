@@ -1,13 +1,15 @@
 Features still missing:
 
 - pause
-- braking
 - determine largest screen mode
 - fading out title
 - keep free space around planets (margin arg for collision detection)
-- computed missile launch
 - missile recoil (on launch and collisions)
+
+Features to be discarded
+
 - HUD debug info (draw time, update time)
+- computed missile launch
 
 Planned features that were not present in the old version
 

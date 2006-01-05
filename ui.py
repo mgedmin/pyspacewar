@@ -502,6 +502,7 @@ class GameUI(object):
         self.while_key(K_RIGHT, self.turn_right, 0)
         self.while_key(K_UP, self.accelerate, 0)
         self.while_key(K_DOWN, self.backwards, 0)
+        self.while_key(K_RALT, self.brake, 0)
         self.on_key(K_RCTRL, self.launch_missile, 0)
         # Player 2
         self.on_key(K_2, self.toggle_ai, 1)
@@ -509,6 +510,7 @@ class GameUI(object):
         self.while_key(K_d, self.turn_right, 1)
         self.while_key(K_w, self.accelerate, 1)
         self.while_key(K_s, self.backwards, 1)
+        self.while_key(K_LALT, self.brake, 1)
         self.on_key(K_LCTRL, self.launch_missile, 1)
 
     def clear_keymap(self):
@@ -588,6 +590,11 @@ class GameUI(object):
         if not self.ai_controlled[player_id]:
             self.ships[player_id].backwards()
 
+    def brake(self, player_id):
+        """Manual ship control: brake."""
+        if not self.ai_controlled[player_id]:
+            self.ships[player_id].brake()
+
     def launch_missile(self, player_id):
         """Manual ship control: launch a missile."""
         if not self.ai_controlled[player_id]:
@@ -634,16 +641,16 @@ class GameUI(object):
         points = map(self.viewport.screen_pos, [pt1, pt2, pt3])
         pygame.draw.aalines(self.screen, color, False, points)
         thrust_lines = []
-        if ship.forward_thrust:
+        if ship.forward_thrust or ship.engage_brakes:
             thrust_lines.append(((-0.1, -0.9), (-0.1, -1.2)))
             thrust_lines.append(((+0.1, -0.9), (+0.1, -1.2)))
-        if ship.rear_thrust:
+        if ship.rear_thrust or ship.engage_brakes:
             thrust_lines.append(((-0.6, -0.2), (-0.6, +0.1)))
             thrust_lines.append(((+0.6, -0.2), (+0.6, +0.1)))
-        if ship.left_thrust:
+        if ship.left_thrust or ship.engage_brakes:
             thrust_lines.append(((-0.2, +0.8), (-0.4, +0.8)))
             thrust_lines.append(((+0.8, -0.8), (+0.6, -0.8)))
-        if ship.right_thrust:
+        if ship.right_thrust or ship.engage_brakes:
             thrust_lines.append(((+0.2, +0.8), (+0.4, +0.8)))
             thrust_lines.append(((-0.8, -0.8), (-0.6, -0.8)))
         for (s1, d1), (s2, d2) in thrust_lines:
