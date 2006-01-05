@@ -102,6 +102,8 @@ class Benchmark(object):
             from profile import Profile
             profiler = Profile()
             profiler.runcall(self.benchmark)
+        else:
+            self.benchmark()
         self.stats.cpu_speed_after_benchmark = get_cpu_speed()
         if self.profile:
             import pstats
@@ -177,7 +179,7 @@ def main():
     parser.add_option('-t', '--ticks', default=100,
                       help='specify number of game ticks [default: %default]',
                       action='store', dest='ticks', type='int')
-    parser.add_option('-w', '--warmup', default=0,
+    parser.add_option('-w', '--warmup', default=100,
                       help='warm up for a number of ticks [default: %default]',
                       action='store', dest='warmup', type='int')
     parser.add_option('-a', '--ai', default=DummyAIController,
@@ -207,6 +209,7 @@ def main():
             print 'using psyco'
     print 'random seed: %r' % opts.seed
     print 'warmup: %d' % opts.warmup
+    print 'ticks: %d' % opts.ticks
     print 'ai: %s' % opts.ai_controller.__name__
     print 'benchmark: %s' % opts.benchmark.__name__
     benchmark = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller,
