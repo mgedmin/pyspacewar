@@ -373,11 +373,20 @@ class Object(object):
         # For simplicity's sake let's assume r(t) is constant.  Then a(t) is
         # also constant, and
         #   v(t1) = v(t0) + a * dt
-        vector = massive_object.position - self.position
-        distance = vector.length()
-        magnitude = self.world.GRAVITY * massive_object.mass / distance ** 2
-        acceleration = vector * (magnitude * dt / distance)
-        self.velocity += acceleration
+
+        # Nice code:
+        #   vector = massive_object.position - self.position
+        #   distance = vector.length()
+        #   magnitude = self.world.GRAVITY * massive_object.mass / distance ** 2
+        #   acceleration = vector * (magnitude * dt / distance)
+        #   self.velocity += acceleration
+        # The equivalent fast code:
+        dx = massive_object.position[0] - self.position[0]
+        dy = massive_object.position[1] - self.position[1]
+        distance = math.hypot(dx, dy)
+        f = self.world.GRAVITY * massive_object.mass * dt / distance ** 3
+        self.velocity = Vector(self.velocity[0] + dx * f,
+                               self.velocity[1] + dy * f)
 
     def move(self, dt):
         """Move for a particular time.
