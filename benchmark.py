@@ -41,9 +41,9 @@ class Stats(object):
     time = 0
     ticks = 0
     max_objects = 0
-    min_objects = 1e1000
+    min_objects = sys.maxint
     total_objects = 0
-    best_time = 1e1000
+    best_time = sys.maxint
     worst_time = 0
 
     @property
@@ -65,12 +65,15 @@ class Stats(object):
         return self.time * 1000.0 / self.ticks
 
 
-def benchmark_logic(seed=None, how_long=100, ai_controller=DummyAIController):
+def benchmark_logic(seed=None, how_long=100, ai_controller=DummyAIController,
+                    warmup=0):
     game = Game.new(ships=2, rng=random.Random(seed))
     game.time_source = DummyTimeSource()
     ships = [obj for obj in game.world.objects if isinstance(obj, Ship)]
     game.controllers += map(ai_controller, ships)
     game.wait_for_tick() # first one does nothing serious
+    for n in range(warmup):
+        game.wait_for_tick()
     stats = Stats()
     start = now = time.time()
     while stats.ticks < how_long:
@@ -87,7 +90,8 @@ def benchmark_logic(seed=None, how_long=100, ai_controller=DummyAIController):
     return stats
 
 
-def benchmark_ui(seed=None, how_long=100, ai_controller=DummyAIController):
+def benchmark_ui(seed=None, how_long=100, ai_controller=DummyAIController,
+                 warmup=0):
     ui = GameUI()
     ui.rng = random.Random(seed)
     ui.init()
@@ -98,6 +102,14 @@ def benchmark_ui(seed=None, how_long=100, ai_controller=DummyAIController):
     game.time_source = DummyTimeSource()
     game.controllers += map(ai_controller, ui.ships)
     game.wait_for_tick() # first one does nothing serious
+    for n in range(warmup):
+        ui.wait_for_tick()
+        ui.draw()
+        event = pygame.event.poll()
+        if (event.type == QUIT or
+            (event.type == KEYDOWN and event.key in (K_ESCAPE, K_q))):
+            how_long = 0
+            break
     stats = Stats()
     start = now = time.time()
     while stats.ticks < how_long:
@@ -111,12 +123,10 @@ def benchmark_ui(seed=None, how_long=100, ai_controller=DummyAIController):
         stats.total_objects += len(game.world.objects)
         stats.best_time = min(stats.best_time, now - prev)
         stats.worst_time = max(stats.worst_time, now - prev)
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                break
-            elif event.type == KEYDOWN:
-                if event.key in (K_ESCAPE, K_q):
-                    break
+        event = pygame.event.poll()
+        if (event.type == QUIT or
+            (event.type == KEYDOWN and event.key in (K_ESCAPE, K_q))):
+            break
     stats.time = now - start
     return stats
 
@@ -129,6 +139,9 @@ def main():
     parser.add_option('-t', '--ticks', default=100,
                       help='specify number of game ticks [default: %default]',
                       action='store', dest='ticks', type='int')
+    parser.add_option('-w', '--warmup', default=0,
+                      help='warm up for a number of ticks [default: %default]',
+                      action='store', dest='warmup', type='int')
     parser.add_option('-a', '--ai', default=DummyAIController,
                       help='use real AI logic [default: dumb logic]',
                       action='store_const', const=AIController,
@@ -144,6 +157,7 @@ def main():
                       help='use Psyco [default: %default]',
                       action='store_true', dest='psyco')
     opts, args = parser.parse_args()
+    print "=== Parameters ==="
     if opts.psyco:
         try:
             import psyco
@@ -154,14 +168,18 @@ def main():
         else:
             print 'using psyco'
     print 'random seed: %r' % opts.seed
+    print 'warmup: %d' % opts.warmup
+    print 'ai: %s' % opts.ai_controller.__name__
+    print 'benchmark: %s' % opts.benchmark.__name__
     if opts.profile:
         from profile import Profile
         profiler = Profile()
         stats = profiler.runcall(opts.benchmark, opts.seed, opts.ticks,
-                                 opts.ai_controller)
+                                 opts.ai_controller, opts.warmup)
     else:
         profiler = None
-        stats = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller)
+        stats = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller,
+                               opts.warmup)
     print 'ticks: %d' % stats.ticks
     print 'ticks per second: avg=%.3f' % stats.ticks_per_second
     print 'ms per tick: min=%.3f avg=%.3f max=%.3f' % (
