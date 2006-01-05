@@ -132,6 +132,8 @@ def main():
     parser.add_option('-g', '--gui', default=benchmark_logic,
                       action='store_const', const=benchmark_ui,
                       dest='benchmark')
+    parser.add_option('-p', '--profile', default=False, action='store_true',
+                      dest='profile')
     parser.add_option('--psyco', default=False, action='store_true',
                       dest='psyco')
     opts, args = parser.parse_args()
@@ -145,7 +147,14 @@ def main():
         else:
             print 'using psyco'
     print 'random seed: %r' % opts.seed
-    stats = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller)
+    if opts.profile:
+        from profile import Profile
+        profiler = Profile()
+        stats = profiler.runcall(opts.benchmark, opts.seed, opts.ticks,
+                                 opts.ai_controller)
+    else:
+        profiler = None
+        stats = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller)
     print 'ticks: %d' % stats.ticks
     print 'ticks per second: avg=%.3f' % stats.ticks_per_second
     print 'ms per tick: min=%.3f avg=%.3f max=%.3f' % (
@@ -156,6 +165,21 @@ def main():
                 stats.min_objects,
                 stats.avg_objects,
                 stats.max_objects)
+
+    if profiler is not None:
+        from pstats import Stats
+        stats = Stats(profiler)
+        stats.strip_dirs()
+        print
+        print "== Stats by internal time ==="
+        print
+        stats.sort_stats('time', 'calls')
+        stats.print_stats(40)
+        print
+        print "== Stats by cumulative time ==="
+        print
+        stats.sort_stats('cumulative', 'calls')
+        stats.print_callees(25)
 
 if __name__ == '__main__':
     main()
