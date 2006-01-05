@@ -91,9 +91,14 @@ class Benchmark(object):
         self.warmup_ticks = warmup_ticks
 
     def run(self):
+        self.stats = Stats()
         self.init()
+        self.stats.cpu_speed_before_warmup = get_cpu_speed()
         self.warmup()
-        return self.benchmark()
+        self.stats.cpu_speed_after_warmup = get_cpu_speed()
+        self.benchmark()
+        self.stats.cpu_speed_after_benchmark = get_cpu_speed()
+        return self.stats
 
     def warmup(self):
         tick = 0
@@ -103,7 +108,7 @@ class Benchmark(object):
 
     def benchmark(self):
         game = self.game
-        stats = Stats()
+        stats = self.stats
         start = now = time.time()
         while stats.ticks < self.how_long:
             prev = now
@@ -116,7 +121,6 @@ class Benchmark(object):
             stats.best_time = min(stats.best_time, now - prev)
             stats.worst_time = max(stats.worst_time, now - prev)
             stats.time = now - start
-        return stats
 
 
 class LogicBenchmark(Benchmark):
@@ -198,8 +202,9 @@ def main():
     print 'warmup: %d' % opts.warmup
     print 'ai: %s' % opts.ai_controller.__name__
     print 'benchmark: %s' % opts.benchmark.__name__
-    benchmark= opts.benchmark(opts.seed, opts.ticks, opts.ai_controller,
-                              opts.warmup)
+    benchmark = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller,
+                               opts.warmup)
+    start_time = time.time()
     if opts.profile:
         from profile import Profile
         profiler = Profile()
@@ -207,9 +212,17 @@ def main():
     else:
         profiler = None
         stats = benchmark.run()
+    total_time = time.time() - start_time
+    print
+    print "=== CPU ==="
+    print
+    print 'CPU speed before warmup: %.0f MHz' % stats.cpu_speed_before_warmup
+    print 'CPU speed after warmup: %.0f MHz' % stats.cpu_speed_after_warmup
+    print 'CPU speed after benchmark: %.0f MHz' % stats.cpu_speed_after_benchmark
     print
     print "=== Results ==="
     print
+    print 'total time: %.3f seconds' % total_time
     print 'ticks: %d' % stats.ticks
     print 'objects: min=%d avg=%.1f max=%d' % (
                 stats.min_objects,
