@@ -7,6 +7,7 @@ import sys
 import glob
 import random
 
+import Numeric
 import pygame
 from pygame.locals import *
 
@@ -385,15 +386,18 @@ class HUDTitle(HUDElement):
         HUDElement.__init__(self, image.get_width(), image.get_height(),
                             xalign, yalign)
         self.image = image
-        self.frames = 100
+        self.alpha = 255
+        self.mask = pygame.surfarray.array_alpha(image).astype(Numeric.Int)
 
     def draw(self, surface):
         """Draw the element."""
-        if self.frames < 1:
+        if self.alpha < 1:
             return
         x, y = self.position(surface)
+        array = pygame.surfarray.pixels_alpha(self.image)
+        array[:] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
         surface.blit(self.image, (x, y))
-        self.frames -= 1
+        self.alpha *= 0.95
 
 
 class GameUI(object):
