@@ -2,7 +2,6 @@ Features still missing:
 
 - pause
 - determine largest screen mode
-- fading out title
 - keep free space around planets (margin arg for collision detection)
 - missile recoil (on launch and collisions)
 

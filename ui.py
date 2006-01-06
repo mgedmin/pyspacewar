@@ -436,6 +436,8 @@ class GameUI(object):
         """Initialize pygame, but don't create an output window just yet."""
         pygame.init()
         pygame.display.set_caption('PySpace War')
+        icon = pygame.image.load(find('pyspacewar-32x32.png'))
+        pygame.display.set_icon(icon)
         pygame.mouse.set_visible(False)
         self.fullscreen_mode = self._choose_best_mode()
 
