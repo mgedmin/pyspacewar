@@ -378,6 +378,24 @@ class HUDCompass(HUDElement):
         surface.blit(self.surface, self.position(surface))
 
 
+class HUDTitle(HUDElement):
+    """Fading out title."""
+
+    def __init__(self, image, xalign=0.5, yalign=0.5):
+        HUDElement.__init__(self, image.get_width(), image.get_height(),
+                            xalign, yalign)
+        self.image = image
+        self.frames = 100
+
+    def draw(self, surface):
+        """Draw the element."""
+        if self.frames < 1:
+            return
+        x, y = self.position(surface)
+        surface.blit(self.image, (x, y))
+        self.frames -= 1
+
+
 class GameUI(object):
     """User interface for the game."""
 
@@ -471,6 +489,7 @@ class GameUI(object):
         self.fps_hud = HUDInfoPanel(self.hud_font, 10, 2, xalign=0.5, yalign=0,
                 content=[('objects', lambda: len(self.game.world.objects)),
                          ('fps', lambda: '%.0f' % self.frame_counter.fps())])
+        title_image = pygame.image.load(find('title.png'))
         self.hud = [
             HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
             HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
@@ -480,6 +499,7 @@ class GameUI(object):
             HUDCompass(self.game.world, self.ships[1], self.viewport, 0, 1,
                        HUDCompass.GREEN_COLORS),
             self.fps_hud,
+            HUDTitle(title_image),
         ]
 
     def _keep_ships_visible(self):
