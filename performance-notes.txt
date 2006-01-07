@@ -5,18 +5,19 @@ The game runs reasonably fast (although not as fast as I'd like) on my 1.6 GHz
 Pentium M laptop.
 
 There's a benchmark that helps measure progress if you're doing optimisation
-work.  You can either benchmark game logic only (default if you run benchmark.py
-with no parameters), or logic + gui (run benchmark.py -g).
+work.  You can either benchmark game logic only (default if you run
+benchmark.py with no parameters), or logic + gui (run benchmark.py -g).
 
 The benchmark can run the profiler for you to help identify hot spots
-(benchmark.py -p).
+(benchmark.py -p).  The benchmark can also show some timings it collects
+manually (benchmark -d).
 
 
 Current status
 --------------
 
-The benchmark performs at about 20 fps on average on my laptop.  The worst
-frame rendering time is 58 ms which translates to 17 fps.  Actual gameplay
+The benchmark performs at about 18 fps on average on my laptop.  The worst
+frame rendering time is 64 ms which translates to 15 fps.  Actual gameplay
 nearly always slows down to 10 fps when there are many missiles floating
 around.
 
@@ -31,11 +32,11 @@ there are 20 planets and 100 missiles, each with a trail 100 positions long.
 Current profile data
 --------------------
 
-(This section may become obsolete without further notice; look at the profile
-results for most recent data.)
+This section may become obsolete without further notice; look at the profile
+results for most recent data.
 
-According to the benchmark, 62% of running time is spent updating the game
-world, and 38% drawing things on screen.
+According to the profile data produced by the benchmark, 62% of running time is
+spent updating the game world, and 38% drawing things on screen.
 
 Most of the update time is spent calculating gravitational forces (28% total
 time or 45% update time) and performing collision detection (15% total time or
@@ -80,6 +81,11 @@ The most often called functions are::
   Vector.x property                          50504 calls  ===
   Vector.y property                          50504 calls  ===
 
+Note that timings shown by the benchmark show a slightly different result --
+according to them, update takes 17--20 ms, while draw takes 30--40 ms.
+I think many thousands of function calls inside World.update skew the profiler
+results.
+
 
 Ideas
 -----
@@ -118,6 +124,9 @@ on-screen.
 
 Successful optimisations
 ------------------------
+
+  Somewhere during the last changes (missile recoil?  menus?  detailed
+  timings?) I lost 2 fps, so the average now is 18, not 20.
 
 Manually inlining method calls in Object.distanceTo (18.4 -> 20.5 average fps).
 
