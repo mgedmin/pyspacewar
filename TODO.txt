@@ -15,7 +15,6 @@ Features still missing:
 Features to be discarded
 
 - HUD debug info (draw time, update time)
-- computed missile launch
 
 Planned features that were not present in the old version
 
