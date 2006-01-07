@@ -110,6 +110,12 @@ class Viewport(object):
         return (int(self._screen_x + world_pos[0] * self._scale),
                 int(self._screen_y - world_pos[1] * self._scale))
 
+    def list_of_screen_pos(self, list_of_world_pos):
+        """Convert world coordinates to screen coordinates."""
+        return [(int(self._screen_x + x * self._scale),
+                 int(self._screen_y - y * self._scale))
+                for x, y in list_of_world_pos]
+
     def world_pos(self, screen_pos):
         """Convert screen coordinates into world coordinates."""
         x = (screen_pos[0] - self._screen_x) / self._scale
@@ -1049,6 +1055,8 @@ class GameUI(object):
         time_format = '%.f ms'
         self.fps_hud = HUDInfoPanel(self.hud_font, 20, xalign=0.5, yalign=0,
                 content=[('objects', lambda: len(self.game.world.objects)),
+                         ('trails', lambda: sum(len(trail)
+                                for trail in self.missile_trails.values())),
                          ('fps', lambda: '%.0f' % self.frame_counter.fps()),
                          ('update', lambda: time_format %
                                 (self.game.time_to_update * 1000)),
@@ -1305,7 +1313,6 @@ class GameUI(object):
 
     def draw_missile_trail(self, missile, trail):
         """Draw a missile orbit trail."""
-        screen_pos = self.viewport.screen_pos
         set_at = self.screen.set_at
         red, green, blue = self.ship_colors[missile.appearance]
         r = red * 0.1
@@ -1315,8 +1322,8 @@ class GameUI(object):
         dr = red * 0.7 / n
         dg = green * 0.7 / n
         db = blue * 0.7 / n
-        for pt in trail:
-            set_at(screen_pos(pt), (r, g, b))
+        for pt in self.viewport.list_of_screen_pos(trail):
+            set_at(pt, (r, g, b))
             r += dr
             g += dg
             b += db
