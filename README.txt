@@ -42,9 +42,13 @@ LALT            - brake (lose 5% speed)
 Other Controls
 --------------
 
+ESC             - escape to menu (pauses current game)
 O               - hide/show missile orbits
 F               - toggle full-screen mode
 +, -            - zoom in/out
+mouse wheel     - zoom in/out
+left click      - escape to menu (pauses current game)
+right drag      - drag the viewport around
 
 
 Command Line
