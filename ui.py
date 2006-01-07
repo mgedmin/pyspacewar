@@ -556,42 +556,19 @@ class UIMode(object):
 
     def handle_mouse_press(self, event):
         """Handle a MOUSEBUTTONDOWN event."""
-        pass
+        if event.button == 4:
+            self.ui.zoom_in()
+        if event.button == 5:
+            self.ui.zoom_out()
 
     def handle_mouse_release(self, event):
         """Handle a MOUSEBUTTONUP event."""
         pass
 
     def handle_mouse_motion(self, event):
-        """Handle the mouse state."""
-        if event.buttons[0] or event.buttons[1] or event.buttons[2]:
+        """Handle a MOUSEMOTION event."""
+        if event.buttons[1] or event.buttons[2]:
             self.ui.viewport.shift_by_pixels(event.rel)
-
-
-class TitleMode(UIMode):
-    """Mode: fading out title."""
-
-    paused = False
-
-    def init(self):
-        """Initialize the mode."""
-        title_image = pygame.image.load(find('images', 'title.png'))
-        self.title = HUDTitle(title_image)
-        self.while_key(K_EQUALS, self.ui.zoom_in)
-        self.while_key(K_MINUS, self.ui.zoom_out)
-        self.on_key(K_o, self.ui.toggle_missile_orbits)
-        self.on_key(K_f, self.ui.toggle_fullscreen)
-
-    def draw(self, screen):
-        """Draw extra things pertaining to the mode."""
-        self.title.draw(screen)
-        if self.title.alpha < 1:
-            self.ui.watch_demo()
-
-    def handle_any_other_key(self, event):
-        """Handle a KEYDOWN event for unknown keys."""
-        if not is_modifier_key(event.key):
-            self.ui.main_menu()
 
 
 class DemoMode(UIMode):
@@ -606,10 +583,33 @@ class DemoMode(UIMode):
         self.on_key(K_o, self.ui.toggle_missile_orbits)
         self.on_key(K_f, self.ui.toggle_fullscreen)
 
+    def handle_mouse_release(self, event):
+        """Handle a MOUSEBUTTONDOWN event."""
+        if event.button == 1:
+            self.ui.main_menu()
+        else:
+            UIMode.handle_mouse_press(self, event)
+
     def handle_any_other_key(self, event):
         """Handle a KEYDOWN event for unknown keys."""
         if not is_modifier_key(event.key):
             self.ui.main_menu()
+
+
+class TitleMode(DemoMode):
+    """Mode: fading out title."""
+
+    def init(self):
+        """Initialize the mode."""
+        DemoMode.init(self)
+        title_image = pygame.image.load(find('images', 'title.png'))
+        self.title = HUDTitle(title_image)
+
+    def draw(self, screen):
+        """Draw extra things pertaining to the mode."""
+        self.title.draw(screen)
+        if self.title.alpha < 1:
+            self.ui.watch_demo()
 
 
 class MenuMode(UIMode):
@@ -655,20 +655,23 @@ class MenuMode(UIMode):
         """Handle a MOUSEBUTTONDOWN event."""
         if event.button == 1:
             self._select_menu_item(event.pos)
+        else:
+            UIMode.handle_mouse_press(self, event)
 
     def handle_mouse_motion(self, event):
-        """Handle the mouse state."""
+        """Handle a MOUSEMOTION event."""
         if event.buttons[0]:
             self._select_menu_item(event.pos)
-        elif event.buttons[1] or event.buttons[2]:
-            self.ui.viewport.shift_by_pixels(event.rel)
+        UIMode.handle_mouse_motion(self, event)
 
     def handle_mouse_release(self, event):
-        """Handle a MOUSEBUTTONDOWN event."""
+        """Handle a MOUSEBUTTONUP event."""
         if event.button == 1:
             which = self._select_menu_item(event.pos)
             if which != -1:
                 self.activate_item()
+        else:
+            UIMode.handle_mouse_release(self, event)
 
     def draw(self, screen):
         """Draw extra things pertaining to the mode."""
@@ -754,6 +757,13 @@ class PlayMode(UIMode):
         self.while_key(K_s, self.ui.backwards, 1)
         self.while_key(K_LALT, self.ui.brake, 1)
         self.on_key(K_LCTRL, self.ui.launch_missile, 1)
+
+    def handle_mouse_release(self, event):
+        """Handle a MOUSEBUTTONUP event."""
+        if event.button == 1:
+            self.ui.game_menu()
+        else:
+            UIMode.handle_mouse_press(self, event)
 
 
 class GameUI(object):
