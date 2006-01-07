@@ -55,6 +55,8 @@ class Game(object):
 
     respawn_radius = 600                # Locale for respawning ships
     respawn_time = 100                  # Time before a dead ship respawns
+    planet_placement_margin = 20        # Free space between planets
+    ship_placement_margin = 100         # Free space between ships
 
     def __init__(self, rng=None):
         if rng is None:
@@ -67,8 +69,9 @@ class Game(object):
         self._next_tick = None
         self.controllers = []
 
-    def randomly_position(self, obj, world_radius):
+    def randomly_position(self, obj, world_radius, margin=0):
         """Pick a random location for ``obj``."""
+        obj.radius += margin
         while True:
             obj.position = Vector.from_polar(self.rng.uniform(0, 360),
                                              self.rng.uniform(0, world_radius))
@@ -78,19 +81,21 @@ class Game(object):
             else:
                 break
             world_radius *= 1.1
+        obj.radius -= margin
 
-    def randomly_place(self, obj, world_radius):
+    def randomly_place(self, obj, world_radius, margin=0):
         """Place ``obj`` in a randomly chosen location."""
-        self.randomly_position(obj, world_radius)
+        self.randomly_position(obj, world_radius, margin)
         self.world.add(obj)
         if isinstance(obj, Ship):
             self.ships.append(obj)
 
     def respawn(self, ship):
         """Respawn a ship."""
-        self.randomly_position(ship, self.respawn_radius)
+        self.randomly_position(ship, self.respawn_radius,
+                               self.ship_placement_margin)
         ship.velocity = Vector(0, 0)
-        granularity = self.ROTATION_SPEED
+        granularity = self.ROTATION_SPEED * self.DELTA_TIME
         ship.direction = self.rng.randrange(360 / granularity) * granularity
         ship.respawn()
 
@@ -144,7 +149,8 @@ class Game(object):
             radius = rng.uniform(5, 40)
             mass = radius ** 3 * rng.uniform(2, 6)
             planet = Planet(appearance=appearance, radius=radius, mass=mass)
-            game.randomly_place(planet, world_radius)
+            game.randomly_place(planet, world_radius,
+                                game.planet_placement_margin)
         for n in range(ships):
             granularity = cls.ROTATION_SPEED
             direction = rng.randrange(360 / granularity) * granularity
@@ -153,7 +159,8 @@ class Game(object):
             ship.rotation_speed = cls.ROTATION_SPEED
             ship.forward_power = cls.FRONT_THRUST
             ship.backward_power = cls.REAR_THRUST
-            game.randomly_place(ship, ship_start_radius)
+            game.randomly_place(ship, ship_start_radius,
+                                game.ship_placement_margin)
         return game
 
     new = classmethod(new)
