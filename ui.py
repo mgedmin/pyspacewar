@@ -968,7 +968,14 @@ class GameUI(object):
 
     def _choose_best_mode(self):
         """Choose a suitable display mode."""
-        return (1024, 768)
+        for (w, h) in pygame.display.list_modes():
+            if w / h >= 2:
+                # Dual-head modes (e.g. two 1024x768 monitors side by side)
+                # return modes like (2048, 768).  These modes do not work
+                # well for PyGame, so skip them.
+                continue
+            return (w, h)
+        return (1024, 768) # *shrug*
 
     def _set_display_mode(self):
         """Set display mode."""

@@ -8,10 +8,6 @@ Planned refactorings and cleanups:
 
 Features still missing:
 
-- determine the best screen mode automatically
-
-Features to be discarded
-
 - HUD debug info (draw time, update time)
 
 Planned features that were not present in the old version
