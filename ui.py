@@ -16,6 +16,16 @@ from game import Game
 from ai import AIController
 
 
+MODIFIER_KEYS = set([K_NUMLOCK, K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK, K_RSHIFT,
+                     K_LSHIFT, K_RCTRL, K_LCTRL, K_RALT, K_LALT, K_RMETA,
+                     K_LMETA, K_LSUPER, K_RSUPER, K_MODE])
+
+
+def is_modifier_key(key):
+    """Is this key a modifier?"""
+    return key in MODIFIER_KEYS
+
+
 def find(filespec):
     """Construct a pathname relative to the location of this module."""
     basedir = os.path.dirname(__file__)
@@ -202,7 +212,7 @@ class FrameRateCounter(object):
         Returns 0 if not enough frames have been drawn yet.
         """
         if len(self.frames) < 1:
-            return 0
+            return 0.0
         ms = pygame.time.get_ticks() - self.frames[0]
         frames = len(self.frames)
         return frames * 1000.0 / ms
@@ -387,7 +397,7 @@ class HUDCompass(HUDElement):
 class HUDTitle(HUDElement):
     """Fading out title."""
 
-    def __init__(self, image, xalign=0.5, yalign=0.5):
+    def __init__(self, image, xalign=0.5, yalign=0.25):
         HUDElement.__init__(self, image.get_width(), image.get_height(),
                             xalign, yalign)
         self.image = image
@@ -403,6 +413,271 @@ class HUDTitle(HUDElement):
         array[:] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
         surface.blit(self.image, (x, y))
         self.alpha *= 0.95
+
+
+class HUDMenu(HUDElement):
+    """A menu."""
+
+    normal_fg_color = (220, 255, 64)
+    normal_bg_color = (120, 24, 24)
+    selected_fg_color = (255, 255, 220)
+    selected_bg_color = (210, 48, 48)
+
+    def __init__(self, font, items, xalign=0.5, yalign=0.5,
+                 xpadding=32, ypadding=8, yspacing=16):
+        width = max([font.size(item)[0] for item in items]) + 2*xpadding
+        item_height = max([font.size(item)[1] for item in items]) + 2*ypadding
+        height = max(0, (item_height + yspacing) * len(items) - yspacing)
+        HUDElement.__init__(self, width, height, xalign, yalign)
+        self.font = font
+        self.items = items
+        self.yspacing = yspacing
+        self.xpadding = xpadding
+        self.ypadding = ypadding
+        self.selected_item = 0
+        self.item_height = item_height
+        self.surface = pygame.Surface((self.width, self.height))
+        self.surface.set_alpha(255 * 0.9)
+        self.surface.set_colorkey((1, 1, 1))
+        self._draw()
+
+    def _draw(self):
+        """Draw the menu on self.surface."""
+        self._drawn_with = self.selected_item
+        self.surface.fill((1, 1, 1))
+        x = 0
+        y = 0
+        for idx, item in enumerate(self.items):
+            if idx == self.selected_item:
+                fg_color = self.selected_fg_color
+                bg_color = self.selected_bg_color
+            else:
+                fg_color = self.normal_fg_color
+                bg_color = self.normal_bg_color
+            img = self.font.render(item, True, fg_color)
+            self.surface.fill(bg_color, (x, y, self.width, self.item_height))
+            self.surface.blit(img,
+                              (x + (self.width - img.get_width())/2,
+                               y + (self.item_height - img.get_height())/2))
+            for ax in (0, self.width-1):
+                for ay in (0, self.item_height-1):
+                    self.surface.set_at((x+ax, y+ay), (1, 1, 1))
+            y += self.item_height + self.yspacing
+
+    def draw(self, surface):
+        """Draw the element."""
+        if self.selected_item != self._drawn_with:
+            self._draw()
+        x, y = self.position(surface)
+        surface.blit(self.surface, (x, y))
+
+
+class UIMode(object):
+    """Mode of user interface.
+
+    The mode determines several things:
+      - what is displayed on screen
+      - whether the game progresses
+      - how keystrokes are interpreted
+
+    Examples of modes: game play, paused, navigating a menu.
+    """
+
+    paused = False
+
+    def __init__(self, ui):
+        self.ui = ui
+        self.clear_keymap()
+        self.init()
+
+    def init(self):
+        """Initialize the mode."""
+
+    def draw(self, screen):
+        """Draw extra things pertaining to the mode."""
+
+    def clear_keymap(self):
+        """Clear all key mappings."""
+        self._keymap_once = {}
+        self._keymap_repeat = {}
+
+    def on_key(self, key, handler, *args):
+        """Install a handler to be called once when a key is pressed."""
+        self._keymap_once[key] = handler, args
+
+    def while_key(self, key, handler, *args):
+        """Install a handler to be called repeatedly while a key is pressed."""
+        self._keymap_repeat[key] = handler, args
+
+    def handle_key_press(self, event):
+        """Handle a KEYDOWN event."""
+        handler_and_args = self._keymap_once.get(event.key)
+        if handler_and_args:
+            handler, args = handler_and_args
+            handler(*args)
+        elif event.key not in self._keymap_repeat:
+            self.handle_any_other_key(event)
+
+    def handle_any_other_key(self, event):
+        """Handle a KEYDOWN event for unknown keys."""
+
+    def handle_held_keys(self, pressed):
+        """Handle any keys that are pressed."""
+        for key, (handler, args) in self._keymap_repeat.items():
+            if pressed[key]:
+                handler(*args)
+
+
+class TitleMode(UIMode):
+    """Mode: fading out title."""
+
+    paused = False
+
+    def init(self):
+        """Initialize the mode."""
+        title_image = pygame.image.load(find('title.png'))
+        self.title = HUDTitle(title_image)
+        self.while_key(K_EQUALS, self.ui.zoom_in)
+        self.while_key(K_MINUS, self.ui.zoom_out)
+        self.on_key(K_o, self.ui.toggle_missile_orbits)
+        self.on_key(K_f, self.ui.toggle_fullscreen)
+
+    def draw(self, screen):
+        """Draw extra things pertaining to the mode."""
+        self.title.draw(screen)
+        if self.title.alpha < 1:
+            self.ui.main_menu()
+
+    def handle_any_other_key(self, event):
+        """Handle a KEYDOWN event for unknown keys."""
+        if not is_modifier_key(event.key):
+            self.ui.main_menu()
+
+
+class DemoMode(UIMode):
+    """Mode: demo."""
+
+    paused = False
+
+    def init(self):
+        """Initialize the mode."""
+        self.while_key(K_EQUALS, self.ui.zoom_in)
+        self.while_key(K_MINUS, self.ui.zoom_out)
+        self.on_key(K_o, self.ui.toggle_missile_orbits)
+        self.on_key(K_f, self.ui.toggle_fullscreen)
+
+    def handle_any_other_key(self, event):
+        """Handle a KEYDOWN event for unknown keys."""
+        if not is_modifier_key(event.key):
+            self.ui.main_menu()
+
+
+class MenuMode(UIMode):
+    """Abstract base class for menu modes."""
+
+    def init(self):
+        self.init_menu()
+        self.menu = HUDMenu(self.ui.menu_font,
+                            [item[0] for item in self.menu_items])
+        self.on_key(K_UP, self.select_prev_item)
+        self.on_key(K_DOWN, self.select_next_item)
+        self.on_key(K_RETURN, self.activate_item)
+        self.on_key(K_KP_ENTER, self.activate_item)
+        # These might be overkill
+        self.while_key(K_EQUALS, self.ui.zoom_in)
+        self.while_key(K_MINUS, self.ui.zoom_out)
+        self.on_key(K_o, self.ui.toggle_missile_orbits)
+        self.on_key(K_f, self.ui.toggle_fullscreen)
+
+    def init_menu(self):
+        """Initialize the menu."""
+        self.menu_items = [
+            ('Quit',            self.ui.quit),
+        ]
+
+    def draw(self, screen):
+        """Draw extra things pertaining to the mode."""
+        self.menu.draw(screen)
+
+    def select_prev_item(self):
+        """Select the previous menu item."""
+        if self.menu.selected_item == 0:
+            self.menu.selected_item = len(self.menu.items)
+        self.menu.selected_item -= 1
+
+    def select_next_item(self):
+        """Select the next menu item."""
+        self.menu.selected_item += 1
+        if self.menu.selected_item == len(self.menu.items):
+            self.menu.selected_item = 0
+
+    def activate_item(self):
+        """Activate the selected menu item."""
+        action = self.menu_items[self.menu.selected_item][1:]
+        handler = action[0]
+        args = action[1:]
+        handler(*args)
+
+
+class MainMenuMode(MenuMode):
+    """Mode: main menu."""
+
+    paused = False
+
+    def init_menu(self):
+        """Initialize the mode."""
+        self.menu_items = [
+            ('Watch Demo',      self.ui.watch_demo),
+            ('One Player Game', self.ui.start_single_player_game),
+            ('Two Player Game', self.ui.start_two_player_game),
+            ('Quit',            self.ui.quit),
+        ]
+        self.on_key(K_ESCAPE, self.ui.watch_demo)
+
+
+class GameMenuMode(MenuMode):
+    """Mode: in-game menu."""
+
+    paused = True
+
+    def init_menu(self):
+        """Initialize the mode."""
+        self.menu_items = [
+            ('Resume game',     self.ui.resume_game),
+            ('End Game',        self.ui.end_game),
+        ]
+        self.on_key(K_ESCAPE, self.ui.resume_game)
+
+
+
+class PlayMode(UIMode):
+    """Mode: play the game."""
+
+    paused = False
+
+    def init(self):
+        """Initialize the mode."""
+        self.on_key(K_ESCAPE, self.ui.game_menu)
+        self.on_key(K_o, self.ui.toggle_missile_orbits)
+        self.on_key(K_f, self.ui.toggle_fullscreen)
+        self.while_key(K_EQUALS, self.ui.zoom_in)
+        self.while_key(K_MINUS, self.ui.zoom_out)
+        # Player 1
+        self.on_key(K_1, self.ui.toggle_ai, 0)
+        self.while_key(K_LEFT, self.ui.turn_left, 0)
+        self.while_key(K_RIGHT, self.ui.turn_right, 0)
+        self.while_key(K_UP, self.ui.accelerate, 0)
+        self.while_key(K_DOWN, self.ui.backwards, 0)
+        self.while_key(K_RALT, self.ui.brake, 0)
+        self.on_key(K_RCTRL, self.ui.launch_missile, 0)
+        # Player 2
+        self.on_key(K_2, self.ui.toggle_ai, 1)
+        self.while_key(K_a, self.ui.turn_left, 1)
+        self.while_key(K_d, self.ui.turn_right, 1)
+        self.while_key(K_w, self.ui.accelerate, 1)
+        self.while_key(K_s, self.ui.backwards, 1)
+        self.while_key(K_LALT, self.ui.brake, 1)
+        self.on_key(K_LCTRL, self.ui.launch_missile, 1)
 
 
 class GameUI(object):
@@ -431,12 +706,12 @@ class GameUI(object):
         self._init_pygame()
         self._load_planet_images()
         self._init_fonts()
-        self._init_keymap()
-        self._set_mode()
+        self._set_display_mode()
         self.viewport = Viewport(self.screen)
-        self._new_game()
         self.frame_counter = FrameRateCounter()
         self.framedrop_needed = False
+        self.ui_mode = TitleMode(self)
+        self._new_game(0)
 
     def _init_pygame(self):
         """Initialize pygame, but don't create an output window just yet."""
@@ -451,7 +726,7 @@ class GameUI(object):
         """Choose a suitable display mode."""
         return (1024, 768)
 
-    def _set_mode(self):
+    def _set_display_mode(self):
         """Set display mode."""
         if self.fullscreen:
             self.screen = pygame.display.set_mode(self.fullscreen_mode,
@@ -471,6 +746,7 @@ class GameUI(object):
     def _init_fonts(self):
         """Load fonts."""
         self.hud_font = self._load_font('Verdana', 14)
+        self.menu_font = self._load_font('Verdana', 40)
 
     def _load_font(self, name, size):
         """Try to load a font."""
@@ -479,7 +755,8 @@ class GameUI(object):
             filename = None
         return pygame.font.Font(filename, size)
 
-    def _new_game(self):
+
+    def _new_game(self, players=1):
         """Start a new game."""
         self.game = Game.new(ships=2,
                              planet_kinds=len(self.planet_images),
@@ -495,14 +772,19 @@ class GameUI(object):
         self.viewport.scale = 1
         self.desired_zoom_level = 1
         self._init_hud()
-        self.toggle_ai(1)
+        if players == 0: # demo mode
+            self.toggle_ai(0)
+            self.toggle_ai(1)
+        elif players == 1: # player vs computer
+            self.toggle_ai(1)
+        else: # player vs player
+            pass
 
     def _init_hud(self):
         """Initialize the heads-up display."""
         self.fps_hud = HUDInfoPanel(self.hud_font, 10, 2, xalign=0.5, yalign=0,
                 content=[('objects', lambda: len(self.game.world.objects)),
                          ('fps', lambda: '%.0f' % self.frame_counter.fps())])
-        title_image = pygame.image.load(find('title.png'))
         self.hud = [
             HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
             HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
@@ -512,7 +794,6 @@ class GameUI(object):
             HUDCompass(self.game.world, self.ships[1], self.viewport, 0, 1,
                        HUDCompass.GREEN_COLORS),
             self.fps_hud,
-            HUDTitle(title_image),
         ]
 
     def _keep_ships_visible(self):
@@ -521,68 +802,55 @@ class GameUI(object):
         self.viewport.keep_visible([s.position for s in self.ships],
                                    self.visibility_margin)
 
-    def _init_keymap(self):
-        """Initialize the keymap."""
-        self.clear_keymap()
-        self.on_key(K_ESCAPE, self.quit)
-        self.on_key(K_q, self.quit)
-        self.on_key(K_o, self.toggle_missile_orbits)
-        self.on_key(K_f, self.toggle_fullscreen)
-        self.while_key(K_EQUALS, self.zoom_in)
-        self.while_key(K_MINUS, self.zoom_out)
-        # Player 1
-        self.on_key(K_1, self.toggle_ai, 0)
-        self.while_key(K_LEFT, self.turn_left, 0)
-        self.while_key(K_RIGHT, self.turn_right, 0)
-        self.while_key(K_UP, self.accelerate, 0)
-        self.while_key(K_DOWN, self.backwards, 0)
-        self.while_key(K_RALT, self.brake, 0)
-        self.on_key(K_RCTRL, self.launch_missile, 0)
-        # Player 2
-        self.on_key(K_2, self.toggle_ai, 1)
-        self.while_key(K_a, self.turn_left, 1)
-        self.while_key(K_d, self.turn_right, 1)
-        self.while_key(K_w, self.accelerate, 1)
-        self.while_key(K_s, self.backwards, 1)
-        self.while_key(K_LALT, self.brake, 1)
-        self.on_key(K_LCTRL, self.launch_missile, 1)
-
-    def clear_keymap(self):
-        """Clear all key mappings."""
-        self._keymap_once = {}
-        self._keymap_repeat = {}
-
-    def on_key(self, key, handler, *args):
-        """Install a handler to be called once when a key is pressed."""
-        self._keymap_once[key] = handler, args
-
-    def while_key(self, key, handler, *args):
-        """Install a handler to be called repeatedly while a key is pressed."""
-        self._keymap_repeat[key] = handler, args
-
     def interact(self):
         """Process pending keyboard/mouse events."""
         for event in pygame.event.get():
             if event.type == QUIT:
                 self.quit()
             elif event.type == KEYDOWN:
-                handler_and_args = self._keymap_once.get(event.key)
-                if handler_and_args:
-                    handler, args = handler_and_args
-                    handler(*args)
+                self.ui_mode.handle_key_press(event)
         pressed = pygame.key.get_pressed()
-        for key, (handler, args) in self._keymap_repeat.items():
-            if pressed[key]:
-                handler(*args)
+        self.ui_mode.handle_held_keys(pressed)
 
     def quit(self):
         """Exit the game."""
         sys.exit(0)
 
+    def main_menu(self):
+        """Enter the main menu."""
+        self.ui_mode = MainMenuMode(self)
+
+    def watch_demo(self):
+        """Go back to demo mode."""
+        self.ui_mode = DemoMode(self)
+
+    def start_single_player_game(self):
+        """Start a new single-player game."""
+        self._new_game(1)
+        self.ui_mode = PlayMode(self)
+
+    def start_two_player_game(self):
+        """Start a new two-player game."""
+        self._new_game(2)
+        self.ui_mode = PlayMode(self)
+
+    def game_menu(self):
+        """Enter the game menu."""
+        self.ui_mode = GameMenuMode(self)
+
+    def resume_game(self):
+        """Resume a game in progress."""
+        self.ui_mode = PlayMode(self)
+
+    def end_game(self):
+        """End the game in progress."""
+        self._new_game(0)
+        self.ui_mode = MainMenuMode(self)
+
     def toggle_fullscreen(self):
         """Toggle fullscreen mode."""
         self.fullscreen = not self.fullscreen
-        self._set_mode()
+        self._set_display_mode()
 
     def zoom_in(self):
         """Zoom in."""
@@ -649,6 +917,7 @@ class GameUI(object):
             getattr(self, 'draw_' + obj.__class__.__name__)(obj)
         for drawable in self.hud:
             drawable.draw(self.screen)
+        self.ui_mode.draw(self.screen)
         pygame.display.flip()
         self.frame_counter.frame()
 
@@ -715,7 +984,6 @@ class GameUI(object):
 
     def draw_missile_trail(self, missile, trail):
         """Draw a missile orbit trail."""
-        in_screen = self.viewport.in_screen
         screen_pos = self.viewport.screen_pos
         set_at = self.screen.set_at
         red, green, blue = self.ship_colors[missile.appearance]
@@ -744,8 +1012,12 @@ class GameUI(object):
 
     def wait_for_tick(self):
         """Wait for the next game time tick.  World moves during this time."""
-        self.update_missile_trails()
-        self.framedrop_needed = not self.game.wait_for_tick()
+        if self.ui_mode.paused:
+            self.game.skip_a_tick()
+            self.framedrop_needed = False
+        else:
+            self.update_missile_trails()
+            self.framedrop_needed = not self.game.wait_for_tick()
 
 
 def main():

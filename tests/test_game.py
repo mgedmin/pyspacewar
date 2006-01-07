@@ -201,6 +201,32 @@ def doctest_Game_time_to_respawn():
     """
 
 
+def doctest_Game_skip_a_tick():
+    """Tests for Game.skip_a_tick
+
+        >>> from game import Game
+        >>> g = Game()
+        >>> ts = g.time_source = TimeSourceStub()
+        >>> g.world.add(Ticker())
+
+    When the game is paused, you should inform it by calling the skip_for_tick
+    method (so the game won't think the frame rate has dropped and won't start
+    compensating).
+
+        >>> g.skip_a_tick()
+        Waiting for 11
+        >>> g.skip_a_tick()
+        Waiting for 23
+
+    The waiting time is depends on outside delays
+
+        >>> ts.counter += 5
+        >>> g.skip_a_tick()
+        Waiting for 40
+
+    """
+
+
 def doctest_Game_wait_for_tick():
     """Tests for Game.wait_for_tick
 

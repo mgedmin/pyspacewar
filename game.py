@@ -110,6 +110,11 @@ class Game(object):
         """
         return self.timers.get(ship, 0)
 
+    def skip_a_tick(self):
+        """Skip a wall clock tick (the game is paused)."""
+        self.time_source.wait(self.time_source.now() + self.time_source.delta)
+        self._next_tick = self.time_source.now() + self.time_source.delta
+
     def wait_for_tick(self):
         """Wait for the next game time tick."""
         if self._next_tick is None: # first time!

@@ -8,7 +8,6 @@ Planned refactorings and cleanups:
 
 Features still missing:
 
-- pause
 - determine largest screen mode
 - keep free space around planets (margin arg for collision detection)
 - missile recoil (on launch and collisions)
@@ -20,10 +19,7 @@ Features to be discarded
 
 Planned features that were not present in the old version
 
-- nice icon (pygame converts my beautiful alpha channel to ugly colorkey)
 - recording/playback
 - multiplayer mode
-- hyperspace (move to a new planet system)
-- game menu (start new game, quit, etc.)
 - customizable key bindings
 - online help
