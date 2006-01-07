@@ -28,10 +28,10 @@ def is_modifier_key(key):
     return key in MODIFIER_KEYS
 
 
-def find(filespec):
+def find(*filespec):
     """Construct a pathname relative to the location of this module."""
     basedir = os.path.dirname(__file__)
-    return os.path.join(basedir, filespec)
+    return os.path.join(basedir, *filespec)
 
 
 def colorblend(col1, col2, alpha=0.5):
@@ -537,7 +537,7 @@ class TitleMode(UIMode):
 
     def init(self):
         """Initialize the mode."""
-        title_image = pygame.image.load(find('title.png'))
+        title_image = pygame.image.load(find('images', 'title.png'))
         self.title = HUDTitle(title_image)
         self.while_key(K_EQUALS, self.ui.zoom_in)
         self.while_key(K_MINUS, self.ui.zoom_out)
@@ -720,7 +720,7 @@ class GameUI(object):
         """Initialize pygame, but don't create an output window just yet."""
         pygame.init()
         pygame.display.set_caption('PySpace War')
-        icon = pygame.image.load(find('pyspacewar-32x32.png'))
+        icon = pygame.image.load(find('images', 'pyspacewar-32x32.png'))
         pygame.display.set_icon(icon)
         pygame.mouse.set_visible(False)
         self.fullscreen_mode = self._choose_best_mode()
@@ -742,7 +742,7 @@ class GameUI(object):
     def _load_planet_images(self):
         """Load bitmaps of planets."""
         self.planet_images = map(pygame.image.load,
-                                 glob.glob(find('planet*.png')))
+                                 glob.glob(find('images', 'planet*.png')))
         if not self.planet_images:
             raise RuntimeError("Could not find planet bitmaps")
 
