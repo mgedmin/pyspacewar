@@ -3,6 +3,10 @@ Ship artificial intelligence.
 
 TODO: write unit tests and refactor this module.
       (I tried refactoring without tests, and broke the code horribly.)
+
+Written by Ignas Mikalajunas.
+
+$Id$
 """
 
 from world import Ship

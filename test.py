@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Run all unit tests.
+"""
 
 import unittest
 import glob

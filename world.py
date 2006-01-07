@@ -1,5 +1,7 @@
 """
 The world of PySpaceWar
+
+$Id$
 """
 
 import math
