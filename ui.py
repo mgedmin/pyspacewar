@@ -6,6 +6,7 @@ $Id$
 
 import os
 import sys
+import sets
 import glob
 import random
 import itertools
@@ -18,9 +19,9 @@ from game import Game
 from ai import AIController
 
 
-MODIFIER_KEYS = set([K_NUMLOCK, K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK, K_RSHIFT,
-                     K_LSHIFT, K_RCTRL, K_LCTRL, K_RALT, K_LALT, K_RMETA,
-                     K_LMETA, K_LSUPER, K_RSUPER, K_MODE])
+MODIFIER_KEYS = sets.Set([K_NUMLOCK, K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK,
+                          K_RSHIFT, K_LSHIFT, K_RCTRL, K_LCTRL, K_RALT, K_LALT,
+                          K_RMETA, K_LMETA, K_LSUPER, K_RSUPER, K_MODE])
 
 
 def is_modifier_key(key):
@@ -1007,9 +1008,7 @@ class GameUI(object):
         self.game = Game.new(ships=2,
                              planet_kinds=len(self.planet_images),
                              rng=self.rng)
-        self.ships = sorted([obj for obj in self.game.world.objects
-                             if isinstance(obj, Ship)],
-                            key=lambda ship: ship.appearance)
+        self.ships = self.game.ships
         self.ai = map(AIController, self.ships)
         self.ai_controlled = [False] * len(self.ships)
         self.missile_trails = {}

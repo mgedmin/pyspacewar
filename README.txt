@@ -10,7 +10,7 @@ You can play against the computer, or two players can play with one keyboard.
 Web page: http://mg.pov.lt/pyspacewar
 
 Requirements:
- * Python (http://www.python.org/), at least version 2.4
+ * Python (http://www.python.org/), at least version 2.3
  * PyGame (http://www.pygame.org/)
 
 

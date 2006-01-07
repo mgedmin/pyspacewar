@@ -290,7 +290,9 @@ def doctest_Game_new():
     """Tests for Game.new
 
         >>> from game import Game
-        >>> g = Game.new()
+        >>> g = Game.new(ships=2)
+        >>> len(g.ships)
+        2
 
     """
 
@@ -300,7 +302,6 @@ def test_suite():
     if path not in sys.path:
         sys.path.append(path)
     return unittest.TestSuite([
-                        doctest.DocTestSuite('game'),
                         doctest.DocTestSuite()])
 
 
