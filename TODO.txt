@@ -1,3 +1,11 @@
+Planned refactorings and cleanups:
+
+- unit tests for ai.py
+- refactor ai.py
+- move Vector into a new module vector.py
+- adjust other constants so that I could set Game.DELTA.TIME == 1.0
+- get rid of Game.DELTA_TIME and the dt argument to World.update
+
 Features still missing:
 
 - pause
@@ -12,6 +20,7 @@ Features to be discarded
 
 Planned features that were not present in the old version
 
+- nice icon (pygame converts my beautiful alpha channel to ugly colorkey)
 - recording/playback
 - multiplayer mode
 - hyperspace (move to a new planet system)
