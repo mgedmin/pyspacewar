@@ -3,6 +3,7 @@ The world of PySpaceWar
 """
 
 import math
+import random
 
 
 class Vector(tuple):
@@ -21,25 +22,15 @@ class Vector(tuple):
 
     """
 
+    # Nice accessories.  Sort of expensive, though: according to timeit,
+    # v.x is 5 times slower than v[0].  It would be possible to shave off
+    # 2.5 milliseconds off world update time by using [0], [1] instead of
+    # .x, .y everywhere.  Time to rewrite in C?
     x = property(lambda self: self[0])
     y = property(lambda self: self[1])
 
-    def __new__(cls, *args):
-        """Create a new vector.
-
-        You can use Vector(x, y) as well as Vector((x, y)).  In particular, if
-        ``v`` is a Vector, you can write Vector(v).
-
-            >>> v1 = Vector(3.5, -2.5)
-            >>> v2 = Vector(v1)
-            >>> v1 == v2
-            True
-
-        """
-        if len(args) == 2:
-            return tuple.__new__(cls, args)
-        else:
-            return tuple.__new__(cls, *args)
+    def __new__(cls, x, y):
+        return tuple.__new__(cls, (x, y))
 
     def from_polar(direction, magnitude=1.0):
         """Create a new vector from polar coordinates.
@@ -117,7 +108,7 @@ class Vector(tuple):
             Vector(2.0, -0.5)
 
         """
-        return Vector(self.x - other.x, self.y - other.y)
+        return Vector(self[0] - other[0], self[1] - other[1])
 
     def __neg__(self):
         """Multiply the vector by -1.
@@ -135,7 +126,7 @@ class Vector(tuple):
             5.0
 
         """
-        return math.hypot(*self)
+        return math.hypot(self[0], self[1])
 
     def direction(self):
         """Compute the direction of the vector (in degrees).
@@ -206,9 +197,14 @@ class World(object):
     GRAVITY = 0.01          # constant of gravitation
     BOUNCE_SPEED_LOSS = 0.1 # lose 10% speed when bouncing off something
 
-    def __init__(self):
+    def __init__(self, rng=None):
+        if rng is None:
+            rng = random.Random()
+        self.rng = rng
         self.time = 0.0
         self.objects = []
+        self._objects_with_zero_radius = []
+        self._objects_with_nonzero_radius = []
         self._in_update = False
         self._add_queue = []
         self._remove_queue = []
@@ -228,18 +224,36 @@ class World(object):
                 calculate the distance to another object
 
         and a ``radius`` attribute, used for collision detection.
+
+        Objects added to a universe will get a ``world`` attribute.
         """
         if self._in_update:
-            self._add_queue.append(obj)
+            if obj in self._remove_queue:
+                self._remove_queue.remove(obj)
+            else:
+                self._add_queue.append(obj)
         else:
             self.objects.append(obj)
+            obj.world = self
+            if obj.radius:
+                self._objects_with_nonzero_radius.append(obj)
+            else:
+                self._objects_with_zero_radius.append(obj)
 
     def remove(self, obj):
         """Remove an object from the universe."""
         if self._in_update:
-            self._remove_queue.append(obj)
+            if obj in self._add_queue:
+                self._add_queue.remove(obj)
+            else:
+                self._remove_queue.append(obj)
         else:
             self.objects.remove(obj)
+            obj.world = None
+            if obj.radius:
+                self._objects_with_nonzero_radius.remove(obj)
+            else:
+                self._objects_with_zero_radius.remove(obj)
 
     def update(self, dt):
         """Make time happen (dt time units of it).
@@ -260,18 +274,20 @@ class World(object):
         for obj in self.objects:
             obj.move(dt)
         # Collision detection: may affect positions and velocities
-        for n, obj1 in enumerate(self.objects):
-            for obj2 in self.objects[n+1:]:
+        for n, obj1 in enumerate(self._objects_with_nonzero_radius):
+            for obj2 in (self._objects_with_nonzero_radius[n+1:] +
+                         self._objects_with_zero_radius):
                 if self.collide(obj1, obj2):
                     obj1.collision(obj2)
                     obj2.collision(obj1)
         self._in_update = False
         if self._add_queue:
-            self.objects += self._add_queue
+            for obj in self._add_queue:
+                self.add(obj)
             self._add_queue = []
         if self._remove_queue:
             for obj in self._remove_queue:
-                self.objects.remove(obj)
+                self.remove(obj)
             self._remove_queue = []
 
     def collide(self, obj1, obj2):
@@ -283,7 +299,7 @@ class World(object):
 class Object(object):
     """A material object in the game universe.
 
-        >>> o = Object(Vector(45.0, 110.0))
+        >>> o = Object(Vector(45.0, 110.0), appearance=42)
         >>> o.position
         Vector(45.0, 110.0)
         >>> o.velocity
@@ -293,13 +309,22 @@ class Object(object):
         >>> o.radius
         0
 
+    Appearance is an opaque field that user interface code can use to
+    distinguish between different objects of the same kind.
+
+        >>> o.appearance
+        42
+
     """
 
-    def __init__(self, position, velocity=Vector(0.0, 0.0), mass=0, radius=0):
+    def __init__(self, position=Vector(0.0, 0.0), velocity=Vector(0.0, 0.0),
+                 mass=0, radius=0, appearance=0):
         self.position = position
         self.mass = mass
         self.radius = radius
         self.velocity = velocity
+        self.appearance = appearance
+        self.world = None
 
     def distanceTo(self, other):
         """Calculate the distance to another object.
@@ -312,7 +337,9 @@ class Object(object):
             50.0
 
         """
-        return (self.position - other.position).length()
+        sp = self.position
+        op = other.position
+        return math.hypot(sp[0] - op[0], sp[1] - op[1])
 
     def gravitate(self, massive_object, dt):
         """React to gravity from massive_object for a particular time.
@@ -348,11 +375,20 @@ class Object(object):
         # For simplicity's sake let's assume r(t) is constant.  Then a(t) is
         # also constant, and
         #   v(t1) = v(t0) + a * dt
-        vector = massive_object.position - self.position
-        sq_of_distance = vector.length() ** 2
-        magnitude = self.world.GRAVITY * massive_object.mass / sq_of_distance
-        acceleration = vector.scaled(magnitude * dt)
-        self.velocity += acceleration
+
+        # Nice code:
+        #   vector = massive_object.position - self.position
+        #   distance = vector.length()
+        #   magnitude = self.world.GRAVITY * massive_object.mass / distance ** 2
+        #   acceleration = vector * (magnitude * dt / distance)
+        #   self.velocity += acceleration
+        # The equivalent fast code:
+        dx = massive_object.position[0] - self.position[0]
+        dy = massive_object.position[1] - self.position[1]
+        distance = math.hypot(dx, dy)
+        f = self.world.GRAVITY * massive_object.mass * dt / distance ** 3
+        self.velocity = Vector(self.velocity[0] + dx * f,
+                               self.velocity[1] + dy * f)
 
     def move(self, dt):
         """Move for a particular time.
@@ -407,6 +443,22 @@ class Object(object):
         collision_distance = other.radius + self.radius
         self.position = other.position + normal.scaled(collision_distance)
 
+    def add_debris(self, howmany=None, maxdistance=1.0, time=5.0):
+        """Add some debris."""
+        rng = self.world.rng
+        if not howmany:
+            howmany = rng.randrange(3, 6)
+        for n in range(howmany):
+            color = (rng.randrange(0xf0, 0xff),
+                     rng.randrange(0x70, 0x90),
+                     rng.randrange(0, 0x20))
+            velocity = self.velocity * 0.3
+            velocity += Vector.from_polar(rng.uniform(0, 360),
+                                          rng.uniform(0, maxdistance))
+            debris = Debris(self.position, velocity, appearance=color,
+                            time_limit=time)
+            self.world.add(debris)
+
 
 class Planet(Object):
     """A planet in the game universe.
@@ -439,13 +491,13 @@ class Ship(Object):
 
     You tell the ship what to do, and the ship does it
 
-        >>> ship.turn_left(15)
-        >>> ship.accelerate(10)
+        >>> ship.turn_left()
+        >>> ship.accelerate()
         >>> ship.move(1.0)
         >>> ship.direction
-        60.0
-        >>> ship.velocity.length()
-        10.0
+        50.0
+        >>> print ship.velocity.length()
+        0.1
 
     """
 
@@ -453,15 +505,31 @@ class Ship(Object):
                             # less convincing collisions we need to have a
                             # collision radius smaller than ship size.
 
-    def __init__(self, position, size, direction=0):
-        Object.__init__(self, position, radius=size * self.SIZE_TO_RADIUS)
+    forward_power = 0.1     # Default engine power for forward thrust
+    backward_power = 0.05   # Default engine power for backward thrust
+    brake_factor = 0.95     # Default brake effectiveness (lose 5% speed)
+    brake_threshold = 0.5   # Speed below which brakes are 100% efficient
+    rotation_speed = 5      # Lateral thruster power (angles per time unit)
+    launch_speed = 3.0      # Missile launch speed
+    missile_time_limit = 1200 # Missile self-destruct timer
+    missile_damage = 0.6    # Damage done by the missile
+    collision_damage = 0.05 # Damage done by a collision
+
+    def __init__(self, position=Vector(0, 0), velocity=Vector(0, 0), size=10,
+                 direction=0, appearance=0):
+        Object.__init__(self, position, velocity=velocity,
+                        radius=size * self.SIZE_TO_RADIUS,
+                        appearance=appearance)
         self.size = size
         self.direction = direction
         self.forward_thrust = 0
         self.rear_thrust = 0
         self.left_thrust = 0
         self.right_thrust = 0
+        self.engage_brakes = False
         self.health = 1.0
+        self.frags = 0
+        self.dead = False
 
     def _set_direction(self, direction):
         """Set the direction of the ship.
@@ -478,21 +546,42 @@ class Ship(Object):
 
     direction = property(lambda self: self._direction, _set_direction)
 
-    def turn_left(self, how_much):
+    def turn_left(self):
         """Tell the ship to turn left."""
-        self.left_thrust += how_much
+        if self.dead:
+            return
+        self.left_thrust = self.rotation_speed
 
-    def turn_right(self, how_much):
+    def turn_right(self):
         """Tell the ship to turn right."""
-        self.right_thrust += how_much
+        if self.dead:
+            return
+        self.right_thrust = self.rotation_speed
 
-    def accelerate(self, how_much):
+    def accelerate(self):
         """Tell the ship to accelerate in the direction of the ship."""
-        self.forward_thrust += how_much
+        if self.dead:
+            return
+        self.forward_thrust = self.forward_power
 
-    def backwards(self, how_much):
+    def backwards(self):
         """Tell the ship to accelerate in the opposite direction."""
-        self.rear_thrust += how_much
+        if self.dead:
+            return
+        self.rear_thrust = self.backward_power
+
+    def brake(self):
+        """Tell the ship to brake."""
+        if self.dead:
+            return
+        if self.velocity != (0, 0):
+            self.engage_brakes = True
+
+    def gravitate(self, massive_object, dt):
+        """Don't react to gravity.  Because of, um, anti-gravity engines."""
+        if not self.dead:
+            return
+        Object.gravitate(self, massive_object, dt)
 
     def move(self, dt):
         """Apply thrusters and move in the universe."""
@@ -508,4 +597,106 @@ class Ship(Object):
         if self.rear_thrust:
             self.velocity -= self.direction_vector * self.rear_thrust * dt
             self.rear_thrust = 0
+        if self.engage_brakes:
+            if self.velocity.length() <= self.brake_threshold:
+                self.velocity = Vector(0.0, 0.0)
+            else:
+                self.velocity *= self.brake_factor
+            self.engage_brakes = False
         Object.move(self, dt)
+
+    def collision(self, other):
+        """Handle a collision."""
+        killed_by = None
+        if isinstance(other, Debris):
+            return
+        elif isinstance(other, Missile):
+            self.health -= self.missile_damage
+            killed_by = other.launched_by
+        else:
+            self.health -= self.collision_damage
+            self.bounce(other)
+        if self.health < 0 and not self.dead:
+            self.die(killed_by)
+
+    def die(self, killed_by=None):
+        """The ship has received terminal damage."""
+        self.dead = True
+        self.forward_thrust = 0
+        self.rear_thrust = 0
+        self.left_thrust = 0
+        self.right_thrust = 0
+        if killed_by is None or killed_by is self:
+            self.frags -= 1
+        else:
+            killed_by.frags += 1
+        self.add_debris(time=50, maxdistance=self.size * 0.5,
+                        howmany=self.world.rng.randrange(9, 21))
+
+    def respawn(self):
+        """Respawn back into the world."""
+        self.dead = False
+        self.health = 1.0
+
+    def launch(self):
+        """Launch a missile."""
+        if self.dead:
+            return
+        direction_vector = self.direction_vector
+        missile = Missile(self.position + direction_vector * self.size,
+                          self.velocity + direction_vector * self.launch_speed,
+                          self.appearance, launched_by=self,
+                          time_limit=self.missile_time_limit)
+        self.world.add(missile)
+
+
+class Missile(Object):
+    """A missile.
+
+    Ships fire missiles.  Missiles are unpowered and cannot manoeuvre.
+    Missiles explode on contact and self-destruct after a set time limit.
+    """
+
+    def __init__(self, position=Vector(0, 0), velocity=Vector(0, 0),
+                 appearance=0, launched_by=None, time_limit=1e1000):
+        Object.__init__(self, position=position, velocity=velocity,
+                        appearance=appearance)
+        self.launched_by = launched_by
+        self.time_limit = time_limit
+        self.dead = False
+
+    def move(self, dt):
+        """Move in the universe.  Check the self-destruct timer."""
+        Object.move(self, dt)
+        self.time_limit -= dt
+        if self.time_limit < 0:
+            self.explode()
+
+    def explode(self):
+        """Self-destruct."""
+        if not self.dead:
+            self.dead = True
+            self.add_debris()
+            self.world.remove(self)
+
+    def collision(self, other):
+        """Explode on collision."""
+        self.explode()
+
+
+class Debris(Object):
+    """Debris is what remains when something explodes."""
+
+    def __init__(self, position=Vector(0, 0), velocity=Vector(0, 0),
+                 appearance=0, time_limit=10):
+        Object.__init__(self, position, velocity=velocity,
+                        appearance=appearance)
+        self.time_limit = time_limit
+
+    def move(self, dt):
+        """Move in the universe.  Check the time left to live."""
+        Object.move(self, dt)
+        self.time_limit -= dt
+        if self.time_limit < 0:
+            self.world.remove(self)
+
