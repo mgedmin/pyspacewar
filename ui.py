@@ -118,6 +118,24 @@ class Viewport(object):
         return [(int(sx + x * scale), int(sy - y * scale))
                 for x, y in list_of_world_pos]
 
+    def draw_trail(self, list_of_world_pos, (r1, g1, b1), (r2, g2, b2),
+                   set_at):
+        """Draw a trail.
+
+        Optimization to avoid function calls and construction of lists.
+        """
+        sx = self._screen_x
+        sy = self._screen_y
+        scale = self._scale
+        n = float(len(list_of_world_pos))
+        r, g, b = r1, g1, b1
+        dr, dg, db = (r2-r1) / n, (g2-g1) / n, (b2-b1) / n
+        for x, y in list_of_world_pos:
+            set_at((int(sx + x * scale), int(sy - y * scale)), (r, g, b))
+            r += dr
+            g += dg
+            b += db
+
     def world_pos(self, screen_pos):
         """Convert screen coordinates into world coordinates."""
         x = (screen_pos[0] - self._screen_x) / self._scale
@@ -1315,20 +1333,9 @@ class GameUI(object):
 
     def draw_missile_trail(self, missile, trail):
         """Draw a missile orbit trail."""
-        set_at = self.screen.set_at
-        red, green, blue = self.ship_colors[missile.appearance]
-        r = red * 0.1
-        g = green * 0.1
-        b = blue * 0.1
-        n = len(trail)
-        dr = red * 0.7 / n
-        dg = green * 0.7 / n
-        db = blue * 0.7 / n
-        for pt in self.viewport.list_of_screen_pos(trail):
-            set_at(pt, (r, g, b))
-            r += dr
-            g += dg
-            b += db
+        r, g, b = self.ship_colors[missile.appearance]
+        self.viewport.draw_trail(trail, (r*.1, g*.1, b*.1), (r*.8, g*.8, b*.8),
+                                 self.screen.set_at)
 
     def draw_Missile(self, missile):
         """Draw a missile."""
