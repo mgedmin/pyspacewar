@@ -546,7 +546,7 @@ class TitleMode(UIMode):
         """Draw extra things pertaining to the mode."""
         self.title.draw(screen)
         if self.title.alpha < 1:
-            self.ui.main_menu()
+            self.ui.watch_demo()
 
     def handle_any_other_key(self, event):
         """Handle a KEYDOWN event for unknown keys."""
