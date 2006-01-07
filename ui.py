@@ -447,6 +447,16 @@ class HUDMenu(HUDElement):
         self.surface.set_colorkey((1, 1, 1))
         self._draw()
 
+    def find(self, surface, (x, y)):
+        """Find the item at given coordinates."""
+        ix, iy = self.position(surface)
+        for idx, item in enumerate(self.items):
+            if (ix <= x < ix + self.width and
+                iy <= y < iy + self.item_height):
+                return idx
+            iy += self.item_height + self.yspacing
+        return -1
+
     def _draw(self):
         """Draw the menu on self.surface."""
         self._drawn_with = self.selected_item
@@ -498,9 +508,19 @@ class UIMode(object):
 
     def init(self):
         """Initialize the mode."""
+        pass
+
+    def enter(self):
+        """Enter the mode."""
+        pass
+
+    def leave(self):
+        """Leave the mode."""
+        pass
 
     def draw(self, screen):
         """Draw extra things pertaining to the mode."""
+        pass
 
     def clear_keymap(self):
         """Clear all key mappings."""
@@ -526,6 +546,7 @@ class UIMode(object):
 
     def handle_any_other_key(self, event):
         """Handle a KEYDOWN event for unknown keys."""
+        pass
 
     def handle_held_keys(self, pressed):
         """Handle any keys that are pressed."""
@@ -534,19 +555,17 @@ class UIMode(object):
                 handler(*args)
 
     def handle_mouse_press(self, event):
-        """Handle a MOUSEBUTTONUP event."""
-        pygame.mouse.get_rel() # clear the relative movement counter
-
-    def handle_mouse_release(self, event):
         """Handle a MOUSEBUTTONDOWN event."""
         pass
 
-    def handle_mouse(self):
+    def handle_mouse_release(self, event):
+        """Handle a MOUSEBUTTONUP event."""
+        pass
+
+    def handle_mouse_motion(self, event):
         """Handle the mouse state."""
-        pressed = pygame.mouse.get_pressed()
-        if pressed[0] or pressed[1] or pressed[2]:
-            delta = pygame.mouse.get_rel()
-            self.ui.viewport.shift_by_pixels(delta)
+        if event.buttons[0] or event.buttons[1] or event.buttons[2]:
+            self.ui.viewport.shift_by_pixels(event.rel)
 
 
 class TitleMode(UIMode):
@@ -597,6 +616,7 @@ class MenuMode(UIMode):
     """Abstract base class for menu modes."""
 
     def init(self):
+        """Initialize the mode."""
         self.init_menu()
         self.menu = HUDMenu(self.ui.menu_font,
                             [item[0] for item in self.menu_items])
@@ -615,6 +635,40 @@ class MenuMode(UIMode):
         self.menu_items = [
             ('Quit',            self.ui.quit),
         ]
+
+    def enter(self):
+        """Enter the mode."""
+        pygame.mouse.set_visible(True)
+
+    def leave(self):
+        """Enter the mode."""
+        pygame.mouse.set_visible(False)
+
+    def _select_menu_item(self, pos):
+        """Select menu item under cursor."""
+        which = self.menu.find(self.ui.screen, pos)
+        if which != -1:
+            self.menu.selected_item = which
+        return which
+
+    def handle_mouse_press(self, event):
+        """Handle a MOUSEBUTTONDOWN event."""
+        if event.button == 1:
+            self._select_menu_item(event.pos)
+
+    def handle_mouse_motion(self, event):
+        """Handle the mouse state."""
+        if event.buttons[0]:
+            self._select_menu_item(event.pos)
+        elif event.buttons[1] or event.buttons[2]:
+            self.ui.viewport.shift_by_pixels(event.rel)
+
+    def handle_mouse_release(self, event):
+        """Handle a MOUSEBUTTONDOWN event."""
+        if event.button == 1:
+            which = self._select_menu_item(event.pos)
+            if which != -1:
+                self.activate_item()
 
     def draw(self, screen):
         """Draw extra things pertaining to the mode."""
@@ -735,6 +789,14 @@ class GameUI(object):
         self.ui_mode = TitleMode(self)
         self._new_game(0)
 
+    def _set_ui_mode(self, new_ui_mode):
+        if hasattr(self, '_ui_mode'):
+            self._ui_mode.leave()
+        self._ui_mode = new_ui_mode
+        self._ui_mode.enter()
+
+    ui_mode = property(lambda self: self._ui_mode, _set_ui_mode)
+
     def _init_pygame(self):
         """Initialize pygame, but don't create an output window just yet."""
         pygame.init()
@@ -835,9 +897,10 @@ class GameUI(object):
                 self.ui_mode.handle_mouse_press(event)
             elif event.type == MOUSEBUTTONUP:
                 self.ui_mode.handle_mouse_release(event)
+            elif event.type == MOUSEMOTION:
+                self.ui_mode.handle_mouse_motion(event)
         pressed = pygame.key.get_pressed()
         self.ui_mode.handle_held_keys(pressed)
-        self.ui_mode.handle_mouse()
 
     def quit(self):
         """Exit the game."""
