@@ -27,4 +27,3 @@ Planned features that were not present in the old version
 - game menu (start new game, quit, etc.)
 - customizable key bindings
 - online help
-- automatic zoom in

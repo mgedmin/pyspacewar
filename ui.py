@@ -126,11 +126,16 @@ class Viewport(object):
             ys = [pt.y for pt in points]
             w = max(xs) - min(xs)
             h = max(ys) - min(ys)
-            while True:
-                xmin, ymin, xmax, ymax = self.world_inner_bounds(margin)
-                if w <= xmax - xmin and h <= ymax - ymin:
-                    break
-                self.scale /= self.AUTOSCALE_FACTOR
+            xmin, ymin, xmax, ymax = self.world_inner_bounds(margin)
+            seen_w = xmax - xmin
+            seen_h = ymax - ymin
+            factor = 1.0
+            while seen_w < w or seen_h < h:
+                factor *= self.AUTOSCALE_FACTOR
+                seen_w *= self.AUTOSCALE_FACTOR
+                seen_h *= self.AUTOSCALE_FACTOR
+            if factor != 1.0:
+                self.scale /= factor
 
         for pt in points:
             xmin, ymin, xmax, ymax = self.world_inner_bounds(margin)
@@ -407,6 +412,7 @@ class GameUI(object):
 
     fullscreen = False              # Start in windowed mode
     show_missile_trails = True      # Show missile trails by default
+    desired_zoom_level = 1.0        # The desired zoom level
 
     min_fps = 10                    # Minimum FPS
 
@@ -487,6 +493,7 @@ class GameUI(object):
         self.viewport.origin = (self.ships[0].position +
                                 self.ships[1].position) / 2
         self.viewport.scale = 1
+        self.desired_zoom_level = 1
         self._init_hud()
         self.toggle_ai(1)
 
@@ -510,6 +517,7 @@ class GameUI(object):
 
     def _keep_ships_visible(self):
         """Update viewport origin/scale so that all ships are on screen."""
+        self.viewport.scale = self.desired_zoom_level
         self.viewport.keep_visible([s.position for s in self.ships],
                                    self.visibility_margin)
 
@@ -578,11 +586,11 @@ class GameUI(object):
 
     def zoom_in(self):
         """Zoom in."""
-        self.viewport.scale *= self.ZOOM_FACTOR
+        self.desired_zoom_level = self.viewport.scale * self.ZOOM_FACTOR
 
     def zoom_out(self):
         """Zoom in."""
-        self.viewport.scale /= self.ZOOM_FACTOR
+        self.desired_zoom_level = self.viewport.scale / self.ZOOM_FACTOR
 
     def toggle_missile_orbits(self):
         """Show/hide missile trails."""
