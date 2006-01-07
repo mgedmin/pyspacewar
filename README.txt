@@ -12,7 +12,6 @@ Web page: http://mg.pov.lt/pyspacewar
 Requirements:
  * Python (http://www.python.org/), at least version 2.4
  * PyGame (http://www.pygame.org/)
- * NumPy (http://numpy.sourceforge.net/)
 
 
 Player 1 Controls

@@ -10,7 +10,6 @@ import glob
 import random
 import itertools
 
-import Numeric
 import pygame
 from pygame.locals import *
 
@@ -409,12 +408,37 @@ class HUDTitle(HUDElement):
                             xalign, yalign)
         self.image = image
         self.alpha = 255
-        self.mask = pygame.surfarray.array_alpha(image).astype(Numeric.Int)
+        try:
+            import Numeric
+        except ImportError:
+            self.image = self.image.convert()
+            self.image.set_colorkey((0, 0, 0))
+            self.draw = self.draw_plainly
+        else:
+            self.mask = pygame.surfarray.array_alpha(image).astype(Numeric.Int)
+            self.draw = self.draw_using_Numeric
 
-    def draw(self, surface):
-        """Draw the element."""
+    def draw_plainly(self, surface):
+        """Draw the element.
+
+        Uses a color key and surface alpha, as an approximation of smooth fade
+        out.
+        """
         if self.alpha < 1:
             return
+        x, y = self.position(surface)
+        self.image.set_alpha(self.alpha)
+        surface.blit(self.image, (x, y))
+        self.alpha *= 0.95
+
+    def draw_using_Numeric(self, surface):
+        """Draw the element.
+
+        Scales the picture alpha channel smoothly using NumPy.
+        """
+        if self.alpha < 1:
+            return
+        import Numeric
         x, y = self.position(surface)
         array = pygame.surfarray.pixels_alpha(self.image)
         array[:] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
