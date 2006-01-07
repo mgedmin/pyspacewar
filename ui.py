@@ -112,8 +112,10 @@ class Viewport(object):
 
     def list_of_screen_pos(self, list_of_world_pos):
         """Convert world coordinates to screen coordinates."""
-        return [(int(self._screen_x + x * self._scale),
-                 int(self._screen_y - y * self._scale))
+        sx = self._screen_x
+        sy = self._screen_y
+        scale = self._scale
+        return [(int(sx + x * scale), int(sy - y * scale))
                 for x, y in list_of_world_pos]
 
     def world_pos(self, screen_pos):
