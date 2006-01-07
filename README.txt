@@ -54,6 +54,7 @@ Command Line
 ------------
 
 -f              - start in full-screen mode
+-d              - show detailed timings
 
 
 Credits

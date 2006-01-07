@@ -1,3 +1,10 @@
+Planned features:
+
+- online help
+- recording/playback
+- multiplayer mode
+- customizable key bindings
+
 Planned refactorings and cleanups:
 
 - unit tests for ai.py
@@ -5,14 +12,3 @@ Planned refactorings and cleanups:
 - move Vector into a new module vector.py
 - adjust other constants so that I could set Game.DELTA_TIME == 1.0
 - get rid of Game.DELTA_TIME and the dt argument to World.update
-
-Features still missing:
-
-- HUD debug info (draw time, update time)
-
-Planned features that were not present in the old version
-
-- online help
-- recording/playback
-- multiplayer mode
-- customizable key bindings

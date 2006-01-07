@@ -87,12 +87,13 @@ class Benchmark(object):
 
     def __init__(self, seed=None, how_long=100,
                  ai_controller=DummyAIController, warmup_ticks=0,
-                 profile=False):
+                 profile=False, debug=False):
         self.seed = seed
         self.how_long = how_long
         self.ai_controller = ai_controller
         self.warmup_ticks = warmup_ticks
         self.profile = profile
+        self.debug = debug
 
     def run(self):
         self.stats = Stats()
@@ -152,6 +153,7 @@ class GameBenchmark(Benchmark):
     def init(self):
         ui = GameUI()
         ui.rng = random.Random(self.seed)
+        ui.show_debug_info = self.debug
         ui.init()
         for player_id, is_ai in enumerate(ui.ai_controlled):
             if is_ai:
@@ -192,6 +194,9 @@ def main():
                       help='benchmark drawing and logic [default: just logic]',
                       action='store_const', const=GameBenchmark,
                       dest='benchmark')
+    parser.add_option('-d', '--debug', default=False,
+                      help='show debug info during benchmark [default: %default]',
+                      action='store_true', dest='debug')
     parser.add_option('-p', '--profile', default=False,
                       help='enable profiling [default: %default]',
                       action='store_true', dest='profile')
@@ -214,8 +219,9 @@ def main():
     print 'ticks: %d' % opts.ticks
     print 'ai: %s' % opts.ai_controller.__name__
     print 'benchmark: %s' % opts.benchmark.__name__
+    print 'debug: %s' % opts.debug
     benchmark = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller,
-                               opts.warmup, opts.profile)
+                               opts.warmup, opts.profile, opts.debug)
     start_time = time.time()
     stats = benchmark.run()
     total_time = time.time() - start_time
