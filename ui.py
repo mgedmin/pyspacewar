@@ -8,6 +8,7 @@ import os
 import sys
 import glob
 import random
+import itertools
 
 import Numeric
 import pygame
@@ -488,6 +489,40 @@ class HUDMenu(HUDElement):
         surface.blit(self.surface, (x, y))
 
 
+class HUDInput(HUDElement):
+    """An input box."""
+
+    bgcolor = (0x01, 0x02, 0x08)
+    color1 = (0x80, 0xcc, 0xff)
+    color2 = (0xee, 0xee, 0xee)
+    alpha = int(0.8 * 255)
+
+    def __init__(self, font, prompt, text='', xmargin=20, ymargin=120,
+                 xpadding=8, ypadding=8):
+        self.font = font
+        self.prompt = prompt
+        self.text = text
+        self.xmargin = xmargin
+        self.ymargin = ymargin
+        self.xpadding = xpadding
+        self.ypadding = ypadding
+
+    def draw(self, surface):
+        """Draw the element."""
+        surface_w, surface_h = surface.get_size()
+        width = surface_w - 2*self.xmargin
+        height = self.font.get_linesize() + 2*self.ypadding
+        buffer = pygame.Surface((width, height))
+        buffer.set_alpha(self.alpha)
+        buffer.fill(self.bgcolor)
+        img1 = self.font.render(self.prompt, True, self.color1)
+        buffer.blit(img1, (self.xpadding, self.ypadding))
+        img2 = self.font.render(self.text, True, self.color2)
+        buffer.blit(img2, (self.xpadding + img1.get_width(), self.ypadding))
+        surface.blit(buffer, (self.xmargin,
+                              surface_h - self.ymargin - buffer.get_height()))
+
+
 class UIMode(object):
     """Mode of user interface.
 
@@ -510,11 +545,11 @@ class UIMode(object):
         """Initialize the mode."""
         pass
 
-    def enter(self):
+    def enter(self, prev_mode=None):
         """Enter the mode."""
         pass
 
-    def leave(self):
+    def leave(self, next_mode=None):
         """Leave the mode."""
         pass
 
@@ -636,11 +671,12 @@ class MenuMode(UIMode):
             ('Quit',            self.ui.quit),
         ]
 
-    def enter(self):
+    def enter(self, prev_mode=None):
         """Enter the mode."""
         pygame.mouse.set_visible(True)
+        self.prev_mode = prev_mode
 
-    def leave(self):
+    def leave(self, next_mode=None):
         """Enter the mode."""
         pygame.mouse.set_visible(False)
 
@@ -696,6 +732,10 @@ class MenuMode(UIMode):
         args = action[1:]
         handler(*args)
 
+    def close_menu(self):
+        """Close the menu and return to the previous game mode."""
+        self.ui.ui_mode = self.prev_mode
+
 
 class MainMenuMode(MenuMode):
     """Mode: main menu."""
@@ -708,6 +748,7 @@ class MainMenuMode(MenuMode):
             ('Watch Demo',      self.ui.watch_demo),
             ('One Player Game', self.ui.start_single_player_game),
             ('Two Player Game', self.ui.start_two_player_game),
+            ('Gravity Wars',    self.ui.start_gravity_wars),
             ('Quit',            self.ui.quit),
         ]
         self.on_key(K_ESCAPE, self.ui.watch_demo)
@@ -722,10 +763,10 @@ class GameMenuMode(MenuMode):
     def init_menu(self):
         """Initialize the mode."""
         self.menu_items = [
-            ('Resume game',     self.ui.resume_game),
+            ('Resume game',     self.close_menu),
             ('End Game',        self.ui.end_game),
         ]
-        self.on_key(K_ESCAPE, self.ui.resume_game)
+        self.on_key(K_ESCAPE, self.close_menu)
 
 
 
@@ -766,6 +807,81 @@ class PlayMode(UIMode):
             UIMode.handle_mouse_press(self, event)
 
 
+class GravityWarsMode(UIMode):
+    """Mode: play gravity wars."""
+
+    paused = False
+
+    def init(self):
+        """Initialize the mode."""
+        self.on_key(K_ESCAPE, self.ui.game_menu)
+        self.on_key(K_o, self.ui.toggle_missile_orbits)
+        self.on_key(K_f, self.ui.toggle_fullscreen)
+        self.while_key(K_EQUALS, self.ui.zoom_in)
+        self.while_key(K_MINUS, self.ui.zoom_out)
+        self.prompt = None
+        self.state = self.logic()
+        self.state.next()
+
+    def wait_for_input(self, prompt, value):
+        """Ask the user to enter a value."""
+        self.prompt = HUDInput(self.ui.input_font,
+                               "%s (%s): " % (prompt, value))
+        while True:
+            yield None
+            if not self.prompt.text:
+                break
+            try:
+                yield float(self.prompt.text)
+            except (ValueError):
+                pass
+
+    def logic(self):
+        """Game logic."""
+        num_players = len(self.ui.ships)
+        for player in itertools.cycle(range(num_players)):
+            ship = self.ui.ships[player]
+            for value in self.wait_for_input("Player %d, launch angle"
+                                             % (player + 1),
+                                             ship.direction):
+                if value is None:
+                    yield None
+                else:
+                    ship.direction = value
+                    break
+            for value in self.wait_for_input("Player %d, launch speed"
+                                             % (player + 1),
+                                             ship.launch_speed):
+                if value is None:
+                    yield None
+                else:
+                    ship.launch_speed = value
+                    break
+            ship.launch()
+
+    def draw(self, screen):
+        """Draw extra things pertaining to the mode."""
+        if self.prompt is not None:
+            self.prompt.draw(screen)
+
+    def handle_mouse_release(self, event):
+        """Handle a MOUSEBUTTONUP event."""
+        if event.button == 1:
+            self.ui.game_menu()
+        else:
+            UIMode.handle_mouse_press(self, event)
+
+    def handle_any_other_key(self, event):
+        """Handle a KEYDOWN event for unknown keys."""
+        if self.prompt is not None:
+            if event.key == K_RETURN:
+                self.state.next()
+            elif event.key == K_BACKSPACE:
+                self.prompt.text = self.prompt.text[:-1]
+            elif event.unicode.isdigit() or event.unicode in ('-', '.'):
+                self.prompt.text += event.unicode
+
+
 class GameUI(object):
     """User interface for the game."""
 
@@ -784,6 +900,8 @@ class GameUI(object):
 
     visibility_margin = 120 # Keep ships at least 120px from screen edges
 
+    _ui_mode = None         # Previous user interface mode
+
     def __init__(self):
         self.rng = random.Random()
 
@@ -800,10 +918,11 @@ class GameUI(object):
         self._new_game(0)
 
     def _set_ui_mode(self, new_ui_mode):
-        if hasattr(self, '_ui_mode'):
-            self._ui_mode.leave()
+        prev_mode = self._ui_mode
+        if prev_mode is not None:
+            prev_mode.leave(new_ui_mode)
         self._ui_mode = new_ui_mode
-        self._ui_mode.enter()
+        self._ui_mode.enter(prev_mode)
 
     ui_mode = property(lambda self: self._ui_mode, _set_ui_mode)
 
@@ -840,6 +959,7 @@ class GameUI(object):
     def _init_fonts(self):
         """Load fonts."""
         self.hud_font = self._load_font('Verdana', 14)
+        self.input_font = self._load_font('Verdana', 24)
         self.menu_font = self._load_font('Verdanab', 40)
 
     def _load_font(self, name, size):
@@ -933,6 +1053,11 @@ class GameUI(object):
         """Start a new two-player game."""
         self._new_game(2)
         self.ui_mode = PlayMode(self)
+
+    def start_gravity_wars(self):
+        """Start a new two-player gravity wars game."""
+        self._new_game(2)
+        self.ui_mode = GravityWarsMode(self)
 
     def game_menu(self):
         """Enter the game menu."""

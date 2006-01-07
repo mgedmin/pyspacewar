@@ -19,7 +19,7 @@ Features to be discarded
 
 Planned features that were not present in the old version
 
+- online help
 - recording/playback
 - multiplayer mode
 - customizable key bindings
-- online help
