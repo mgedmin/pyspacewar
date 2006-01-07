@@ -27,6 +27,11 @@ from ui import GameUI
 
 
 def main():
+    try:
+        import psyco
+        psyco.full()
+    except ImportError:
+        pass
     ui = GameUI()
     if '-f' in sys.argv:
         ui.fullscreen = True
