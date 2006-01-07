@@ -868,6 +868,8 @@ class GravityWarsMode(UIMode):
     def logic(self):
         """Game logic."""
         num_players = len(self.ui.ships)
+        for ship in self.ui.ships:
+            ship.missile_recoil = 0
         for player in itertools.cycle(range(num_players)):
             ship = self.ui.ships[player]
             for value in self.wait_for_input("Player %d, launch angle"

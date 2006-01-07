@@ -513,6 +513,7 @@ class Ship(Object):
     brake_threshold = 0.5   # Speed below which brakes are 100% efficient
     rotation_speed = 5      # Lateral thruster power (angles per time unit)
     launch_speed = 3.0      # Missile launch speed
+    missile_recoil = 0.01   # Missile recoil factor
     missile_time_limit = 1200 # Missile self-destruct timer
     missile_damage = 0.6    # Damage done by the missile
     collision_damage = 0.05 # Damage done by a collision
@@ -615,6 +616,7 @@ class Ship(Object):
         elif isinstance(other, Missile):
             self.health -= self.missile_damage
             killed_by = other.launched_by
+            self.velocity += other.velocity * self.missile_recoil
         else:
             self.health -= self.collision_damage
             self.bounce(other)
@@ -649,6 +651,8 @@ class Ship(Object):
                           self.velocity + direction_vector * self.launch_speed,
                           self.appearance, launched_by=self,
                           time_limit=self.missile_time_limit)
+        recoil = direction_vector * self.launch_speed * self.missile_recoil
+        self.velocity -= recoil
         self.world.add(missile)
 
 
