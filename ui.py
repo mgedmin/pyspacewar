@@ -514,11 +514,15 @@ class HUDInput(HUDElement):
         height = self.font.get_linesize() + 2*self.ypadding
         buffer = pygame.Surface((width, height))
         buffer.set_alpha(self.alpha)
+        buffer.set_colorkey((1, 1, 1))
         buffer.fill(self.bgcolor)
         img1 = self.font.render(self.prompt, True, self.color1)
         buffer.blit(img1, (self.xpadding, self.ypadding))
         img2 = self.font.render(self.text, True, self.color2)
         buffer.blit(img2, (self.xpadding + img1.get_width(), self.ypadding))
+        for x in (0, width-1):
+            for y in (0, height-1):
+                buffer.set_at((x, y), (1, 1, 1))
         surface.blit(buffer, (self.xmargin,
                               surface_h - self.ymargin - buffer.get_height()))
 
