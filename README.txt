@@ -6,6 +6,8 @@ themselves (which have spanking new anti-gravity devices), but it affects
 missiles launced by the ships.
 
 You can play against the computer, or two players can play with one keyboard.
+There is also a Gravity Wars mode, where the two ships do not move, and the
+players repeatedly specify the direction and velocity of their missiles.
 
 Web page: http://mg.pov.lt/pyspacewar
 
@@ -27,8 +29,6 @@ RALT            - brake (lose 5% speed)
 
 Player 2 Controls
 -----------------
-
-Player 2 starts in AI-mode.  Press 2 if you want to control it manually.
 
 A, D            - rotate
 W               - accelerate in the direction you're facing
