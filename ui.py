@@ -119,6 +119,10 @@ class Viewport(object):
         xmin, ymin, xmax, ymax = self.world_bounds
         return xmin <= world_pos[0] <= xmax and ymin <= world_pos[1] <= ymax
 
+    def shift_by_pixels(self, (delta_x, delta_y)):
+        """Shift the origin by a given number of screen pixels."""
+        self.origin += Vector(delta_x / self.scale, -delta_y / self.scale)
+
     def keep_visible(self, points, margin):
         """Adjust origin and scale to keep all specified points visible.
 
@@ -529,6 +533,21 @@ class UIMode(object):
             if pressed[key]:
                 handler(*args)
 
+    def handle_mouse_press(self, event):
+        """Handle a MOUSEBUTTONUP event."""
+        pygame.mouse.get_rel() # clear the relative movement counter
+
+    def handle_mouse_release(self, event):
+        """Handle a MOUSEBUTTONDOWN event."""
+        pass
+
+    def handle_mouse(self):
+        """Handle the mouse state."""
+        pressed = pygame.mouse.get_pressed()
+        if pressed[0] or pressed[1] or pressed[2]:
+            delta = pygame.mouse.get_rel()
+            self.ui.viewport.shift_by_pixels(delta)
+
 
 class TitleMode(UIMode):
     """Mode: fading out title."""
@@ -812,8 +831,13 @@ class GameUI(object):
                 self.quit()
             elif event.type == KEYDOWN:
                 self.ui_mode.handle_key_press(event)
+            elif event.type == MOUSEBUTTONDOWN:
+                self.ui_mode.handle_mouse_press(event)
+            elif event.type == MOUSEBUTTONUP:
+                self.ui_mode.handle_mouse_release(event)
         pressed = pygame.key.get_pressed()
         self.ui_mode.handle_held_keys(pressed)
+        self.ui_mode.handle_mouse()
 
     def quit(self):
         """Exit the game."""
