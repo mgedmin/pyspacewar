@@ -633,6 +633,7 @@ class MainMenuMode(MenuMode):
             ('Quit',            self.ui.quit),
         ]
         self.on_key(K_ESCAPE, self.ui.watch_demo)
+        self.on_key(K_q, self.ui.quit)
 
 
 class GameMenuMode(MenuMode):
@@ -1019,15 +1020,3 @@ class GameUI(object):
             self.update_missile_trails()
             self.framedrop_needed = not self.game.wait_for_tick()
 
-
-def main():
-    ui = GameUI()
-    ui.init()
-    while True:
-        ui.wait_for_tick()
-        ui.interact()
-        ui.draw()
-
-
-if __name__ == '__main__':
-    main()
