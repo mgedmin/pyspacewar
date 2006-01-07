@@ -951,7 +951,11 @@ class GameUI(object):
         else:
             w, h = self.fullscreen_mode
             windowed_mode = (int(w * 0.8), int(h * 0.8))
-            self.screen = pygame.display.set_mode(windowed_mode)
+            self.screen = pygame.display.set_mode(windowed_mode, RESIZABLE)
+
+    def _resize_window(self, size):
+        """Resize the PyGame window as requested."""
+        self.screen = pygame.display.set_mode(size, RESIZABLE)
 
     def _load_planet_images(self):
         """Load bitmaps of planets."""
@@ -1025,6 +1029,8 @@ class GameUI(object):
         for event in pygame.event.get():
             if event.type == QUIT:
                 self.quit()
+            elif event.type == VIDEORESIZE:
+                self._resize_window(event.size)
             elif event.type == KEYDOWN:
                 self.ui_mode.handle_key_press(event)
             elif event.type == MOUSEBUTTONDOWN:
