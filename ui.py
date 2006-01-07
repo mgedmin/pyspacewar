@@ -746,7 +746,7 @@ class GameUI(object):
     def _init_fonts(self):
         """Load fonts."""
         self.hud_font = self._load_font('Verdana', 14)
-        self.menu_font = self._load_font('Verdana', 40)
+        self.menu_font = self._load_font('Verdanab', 40)
 
     def _load_font(self, name, size):
         """Try to load a font."""
