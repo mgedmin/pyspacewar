@@ -82,10 +82,21 @@ The most often called functions are::
   Vector.y property                          50504 calls  ===
 
 Note that timings shown by the benchmark show a slightly different result --
-according to them, update takes 17--20 ms, while draw takes 30--40 ms.
-I think many thousands of function calls inside World.update skew the profiler
-results.
+according to them, update takes 17--20 ms, while draw takes 30--40 ms (and
+draw_missile_trails 20--30 ms).  I think many thousands of function calls
+inside World.update skew the profiler results.
 
+Some back-of-the-napkin calculations: when the benchmark reaches 6000 trail
+points, draw_trail time reaches 25 ms.  That's about 4.1 µs per pixel.
+Python's timeit claims that Viewport.screen_pos takes 3.1 µs, and that
+pygame.Surface.set_at takes 0.95 µs.
+
+If instead of calling screen_pos in a loop I introduce a list_of_screen_pos
+method, which takes a list of 80 points and returns 80 pairs of coordinates,
+the timing decreases to 2.2 µs per point.
+
+If I remove trail gradients and instead draw all trail pixels in one color, I
+can reduce draw_trail time for those 6000 pixels down to 20 ms (a 5 ms win).
 
 Ideas
 -----
