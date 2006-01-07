@@ -6,6 +6,7 @@ $Id$
 
 import math
 import random
+import time
 
 
 class Vector(tuple):
@@ -199,6 +200,10 @@ class World(object):
     GRAVITY = 0.01          # constant of gravitation
     BOUNCE_SPEED_LOSS = 0.1 # lose 10% speed when bouncing off something
 
+    # Some debug information
+    time_for_gravitation = 0    # Time to calculate gravitation
+    time_for_collisions = 0     # Time to detect collisions
+
     def __init__(self, rng=None):
         if rng is None:
             rng = random.Random()
@@ -266,22 +271,26 @@ class World(object):
         self._in_update = True
         self.time += dt
         # Gravity: affects velocities, but not positions
+        start = time.time()
         for massive_obj in self.objects:
             if not massive_obj.mass:
                 continue
             for obj in self.objects:
                 if obj is not massive_obj:
                     obj.gravitate(massive_obj, dt)
+        self.time_for_gravitation = time.time() - start
         # Movement: affects positions, may affect velocities
         for obj in self.objects:
             obj.move(dt)
         # Collision detection: may affect positions and velocities
+        start = time.time()
         for n, obj1 in enumerate(self._objects_with_nonzero_radius):
             for obj2 in (self._objects_with_nonzero_radius[n+1:] +
                          self._objects_with_zero_radius):
                 if self.collide(obj1, obj2):
                     obj1.collision(obj2)
                     obj2.collision(obj1)
+        self.time_for_collisions = time.time() - start
         self._in_update = False
         if self._add_queue:
             for obj in self._add_queue:

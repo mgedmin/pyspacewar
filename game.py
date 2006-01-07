@@ -58,6 +58,10 @@ class Game(object):
     planet_placement_margin = 20        # Free space between planets
     ship_placement_margin = 100         # Free space between ships
 
+    # Some debug information
+    time_to_update = 0                  # Time to update game world
+    time_waiting = 0                    # Time spent idling
+
     def __init__(self, rng=None):
         if rng is None:
             rng = random.Random()
@@ -129,11 +133,15 @@ class Game(object):
             self._next_tick = self.time_source.now() + self.time_source.delta
             on_schedule = True
         else:
+            start = time.time()
             self.world.update(self.DELTA_TIME)
             self.auto_respawn()
             for controller in self.controllers:
                 controller.control()
+            self.time_to_update = time.time() - start
+            start = time.time()
             on_schedule = self.time_source.wait(self._next_tick)
+            self.time_waiting = time.time() - start
             self._next_tick += self.time_source.delta
         return on_schedule
 

@@ -30,6 +30,8 @@ def main():
     ui = GameUI()
     if '-f' in sys.argv:
         ui.fullscreen = True
+    if '-d' in sys.argv:
+        ui.show_debug_info = True
     ui.init()
     while True:
         ui.wait_for_tick()

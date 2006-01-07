@@ -8,6 +8,7 @@ import os
 import sys
 import sets
 import glob
+import time
 import random
 import itertools
 
@@ -251,11 +252,13 @@ class HUDInfoPanel(HUDElement):
     STD_COLORS = [(0xff, 0xff, 0xff), (0xcc, 0xff, 0xff)]
     GREEN_COLORS = [(0x7f, 0xff, 0x00), (0xcc, 0xff, 0xff)]
 
-    def __init__(self, font, ncols, nrows, xalign=0, yalign=0,
+    def __init__(self, font, ncols, nrows=None, xalign=0, yalign=0,
                  colors=STD_COLORS, content=None):
         self.font = font
         self.width = int(self.font.size('x')[0] * ncols)
         self.row_height = self.font.get_linesize()
+        if nrows is None:
+            nrows = len(content)
         self.height = int(nrows * self.row_height)
         self.xalign = xalign
         self.yalign = yalign
@@ -920,6 +923,7 @@ class GameUI(object):
 
     fullscreen = False              # Start in windowed mode
     show_missile_trails = True      # Show missile trails by default
+    show_debug_info = False         # Hide debug info by default
     desired_zoom_level = 1.0        # The desired zoom level
 
     min_fps = 10                    # Minimum FPS
@@ -932,6 +936,12 @@ class GameUI(object):
     visibility_margin = 120 # Keep ships at least 120px from screen edges
 
     _ui_mode = None         # Previous user interface mode
+
+    # Some debug information
+    time_to_draw = 0            # Time to draw everything
+    time_to_draw_trails = 0     # Time to draw missile trails
+    total_time = 0              # Time to process a frame
+    last_time = None            # Timestamp of last frame
 
     def __init__(self):
         self.rng = random.Random()
@@ -1036,9 +1046,37 @@ class GameUI(object):
 
     def _init_hud(self):
         """Initialize the heads-up display."""
-        self.fps_hud = HUDInfoPanel(self.hud_font, 10, 2, xalign=0.5, yalign=0,
+        time_format = '%.f ms'
+        self.fps_hud = HUDInfoPanel(self.hud_font, 20, xalign=0.5, yalign=0,
                 content=[('objects', lambda: len(self.game.world.objects)),
-                         ('fps', lambda: '%.0f' % self.frame_counter.fps())])
+                         ('fps', lambda: '%.0f' % self.frame_counter.fps()),
+                         ('update', lambda: time_format %
+                                (self.game.time_to_update * 1000)),
+                         ('  gravity', lambda: time_format %
+                                (self.game.world.time_for_gravitation * 1000)),
+                         ('  collisions', lambda: time_format %
+                                (self.game.world.time_for_collisions * 1000)),
+                         ('  other', lambda: time_format %
+                                ((self.game.time_to_update
+                                  - self.game.world.time_for_gravitation
+                                  - self.game.world.time_for_collisions)
+                                 * 1000)),
+                         ('draw', lambda: time_format %
+                                (self.time_to_draw * 1000)),
+                         ('  trails', lambda: time_format %
+                                (self.time_to_draw_trails * 1000)),
+                         ('  other', lambda: time_format %
+                                ((self.time_to_draw
+                                  - self.time_to_draw_trails) * 1000)),
+                         ('other', lambda: time_format %
+                                ((self.total_time - self.game.time_to_update
+                                  - self.time_to_draw - self.game.time_waiting)
+                                 * 1000)),
+                         ('idle', lambda: time_format %
+                                (self.game.time_waiting * 1000)),
+                         ('total', lambda: time_format %
+                                (self.total_time * 1000)),
+                        ])
         self.hud = [
             HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
             HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
@@ -1047,7 +1085,6 @@ class GameUI(object):
                        HUDCompass.BLUE_COLORS),
             HUDCompass(self.game.world, self.ships[1], self.viewport, 0, 1,
                        HUDCompass.GREEN_COLORS),
-            self.fps_hud,
         ]
 
     def _keep_ships_visible(self):
@@ -1064,7 +1101,10 @@ class GameUI(object):
             elif event.type == VIDEORESIZE:
                 self._resize_window(event.size)
             elif event.type == KEYDOWN:
-                self.ui_mode.handle_key_press(event)
+                if event.key == K_F12:
+                    self.toggle_debug_info()
+                else:
+                    self.ui_mode.handle_key_press(event)
             elif event.type == MOUSEBUTTONDOWN:
                 self.ui_mode.handle_mouse_press(event)
             elif event.type == MOUSEBUTTONUP:
@@ -1127,6 +1167,10 @@ class GameUI(object):
         """Zoom in."""
         self.desired_zoom_level = self.viewport.scale / self.ZOOM_FACTOR
 
+    def toggle_debug_info(self):
+        """Show/hide debug info."""
+        self.show_debug_info = not self.show_debug_info
+
     def toggle_missile_orbits(self):
         """Show/hide missile trails."""
         self.show_missile_trails = not self.show_missile_trails
@@ -1171,9 +1215,14 @@ class GameUI(object):
 
     def draw(self):
         """Draw the state of the game"""
+        start = time.time()
+        if self.last_time is not None:
+            self.total_time = start - self.last_time
+        self.last_time = start
         if (self.framedrop_needed and
             self.frame_counter.notional_fps() >= self.min_fps):
-            self.fps_hud.draw(self.screen)
+            if self.show_debug_info:
+                self.fps_hud.draw(self.screen)
             pygame.display.flip()
             return
         self._keep_ships_visible()
@@ -1185,6 +1234,9 @@ class GameUI(object):
         for drawable in self.hud:
             drawable.draw(self.screen)
         self.ui_mode.draw(self.screen)
+        if self.show_debug_info:
+            self.fps_hud.draw(self.screen)
+        self.time_to_draw = time.time() - start
         pygame.display.flip()
         self.frame_counter.frame()
 
@@ -1246,8 +1298,10 @@ class GameUI(object):
 
     def draw_missile_trails(self):
         """Draw missile trails."""
+        start = time.time()
         for missile, trail in self.missile_trails.items():
             self.draw_missile_trail(missile, trail)
+        self.time_to_draw_trails = time.time() - start
 
     def draw_missile_trail(self, missile, trail):
         """Draw a missile orbit trail."""
