@@ -492,6 +492,7 @@ class HUDTitle(HUDElement):
         x, y = self.position(surface)
         array = pygame.surfarray.pixels_alpha(self.image)
         array[:] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
+        del array
         surface.blit(self.image, (x, y))
         self.alpha *= 0.95
 
