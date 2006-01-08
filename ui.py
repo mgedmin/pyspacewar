@@ -1070,15 +1070,23 @@ class GameUI(object):
         else: # player vs player
             pass
 
+    def _count_trails(self):
+        """Count the number of pixels in missile trails."""
+        total = 0
+        for trail in self.missile_trails.values():
+            total += len(trail)
+        return total
+
     def _init_hud(self):
         """Initialize the heads-up display."""
         time_format = '%.f ms'
-        self.fps_hud = HUDInfoPanel(self.hud_font, 20, xalign=0.5, yalign=0,
+        self.fps_hud1 = HUDInfoPanel(self.hud_font, 20, xalign=0.5, yalign=0,
                 content=[('objects', lambda: len(self.game.world.objects)),
-                         ('trails', lambda: sum(len(trail)
-                                for trail in self.missile_trails.values())),
+                         ('trails', self._count_trails),
                          ('fps', lambda: '%.0f' % self.frame_counter.fps()),
-                         ('update', lambda: time_format %
+                        ])
+        self.fps_hud2 = HUDInfoPanel(self.hud_font, 20, xalign=0.5, yalign=1,
+                content=[('update', lambda: time_format %
                                 (self.game.time_to_update * 1000)),
                          ('  gravity', lambda: time_format %
                                 (self.game.world.time_for_gravitation * 1000)),
@@ -1250,7 +1258,8 @@ class GameUI(object):
         if (self.framedrop_needed and
             self.frame_counter.notional_fps() >= self.min_fps):
             if self.show_debug_info:
-                self.fps_hud.draw(self.screen)
+                self.fps_hud1.draw(self.screen)
+                # do not draw fps_hud2 -- that would be misleading
             pygame.display.flip()
             return
         self._keep_ships_visible()
@@ -1263,7 +1272,8 @@ class GameUI(object):
             drawable.draw(self.screen)
         self.ui_mode.draw(self.screen)
         if self.show_debug_info:
-            self.fps_hud.draw(self.screen)
+            self.fps_hud1.draw(self.screen)
+            self.fps_hud2.draw(self.screen)
         self.time_to_draw = time.time() - start
         pygame.display.flip()
         self.frame_counter.frame()
