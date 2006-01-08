@@ -16,9 +16,10 @@ the two ships do not move, and the players repeatedly
 specify the direction and velocity of their missiles.
 """
 
-version = file('VERSION.txt').read().strip()
+pkgdir = os.path.join('src', 'pyspacewar')
+version = file(os.path.join(pkgdir, 'VERSION.txt')).read().strip()
 
-planet_images = glob.glob(os.path.join('images', 'planet*.png'))
+planet_images = glob.glob(os.path.join(pkgdir, 'images', 'planet*.png'))
 
 setup(name='pyspacewar',
       version=version,
@@ -42,8 +43,7 @@ setup(name='pyspacewar',
             'Topic :: Games/Entertainment :: Arcade',
         ],
       scripts=['pyspacewar'],
-      py_modules=['ui', 'game', 'world', 'ai'],
-      data_files=[('images', ['images/pyspacewar-32x32.png',
-                              'images/title.png'] + planet_images),
-                 ],
+      packages=['pyspacewar'],
+      package_dir={'pyspacewar': 'src/pyspacewar'},
+      package_data={'pyspacewar': ['VERSION.txt', 'images/*']},
      )

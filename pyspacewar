@@ -21,17 +21,31 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 $Id$
 """
 
+import os
 import sys
 
-from ui import GameUI
+
+def setup_path():
+    """Set up python path if running from a source tree."""
+    pkgdir = os.path.join(os.path.dirname(__file__), 'src')
+    print pkgdir
+    if os.path.isdir(pkgdir):
+        sys.path.insert(0, pkgdir)
 
 
-def main():
+def use_psyco():
+    """Use Psyco (if available) to speed things up."""
     try:
         import psyco
         psyco.full()
     except ImportError:
         pass
+
+
+def main():
+    setup_path()
+    use_psyco()
+    from pyspacewar.ui import GameUI
     ui = GameUI()
     if '-f' in sys.argv:
         ui.fullscreen = True

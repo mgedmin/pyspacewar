@@ -5,6 +5,7 @@ PySpaceWar benchmarks for optimisation work
 $Id$
 """
 
+import os
 import sys
 import time
 import random
@@ -13,10 +14,21 @@ import optparse
 import pygame
 from pygame.locals import *
 
-from game import Game
-from world import Ship
-from ai import AIController
-from ui import GameUI
+
+def setup_path():
+    """Set up python path if running from a source tree."""
+    pkgdir = os.path.join(os.path.dirname(__file__), 'src')
+    print pkgdir
+    if os.path.isdir(pkgdir):
+        sys.path.insert(0, pkgdir)
+
+setup_path()
+
+
+from pyspacewar.game import Game
+from pyspacewar.world import Ship
+from pyspacewar.ai import AIController
+from pyspacewar.ui import GameUI
 
 
 def get_cpu_speed():
