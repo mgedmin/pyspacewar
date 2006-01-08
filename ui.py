@@ -270,6 +270,26 @@ class HUDElement(object):
 
     def draw(self, surface):
         """Draw the element."""
+        pass
+
+
+class HUDLabel(HUDElement):
+    """A static text label."""
+
+    DEFAULT_COLOR = (250, 250, 255)
+
+    def __init__(self, font, text, xalign=0, yalign=0, color=DEFAULT_COLOR):
+        self.font = font
+        self.width, self.height = self.font.size(text)
+        self.xalign = xalign
+        self.yalign = yalign
+        self.color = color
+        self.rendered_text = font.render(text, True, self.color)
+
+    def draw(self, surface):
+        """Draw the element."""
+        x, y = self.position(surface)
+        surface.blit(self.rendered_text, (x, y))
 
 
 class HUDInfoPanel(HUDElement):
@@ -697,9 +717,12 @@ class TitleMode(DemoMode):
         DemoMode.init(self)
         title_image = pygame.image.load(find('images', 'title.png'))
         self.title = HUDTitle(title_image)
+        self.version = HUDLabel(self.ui.hud_font, self.ui.version_text,
+                                0.5, 1)
 
     def draw(self, screen):
         """Draw extra things pertaining to the mode."""
+        self.version.draw(screen)
         self.title.draw(screen)
         if self.title.alpha < 1:
             self.ui.watch_demo()
@@ -722,6 +745,8 @@ class MenuMode(UIMode):
         self.while_key(K_MINUS, self.ui.zoom_out)
         self.on_key(K_o, self.ui.toggle_missile_orbits)
         self.on_key(K_f, self.ui.toggle_fullscreen)
+        self.version = HUDLabel(self.ui.hud_font, self.ui.version_text,
+                                0.5, 1)
 
     def init_menu(self):
         """Initialize the menu."""
@@ -769,6 +794,7 @@ class MenuMode(UIMode):
 
     def draw(self, screen):
         """Draw extra things pertaining to the mode."""
+        self.version.draw(screen)
         self.menu.draw(screen)
 
     def select_prev_item(self):
@@ -974,6 +1000,8 @@ class GameUI(object):
 
     def init(self):
         """Initialize the user interface."""
+        self.version = file(find('VERSION.txt')).read().strip()
+        self.version_text = 'PySpaceWar version %s' % self.version
         self._init_pygame()
         self._load_planet_images()
         self._init_fonts()
