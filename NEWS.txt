@@ -1,0 +1,48 @@
+January 8, 2006: After a week of intensive work, I released version 0.9.0.
+User-visible changes:
+
+  - Added an in-game menu.
+  - You can drag the viewport around with the mouse (use the right button).
+  - Automatic zoom in.
+  - Radars show planet sizes, not just positions.
+  - Dead ships fade away.
+  - Information panels have translucent backgrounds.
+  - Added an icon.
+
+Internal code changes.
+
+  - Split the code into several modules in a package.
+  - Refactored the code extensively, it is now much more flexible.
+  - Added unit tests.
+  - Added a distutils setup script.
+
+
+January 1, 2006: After a very nice New Year's party, I started working on
+PySpaceWar again.  I want to refactor the code into separate logic and graphics
+parts, and add unit tests.  I want to add a proper in-game menu (start new
+game, options, exit, etc.).  In longer term I want to implement a networked
+multiplayer mode, and a battle recorder with playback.
+
+
+November 11, 2005: A minor tweak with zoom level.  It is difficult to implement
+things I want with the current code base.  Thinking about a rewrite.
+
+
+July 1-2, 2005: Minor tweaks, unsuccessful optimisations.
+
+
+June 29, 2005: Demoed the game during EuroPython 2005 lightning talks session.
+Was asked if the game could be played over the network.  Said that no, but
+that I accept patches.  Nobody sent me a patch, though.
+
+
+June 27-29, 2005: EuroPython 2005.  Having much fun with the game.  Sometimes
+I'm hacking during the talks.
+
+
+June 25, 2005: The weekend before EuroPython 2005.  A couple of days ago
+my coworker Ignas told me about a game called Gravity Wars.  I found a free
+Pascal version on-line and spent a couple of evenings playing it.  I am now
+suddenly overcome by a hacking mood.  I will try to write a gravity based
+game (Spacewar or Gravity Wars or both) with PyGame.
+
