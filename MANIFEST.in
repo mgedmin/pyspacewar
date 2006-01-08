@@ -1,0 +1,6 @@
+include MANIFEST.in
+include benchmark.py
+include test.py
+include tests/*.py
+include *.txt
+include images/*
