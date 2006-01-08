@@ -16,10 +16,12 @@ the two ships do not move, and the players repeatedly
 specify the direction and velocity of their missiles.
 """
 
+version = file('VERSION.txt').read().strip()
+
 planet_images = glob.glob(os.path.join('images', 'planet*.png'))
 
 setup(name='pyspacewar',
-      version='0.9.0',
+      version=version,
       author='Marius Gedminas',
       author_email='marius@pov.lt',
       license='GPL',
