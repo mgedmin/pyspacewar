@@ -18,6 +18,7 @@ from pygame.locals import *
 from world import Vector, Ship, Missile
 from game import Game
 from ai import AIController
+from version import version
 
 
 MODIFIER_KEYS = sets.Set([K_NUMLOCK, K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK,
@@ -1004,7 +1005,7 @@ class GameUI(object):
 
     def init(self):
         """Initialize the user interface."""
-        self.version = file(find('VERSION.txt')).read().strip()
+        self.version = version
         self.version_text = 'PySpaceWar version %s' % self.version
         self._init_pygame()
         self._load_planet_images()

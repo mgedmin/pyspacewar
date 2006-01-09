@@ -4,7 +4,6 @@ Planned features:
 - recording/playback
 - multiplayer mode
 - customizable key bindings
-- instead of VERSION.txt use version.py that uses $Revision$
 
 Planned refactorings and cleanups:
 

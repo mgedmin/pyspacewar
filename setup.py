@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import sys
 import glob
 from distutils.core import setup
 
@@ -17,7 +18,12 @@ specify the direction and velocity of their missiles.
 """
 
 pkgdir = os.path.join('src', 'pyspacewar')
-version = file(os.path.join(pkgdir, 'VERSION.txt')).read().strip()
+def determine_version():
+    sys.path.insert(0, 'src')
+    from pyspacewar.version import version
+    del sys.path[0]
+    return version
+version = determine_version()
 
 planet_images = glob.glob(os.path.join(pkgdir, 'images', 'planet*.png'))
 
