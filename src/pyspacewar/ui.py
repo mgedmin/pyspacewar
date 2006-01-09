@@ -491,6 +491,9 @@ class HUDTitle(HUDElement):
         import Numeric
         x, y = self.position(surface)
         array = pygame.surfarray.pixels_alpha(self.image)
+        # It might be possible to do this in a simpler way: see
+        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2915311
+        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2814793
         array[:] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
         del array
         surface.blit(self.image, (x, y))
@@ -1045,6 +1048,8 @@ class GameUI(object):
     def _set_display_mode(self):
         """Set display mode."""
         if self.fullscreen:
+            # Consider using DOUBLEBUF and HWSURFACE flags here
+            # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2793695
             self.screen = pygame.display.set_mode(self.fullscreen_mode,
                                                   FULLSCREEN)
         else:
@@ -1065,17 +1070,21 @@ class GameUI(object):
 
     def _init_fonts(self):
         """Load fonts."""
-        self.hud_font = self._load_font('Verdana', 14)
-        self.input_font = self._load_font('Verdana', 24)
-        self.menu_font = self._load_font('Verdanab', 40)
-
-    def _load_font(self, name, size):
-        """Try to load a font."""
-        filename = '/usr/share/fonts/truetype/msttcorefonts/%s.ttf' % name
-        if not os.path.exists(filename):
-            filename = None
-        return pygame.font.Font(filename, size)
-
+        verdana = pygame.font.match_font('Verdana')
+        verdana_bold =  pygame.font.match_font('Verdana', bold=True)
+        # Work around a bug in pygame:
+        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2970161
+        if verdana and os.path.basename(verdana).lower() == 'verdanaz.ttf':
+            fontdir = os.path.dirname(verdana)
+            verdana = os.path.join(fontdir, 'verdana.ttf')
+            verdana_bold = os.path.join(fontdir, 'verdanab.ttf')
+            if not os.path.exists(verdana):
+                verdana = None
+            if not os.path.exists(verdana_bold):
+                verdana_bold = verdana
+        self.hud_font = pygame.font.Font(verdana, 14)
+        self.input_font = pygame.font.Font(verdana, 24)
+        self.menu_font = pygame.font.Font(verdana_bold, 40)
 
     def _new_game(self, players=1):
         """Start a new game."""
