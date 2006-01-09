@@ -28,7 +28,6 @@ import sys
 def setup_path():
     """Set up python path if running from a source tree."""
     pkgdir = os.path.join(os.path.dirname(__file__), 'src')
-    print pkgdir
     if os.path.isdir(pkgdir):
         sys.path.insert(0, pkgdir)
 
