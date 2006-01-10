@@ -621,12 +621,13 @@ class UIMode(object):
 
     def __init__(self, ui):
         self.ui = ui
+        self.prev_mode = None
         self.clear_keymap()
         self.init()
 
     def init(self):
         """Initialize the mode."""
-        pass
+        self.on_key(K_PAUSE, self.ui.pause)
 
     def enter(self, prev_mode=None):
         """Enter the mode."""
@@ -689,6 +690,35 @@ class UIMode(object):
             self.ui.viewport.shift_by_pixels(event.rel)
 
 
+class PauseMode(UIMode):
+    """Mode: paused."""
+
+    paused = True
+
+    def init(self):
+        """Initialize the mode."""
+        pass
+
+    def enter(self, prev_mode=None):
+        """Enter the mode."""
+        if self.prev_mode is None:
+            # Don't let double PAUSE make me forget how to unpause
+            self.prev_mode = prev_mode
+
+    def draw(self, screen):
+        """Draw extra things pertaining to the mode."""
+        self.prev_mode.draw(screen)
+
+    def handle_any_other_key(self, event):
+        """Handle a KEYDOWN event for unknown keys."""
+        if not is_modifier_key(event.key):
+            self.ui.ui_mode = self.prev_mode
+
+    def handle_mouse_release(self, event):
+        """Handle a MOUSEBUTTONUP event."""
+        self.ui.ui_mode = self.prev_mode
+
+
 class DemoMode(UIMode):
     """Mode: demo."""
 
@@ -696,6 +726,7 @@ class DemoMode(UIMode):
 
     def init(self):
         """Initialize the mode."""
+        UIMode.init(self)
         self.while_key(K_EQUALS, self.ui.zoom_in)
         self.while_key(K_MINUS, self.ui.zoom_out)
         self.on_key(K_o, self.ui.toggle_missile_orbits)
@@ -738,6 +769,7 @@ class MenuMode(UIMode):
 
     def init(self):
         """Initialize the mode."""
+        UIMode.init(self)
         self.init_menu()
         self.menu = HUDMenu(self.ui.menu_font,
                             [item[0] for item in self.menu_items])
@@ -762,7 +794,9 @@ class MenuMode(UIMode):
     def enter(self, prev_mode=None):
         """Enter the mode."""
         pygame.mouse.set_visible(True)
-        self.prev_mode = prev_mode
+        if self.prev_mode is None:
+            # Don't let PAUSE make me forget how to unpause
+            self.prev_mode = prev_mode
 
     def leave(self, next_mode=None):
         """Enter the mode."""
@@ -866,6 +900,7 @@ class PlayMode(UIMode):
 
     def init(self):
         """Initialize the mode."""
+        UIMode.init(self)
         self.on_key(K_ESCAPE, self.ui.game_menu)
         self.on_key(K_o, self.ui.toggle_missile_orbits)
         self.on_key(K_f, self.ui.toggle_fullscreen)
@@ -903,6 +938,7 @@ class GravityWarsMode(UIMode):
 
     def init(self):
         """Initialize the mode."""
+        UIMode.init(self)
         self.on_key(K_ESCAPE, self.ui.game_menu)
         self.on_key(K_o, self.ui.toggle_missile_orbits)
         self.on_key(K_f, self.ui.toggle_fullscreen)
@@ -1192,6 +1228,10 @@ class GameUI(object):
     def quit(self):
         """Exit the game."""
         sys.exit(0)
+
+    def pause(self):
+        """Pause whatever is happening (so I can take a screenshot)."""
+        self.ui_mode = PauseMode(self)
 
     def main_menu(self):
         """Enter the main menu."""
