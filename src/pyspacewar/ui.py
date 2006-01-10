@@ -1042,6 +1042,7 @@ class GameUI(object):
         self.version_text = 'PySpaceWar version %s' % self.version
         self._init_pygame()
         self._load_planet_images()
+        self._load_background()
         self._init_fonts()
         self._set_display_mode()
         self.viewport = Viewport(self.screen)
@@ -1090,10 +1091,12 @@ class GameUI(object):
             w, h = self.fullscreen_mode
             windowed_mode = (int(w * 0.8), int(h * 0.8))
             self.screen = pygame.display.set_mode(windowed_mode, RESIZABLE)
+        self._prepare_background()
 
     def _resize_window(self, size):
         """Resize the PyGame window as requested."""
         self.screen = pygame.display.set_mode(size, RESIZABLE)
+        self._prepare_background()
 
     def _load_planet_images(self):
         """Load bitmaps of planets."""
@@ -1101,6 +1104,25 @@ class GameUI(object):
                                  glob.glob(find('images', 'planet*.png')))
         if not self.planet_images:
             raise RuntimeError("Could not find planet bitmaps")
+
+    def _load_background(self):
+        """Load background bitmap."""
+        self.background = pygame.image.load(find('images',
+                                                 'background.jpg'))
+        self.background_surface = None
+
+    def _prepare_background(self):
+        """Prepare a background surface."""
+        if self.background_surface is None:
+            self.background_surface = self.background.convert()
+        w, h = self.background_surface.get_size()
+        screen_w, screen_h = self.screen.get_size()
+        if w != screen_w or h != screen_h:
+            scaled = pygame.transform.scale(self.background,
+                                            (screen_w, screen_h))
+            # The call to surface.convert dramatically affects performance
+            # of subsequent blits
+            self.background_surface = scaled.convert()
 
     def _init_fonts(self):
         """Load fonts."""
@@ -1339,7 +1361,7 @@ class GameUI(object):
             pygame.display.flip()
             return
         self._keep_ships_visible()
-        self.screen.fill((0, 0, 0))
+        self.screen.blit(self.background_surface, (0, 0))
         if self.show_missile_trails:
             self.draw_missile_trails()
         for obj in self.game.world.objects:
