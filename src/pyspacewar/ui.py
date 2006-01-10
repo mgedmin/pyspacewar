@@ -627,7 +627,7 @@ class UIMode(object):
 
     def init(self):
         """Initialize the mode."""
-        self.on_key(K_PAUSE, self.ui.pause)
+        pass
 
     def enter(self, prev_mode=None):
         """Enter the mode."""
@@ -695,14 +695,11 @@ class PauseMode(UIMode):
 
     paused = True
 
-    def init(self):
-        """Initialize the mode."""
-        pass
-
     def enter(self, prev_mode=None):
         """Enter the mode."""
         if self.prev_mode is None:
-            # Don't let double PAUSE make me forget how to unpause
+            # Don't let double PAUSE make me forget how to unpause.  Not that a
+            # double PAUSE can happen, if the key bindings are right.
             self.prev_mode = prev_mode
 
     def draw(self, screen):
@@ -726,7 +723,7 @@ class DemoMode(UIMode):
 
     def init(self):
         """Initialize the mode."""
-        UIMode.init(self)
+        self.on_key(K_PAUSE, self.ui.pause)
         self.while_key(K_EQUALS, self.ui.zoom_in)
         self.while_key(K_MINUS, self.ui.zoom_out)
         self.on_key(K_o, self.ui.toggle_missile_orbits)
@@ -769,7 +766,6 @@ class MenuMode(UIMode):
 
     def init(self):
         """Initialize the mode."""
-        UIMode.init(self)
         self.init_menu()
         self.menu = HUDMenu(self.ui.menu_font,
                             [item[0] for item in self.menu_items])
@@ -874,6 +870,7 @@ class MainMenuMode(MenuMode):
             ('Gravity Wars',    self.ui.start_gravity_wars),
             ('Quit',            self.ui.quit),
         ]
+        self.on_key(K_PAUSE, self.ui.pause)
         self.on_key(K_ESCAPE, self.ui.watch_demo)
         self.on_key(K_q, self.ui.quit)
 
@@ -900,7 +897,7 @@ class PlayMode(UIMode):
 
     def init(self):
         """Initialize the mode."""
-        UIMode.init(self)
+        self.on_key(K_PAUSE, self.ui.pause)
         self.on_key(K_ESCAPE, self.ui.game_menu)
         self.on_key(K_o, self.ui.toggle_missile_orbits)
         self.on_key(K_f, self.ui.toggle_fullscreen)
@@ -938,7 +935,7 @@ class GravityWarsMode(UIMode):
 
     def init(self):
         """Initialize the mode."""
-        UIMode.init(self)
+        self.on_key(K_PAUSE, self.ui.pause)
         self.on_key(K_ESCAPE, self.ui.game_menu)
         self.on_key(K_o, self.ui.toggle_missile_orbits)
         self.on_key(K_f, self.ui.toggle_fullscreen)
