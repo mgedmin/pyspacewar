@@ -1,7 +1,30 @@
-Planned features:
+Features that block 1.0 release:
 
-- online help
-- recording/playback
+- some failing unit tests on some platforms (floating point accuracy)
+- invisible ships on Mac OS X (draw_aalines doesn't work?)
+
+Features that would be nice for 1.0, but that I could live without:
+
+- on-line help (list keybindings, maybe say a few words)
+- some music/sound effects
+- video mode customisation (say, I want 800x600 instead of 1024x768)
+- frag limit; once reached, a player becomes victorious and both players
+  are warped to a new planet system
+- credits next to the version number?
+
+Smaller wishlist items:
+
+- say 'Paused' somewhere when you press the Pause key (though I want it not to
+  interfere with screenshots; maybe put it in the title bar if not
+  in fullscreen mode?)
+- preserve aspect ratio for the background image (scale & crop)
+- three modes for debug panels, cycled with F12: no debug; show fps/#objects,
+  show fps/#objects + detailed timings (also please fix the timings)
+- automatically pause the game when you lose focus
+
+Larger wishlist items:
+
+- game recording/playback (this can be a prototype for multiplayer)
 - multiplayer mode
 - customizable key bindings
 
