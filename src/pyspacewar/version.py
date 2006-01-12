@@ -9,3 +9,6 @@ version = "0.9.0+svn"
 
 if version.endswith('svn'):
     version += svn_revision
+    # This is slightly misleading: svn_revision contains the last changed
+    # revision number for version.py, not the revision number of the whole
+    # repository.
