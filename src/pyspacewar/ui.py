@@ -1172,7 +1172,7 @@ class GameUI(object):
                 verdana_bold = verdana
         self.hud_font = pygame.font.Font(verdana, 14)
         self.input_font = pygame.font.Font(verdana, 24)
-        self.menu_font = pygame.font.Font(verdana_bold, 40)
+        self.menu_font = pygame.font.Font(verdana_bold, 30)
 
     def _new_game(self, players=1):
         """Start a new game."""
