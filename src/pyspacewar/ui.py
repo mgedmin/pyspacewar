@@ -1374,13 +1374,11 @@ class GameUI(object):
 
     def draw(self):
         """Draw the state of the game"""
+        self.time_to_draw = 0
+        self.time_to_draw_trails = 0
         drop_this_frame = (self.framedrop_needed and
                            self.frame_counter.notional_fps() >= self.min_fps)
-        if drop_this_frame:
-            # skip drawing this frame
-            self.time_to_draw = 0
-            self.time_to_draw_trails = 0
-        else:
+        if not drop_this_frame:
             start = time.time()
             self._keep_ships_visible()
             self.screen.blit(self.background_surface, (0, 0))

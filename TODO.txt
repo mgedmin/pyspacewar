@@ -1,6 +1,8 @@
 Features that block 1.0 release:
 
 - invisible ships on Mac OS X (draw_aalines doesn't work?)
+- when the game is too slow and starts dropping frames, debug timing shows
+  that it still spends 7 to 30 ms idling.  Why?
 
 Features that would be nice for 1.0, but that I could live without:
 
