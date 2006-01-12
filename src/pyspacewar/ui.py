@@ -1058,6 +1058,7 @@ class GameUI(object):
         self._load_background()
         self._init_fonts()
         self._set_display_mode()
+        self._optimize_images()
         self.viewport = Viewport(self.screen)
         self.frame_counter = FrameRateCounter()
         self.framedrop_needed = False
@@ -1129,6 +1130,15 @@ class GameUI(object):
         """Resize the PyGame window as requested."""
         self.screen = pygame.display.set_mode(size, RESIZABLE)
         self._prepare_background()
+
+    def _optimize_images(self):
+        """Convert loaded images to native format for faster blitting.
+
+        Must be called after _set_display_mode, and, of course, after
+        _load_planet_images.
+        """
+        self.planet_images = [img.convert_alpha()
+                              for img in self.planet_images]
 
     def _load_planet_images(self):
         """Load bitmaps of planets."""
