@@ -64,8 +64,8 @@ class Vector(tuple):
     def __repr__(self):
         """Return an accurate string representation.
 
-            >>> Vector.from_polar(-90, 1)
-            Vector(6.1230317691118863e-17, -1.0)
+            >>> Vector.from_polar(-90, 1)           # doctest:+ELLIPSIS
+            Vector(6.123...e-17, -1.0)
 
         """
         return 'Vector(%r, %r)' % self

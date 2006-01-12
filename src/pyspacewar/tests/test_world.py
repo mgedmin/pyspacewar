@@ -343,11 +343,11 @@ def doctest_Ship_movement():
         >>> ship.rear_thrust = 2
 
         >>> ship.move(1.0)
-        >>> ship.direction
+        >>> print ship.direction
         50.0
-        >>> ship.velocity.length()
+        >>> print ship.velocity.length()
         6.0
-        >>> ship.velocity.direction()
+        >>> print ship.velocity.direction()
         50.0
         >>> print ship.position
         (3.857, 4.596)
