@@ -16,6 +16,7 @@ Features that would be nice for 1.0, but that I could live without:
 - better drawing of brake thrusters
 - better drawing of turn thrusters (consider angular momentum)
 - sprites for the ships
+- some sort of warp-in effect when the ships respawn
 
 Smaller wishlist items:
 

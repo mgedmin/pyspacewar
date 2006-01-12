@@ -119,8 +119,7 @@ class Viewport(object):
         return [(int(sx + x * scale), int(sy - y * scale))
                 for x, y in list_of_world_pos]
 
-    def draw_trail(self, list_of_world_pos, (r1, g1, b1), (r2, g2, b2),
-                   set_at):
+    def draw_trail(self, list_of_world_pos, gradient, set_at):
         """Draw a trail.
 
         Optimization to avoid function calls and construction of lists.
@@ -128,14 +127,8 @@ class Viewport(object):
         sx = self._screen_x
         sy = self._screen_y
         scale = self._scale
-        n = float(len(list_of_world_pos))
-        r, g, b = r1, g1, b1
-        dr, dg, db = (r2-r1) / n, (g2-g1) / n, (b2-b1) / n
-        for x, y in list_of_world_pos:
-            set_at((int(sx + x * scale), int(sy - y * scale)), (r, g, b))
-            r += dr
-            g += dg
-            b += db
+        for (x, y), color in zip(list_of_world_pos, gradient):
+            set_at((int(sx + x * scale), int(sy - y * scale)), color)
 
     def world_pos(self, screen_pos):
         """Convert screen coordinates into world coordinates."""
@@ -1027,6 +1020,8 @@ class GameUI(object):
 
     ZOOM_FACTOR = 1.25              # Keyboard zoom factor
 
+    MAX_TRAIL = 100                 # Maximum missile trail length
+
     fullscreen = False              # Start in windowed mode
     fullscreen_mode = None          # Desired video mode (w, h)
     show_missile_trails = True      # Show missile trails by default
@@ -1058,6 +1053,7 @@ class GameUI(object):
         self.version = version
         self.version_text = 'PySpaceWar version %s' % self.version
         self._init_pygame()
+        self._init_trail_colors()
         self._load_planet_images()
         self._load_background()
         self._init_fonts()
@@ -1076,6 +1072,21 @@ class GameUI(object):
         self._ui_mode.enter(prev_mode)
 
     ui_mode = property(lambda self: self._ui_mode, _set_ui_mode)
+
+    def _init_trail_colors(self):
+        """Precalculate missile trail gradients."""
+        self.trail_colors = {}
+        for appearance, color in enumerate(self.ship_colors):
+            self.trail_colors[appearance] = [[],]
+            r, g, b = color
+            r1, g1, b1 = r*.1, g*.1, b*.1
+            r2, g2, b2 = r*.8, g*.8, b*.8
+            for n in range(1, self.MAX_TRAIL+1):
+                dr, dg, db = (r2-r1) / n, (g2-g1) / n, (b2-b1) / n
+                colors_for_length_n = [
+                    (int(r1+dr*i), int(g1+dg*i), int(b1+db*i))
+                    for i in range(n)]
+                self.trail_colors[appearance].append(colors_for_length_n)
 
     def _init_pygame(self):
         """Initialize pygame, but don't create an output window just yet."""
@@ -1453,7 +1464,7 @@ class GameUI(object):
                     del self.missile_trails[missile]
             else:
                 trail.append(missile.position)
-                if len(trail) > 100:
+                if len(trail) > self.MAX_TRAIL:
                     del trail[0]
         for obj in self.game.world.objects:
             if isinstance(obj, Missile) and obj not in self.missile_trails:
@@ -1469,8 +1480,8 @@ class GameUI(object):
     def draw_missile_trail(self, missile, trail):
         """Draw a missile orbit trail."""
         r, g, b = self.ship_colors[missile.appearance]
-        self.viewport.draw_trail(trail, (r*.1, g*.1, b*.1), (r*.8, g*.8, b*.8),
-                                 self.screen.set_at)
+        gradient = self.trail_colors[missile.appearance][len(trail)]
+        self.viewport.draw_trail(trail, gradient, self.screen.set_at)
 
     def draw_Missile(self, missile):
         """Draw a missile."""
