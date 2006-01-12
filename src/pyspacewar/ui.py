@@ -1028,6 +1028,7 @@ class GameUI(object):
     ZOOM_FACTOR = 1.25              # Keyboard zoom factor
 
     fullscreen = False              # Start in windowed mode
+    fullscreen_mode = None          # Desired video mode (w, h)
     show_missile_trails = True      # Show missile trails by default
     show_debug_info = False         # Hide debug info by default
     desired_zoom_level = 1.0        # The desired zoom level
@@ -1083,7 +1084,8 @@ class GameUI(object):
         icon = pygame.image.load(find('images', 'pyspacewar-32x32.png'))
         pygame.display.set_icon(icon)
         pygame.mouse.set_visible(False)
-        self.fullscreen_mode = self._choose_best_mode()
+        if not self.fullscreen_mode:
+            self.fullscreen_mode = self._choose_best_mode()
 
     def _choose_best_mode(self):
         """Choose a suitable display mode."""
@@ -1399,6 +1401,7 @@ class GameUI(object):
             if not drop_this_frame:
                 self.fps_hud2.draw(self.screen)
         pygame.display.flip()
+        self.debug_and_flip_time = time.time() - now
 
     def draw_Planet(self, planet):
         """Draw a planet."""

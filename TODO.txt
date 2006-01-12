@@ -6,12 +6,16 @@ Features that block 1.0 release:
 
 Features that would be nice for 1.0, but that I could live without:
 
+- optimize: what are the 11 ms spent on "other" in draw? what are the 11 ms
+  spent on "other" outside update/draw/wait?
 - on-line help (list keybindings, maybe say a few words)
 - some music/sound effects
-- video mode customisation (say, I want 800x600 instead of 1024x768)
 - frag limit; once reached, a player becomes victorious and both players
   are warped to a new planet system
 - credits next to the version number?
+- better drawing of brake thrusters
+- better drawing of turn thrusters (consider angular momentum)
+- sprites for the ships
 
 Smaller wishlist items:
 
@@ -20,14 +24,17 @@ Smaller wishlist items:
   in fullscreen mode?)
 - preserve aspect ratio for the background image (scale & crop)
 - three modes for debug panels, cycled with F12: no debug; show fps/#objects,
-  show fps/#objects + detailed timings (also please fix the timings)
-- automatically pause the game when you lose focus
+  show fps/#objects + detailed timings
+- automatically pause the game when you lose window focus
+- use pygame.time.get_ticks() instead of time.time() for timings
 
 Larger wishlist items:
 
 - game recording/playback (this can be a prototype for multiplayer)
 - multiplayer mode
-- customizable key bindings
+- options menu: video mode, customizable key bindings, video features (turn off
+  alpha blending of HUD items or the background image, to speed things up,
+  etc.)
 
 Planned refactorings and cleanups:
 

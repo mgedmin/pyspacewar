@@ -16,6 +16,14 @@ Requirements:
  * PyGame (http://www.pygame.org/)
 
 
+Quick start
+-----------
+
+Just run 'pyspacewar' and play.  There is no need to build or install anything
+(although if you wish to do so, you can use the traditional 'python setup.py
+install').
+
+
 Player 1 Controls
 -----------------
 
@@ -56,15 +64,21 @@ Command Line
 ------------
 
 -f              - start in full-screen mode
--d              - show detailed timings
+-m WxH          - choose video mode for full-screen (e.g. -m 800x600)
+-d              - show detailed timings for debugging/optimization
 
 
 Credits
 -------
 
-PySpaceWar was written by Marius Gedminas <marius@pov.lt> during EuroPython
-2005 (and a proverbial weekend before that).  Ignas Mikalajūnas <ignas@pov.lt>
-contributed the computer AI code.
+PySpaceWar was written by Marius Gedminas <marius@pov.lt>.  It is released
+under the GNU General Public Licence (see GPL.txt).
 
+Ignas Mikalajūnas <ignas@pov.lt> contributed the computer AI code.
 
-Licence: GPL (see GPL.txt).
+The planet images were borrowed from IGE - Outer Space, an open-source on-line
+strategy game (http://www.ospace.net/).
+
+The background image is a darkened version of a public domain Hubble Space
+Telescope picture of the NGC 3949 galaxy, downloaded from
+http://hubblesite.org/newscenter/newsdesk/archive/releases/2004/25/
