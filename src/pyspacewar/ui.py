@@ -253,6 +253,22 @@ class FrameRateCounter(object):
         return frames * 1000.0 / ms
 
 
+class HUDCollection(object):
+    """A collection of heads up display widgets."""
+
+    def __init__(self, widgets=()):
+        self.widgets = list(widgets)
+
+    def add(self, widget):
+        """Add a widget to the collection."""
+        self.widgets.append(widget)
+
+    def draw(self, surface):
+        """Draw the element."""
+        for w in self.widgets:
+            w.draw(surface)
+
+
 class HUDElement(object):
     """Heads-up status display widget."""
 
@@ -1177,12 +1193,13 @@ class GameUI(object):
     def _init_hud(self):
         """Initialize the heads-up display."""
         time_format = '%.f ms'
-        self.fps_hud1 = HUDInfoPanel(self.hud_font, 20, xalign=0.5, yalign=0,
+        self.fps_hud1 = HUDInfoPanel(self.hud_font, 16, xalign=0.5, yalign=0,
                 content=[('objects', lambda: len(self.game.world.objects)),
-                         ('trails', self._count_trails),
+                         ('missile trails', self._count_trails),
                          ('fps', lambda: '%.0f' % self.frame_counter.fps()),
                         ])
-        self.fps_hud2 = HUDInfoPanel(self.hud_font, 20, xalign=0.5, yalign=1,
+        self.fps_hud2 = HUDCollection([
+            HUDInfoPanel(self.hud_font, 16, xalign=0.25, yalign=0.95,
                 content=[('update', lambda: time_format %
                                 (self.game.time_to_update * 1000)),
                          ('  gravity', lambda: time_format %
@@ -1194,14 +1211,18 @@ class GameUI(object):
                                   - self.game.world.time_for_gravitation
                                   - self.game.world.time_for_collisions)
                                  * 1000)),
-                         ('draw', lambda: time_format %
+                        ]),
+            HUDInfoPanel(self.hud_font, 16, xalign=0.5, yalign=0.95,
+                content=[('draw', lambda: time_format %
                                 (self.time_to_draw * 1000)),
                          ('  trails', lambda: time_format %
                                 (self.time_to_draw_trails * 1000)),
                          ('  other', lambda: time_format %
                                 ((self.time_to_draw
                                   - self.time_to_draw_trails) * 1000)),
-                         ('other', lambda: time_format %
+                        ]),
+            HUDInfoPanel(self.hud_font, 16, xalign=0.75, yalign=0.95,
+                content=[('other', lambda: time_format %
                                 ((self.total_time - self.game.time_to_update
                                   - self.time_to_draw - self.game.time_waiting)
                                  * 1000)),
@@ -1209,8 +1230,9 @@ class GameUI(object):
                                 (self.game.time_waiting * 1000)),
                          ('total', lambda: time_format %
                                 (self.total_time * 1000)),
-                        ])
-        self.hud = [
+                        ]),
+            ])
+        self.hud = HUDCollection([
             HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
             HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
                         HUDShipInfo.GREEN_COLORS),
@@ -1218,7 +1240,7 @@ class GameUI(object):
                        HUDCompass.BLUE_COLORS),
             HUDCompass(self.game.world, self.ships[1], self.viewport, 0, 1,
                        HUDCompass.GREEN_COLORS),
-        ]
+        ])
 
     def _keep_ships_visible(self):
         """Update viewport origin/scale so that all ships are on screen."""
@@ -1369,8 +1391,7 @@ class GameUI(object):
             self.draw_missile_trails()
         for obj in self.game.world.objects:
             getattr(self, 'draw_' + obj.__class__.__name__)(obj)
-        for drawable in self.hud:
-            drawable.draw(self.screen)
+        self.hud.draw(self.screen)
         self.ui_mode.draw(self.screen)
         if self.show_debug_info:
             self.fps_hud1.draw(self.screen)
