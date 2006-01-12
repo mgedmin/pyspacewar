@@ -1374,31 +1374,33 @@ class GameUI(object):
 
     def draw(self):
         """Draw the state of the game"""
-        start = time.time()
+        drop_this_frame = (self.framedrop_needed and
+                           self.frame_counter.notional_fps() >= self.min_fps)
+        if drop_this_frame:
+            # skip drawing this frame
+            self.time_to_draw = 0
+            self.time_to_draw_trails = 0
+        else:
+            start = time.time()
+            self._keep_ships_visible()
+            self.screen.blit(self.background_surface, (0, 0))
+            if self.show_missile_trails:
+                self.draw_missile_trails()
+            for obj in self.game.world.objects:
+                getattr(self, 'draw_' + obj.__class__.__name__)(obj)
+            self.hud.draw(self.screen)
+            self.ui_mode.draw(self.screen)
+            self.time_to_draw = time.time() - start
+            self.frame_counter.frame()
+        now = time.time()
         if self.last_time is not None:
-            self.total_time = start - self.last_time
-        self.last_time = start
-        if (self.framedrop_needed and
-            self.frame_counter.notional_fps() >= self.min_fps):
-            if self.show_debug_info:
-                self.fps_hud1.draw(self.screen)
-                # do not draw fps_hud2 -- that would be misleading
-            pygame.display.flip()
-            return
-        self._keep_ships_visible()
-        self.screen.blit(self.background_surface, (0, 0))
-        if self.show_missile_trails:
-            self.draw_missile_trails()
-        for obj in self.game.world.objects:
-            getattr(self, 'draw_' + obj.__class__.__name__)(obj)
-        self.hud.draw(self.screen)
-        self.ui_mode.draw(self.screen)
+            self.total_time = now - self.last_time
+        self.last_time = now
         if self.show_debug_info:
             self.fps_hud1.draw(self.screen)
-            self.fps_hud2.draw(self.screen)
-        self.time_to_draw = time.time() - start
+            if not drop_this_frame:
+                self.fps_hud2.draw(self.screen)
         pygame.display.flip()
-        self.frame_counter.frame()
 
     def draw_Planet(self, planet):
         """Draw a planet."""

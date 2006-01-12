@@ -214,15 +214,16 @@ def doctest_Game_skip_a_tick():
     compensating).
 
         >>> g.skip_a_tick()
+        >>> g.skip_a_tick()
         Waiting for 11
         >>> g.skip_a_tick()
-        Waiting for 23
+        Waiting for 22
 
-    The waiting time is depends on outside delays
+    The waiting time depends on outside delays
 
         >>> ts.counter += 5
         >>> g.skip_a_tick()
-        Waiting for 40
+        Waiting for 33
 
     """
 
