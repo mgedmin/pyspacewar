@@ -23,6 +23,7 @@ $Id$
 
 import os
 import sys
+import optparse
 
 
 def setup_path():
@@ -46,10 +47,29 @@ def main():
     use_psyco()
     from pyspacewar.ui import GameUI
     ui = GameUI()
-    if '-f' in sys.argv:
-        ui.fullscreen = True
-    if '-d' in sys.argv:
-        ui.show_debug_info = True
+    parser = optparse.OptionParser()
+    parser.add_option('-f', '--fullscreen', default=False,
+                      help='start in full-screen mode',
+                      action='store_true', dest='fullscreen')
+    parser.add_option('-d', '--debug', default=False,
+                      help='show debug timings',
+                      action='store_true', dest='debug')
+    parser.add_option('-m', '--mode', default=None, metavar='WxH',
+                      help='video mode for fullscreen (e.g. -m 640x480);'
+                           ' note that in windowed mode the window size be 20%'
+                           ' smaller',
+                      action='store', dest='mode')
+    opts, args = parser.parse_args()
+    ui.fullscreen = opts.fullscreen
+    ui.show_debug_info = opts.fullscreen
+    if opts.mode:
+        try:
+            w, h = opts.mode.split('x')
+            ui.fullscreen_mode = int(w), int(h)
+        except ValueError:
+            print >> sys.stderr, ('pyspacewar: error: invalid mode: %s'
+                                  % opts.mode)
+            sys.exit(1)
     ui.init()
     while True:
         ui.wait_for_tick()
