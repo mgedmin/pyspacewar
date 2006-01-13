@@ -1,4 +1,5 @@
-January 14, 2006: Bugfixing continues, as well as some small features:
+January 14, 2006: Released version 0.9.1 with some bug fixes and small
+features:
 
   - Use pygame.font.SysFont to locate Verdana.ttf on your system.
   - Fix "surfaces must not be locked during blit" bug.

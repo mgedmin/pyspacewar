@@ -463,6 +463,8 @@ class HUDCompass(HUDElement):
 class HUDTitle(HUDElement):
     """Fading out title."""
 
+    paused = False
+
     def __init__(self, image, xalign=0.5, yalign=0.25):
         HUDElement.__init__(self, image.get_width(), image.get_height(),
                             xalign, yalign)
@@ -489,7 +491,8 @@ class HUDTitle(HUDElement):
         x, y = self.position(surface)
         self.image.set_alpha(self.alpha)
         surface.blit(self.image, (x, y))
-        self.alpha *= 0.95
+        if not self.paused:
+            self.alpha *= 0.95
 
     def draw_using_Numeric(self, surface):
         """Draw the element.
@@ -507,7 +510,8 @@ class HUDTitle(HUDElement):
         array[:] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
         del array
         surface.blit(self.image, (x, y))
-        self.alpha *= 0.95
+        if not self.paused:
+            self.alpha *= 0.95
 
 
 class HUDMenu(HUDElement):
@@ -765,6 +769,7 @@ class TitleMode(DemoMode):
     def draw(self, screen):
         """Draw extra things pertaining to the mode."""
         self.version.draw(screen)
+        self.title.paused = self.ui.ui_mode.paused
         self.title.draw(screen)
         if self.title.alpha < 1:
             self.ui.watch_demo()
