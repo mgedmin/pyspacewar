@@ -1119,6 +1119,8 @@ class GameUI(object):
             # On the other hand, alpha-blended blits are reportedly slow on
             # hardware surfaces, and there are other sorts of problems too:
             # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/1825852
+            # According to my measurements, using HWSURFACE|DOUBLEBUF had no
+            # impact on pygame.display.flip() time.
             self.screen = pygame.display.set_mode(self.fullscreen_mode,
                                                   FULLSCREEN)
         else:
