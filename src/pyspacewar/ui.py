@@ -1042,6 +1042,7 @@ class GameUI(object):
     # Some debug information
     time_to_draw = 0            # Time to draw everything
     time_to_draw_trails = 0     # Time to draw missile trails
+    flip_time = 0               # Time to draw debug info & flip
     total_time = 0              # Time to process a frame
     last_time = None            # Timestamp of last frame
 
@@ -1243,6 +1244,8 @@ class GameUI(object):
                          ('  other', lambda: time_format %
                                 ((self.time_to_draw
                                   - self.time_to_draw_trails) * 1000)),
+                         ('    flip', lambda: time_format %
+                                (self.flip_time * 1000)),
                         ]),
             HUDInfoPanel(self.hud_font, 16, xalign=0.75, yalign=0.95,
                 content=[('other', lambda: time_format %
@@ -1421,8 +1424,9 @@ class GameUI(object):
             self.fps_hud1.draw(self.screen)
             if not drop_this_frame:
                 self.fps_hud2.draw(self.screen)
+        now = time.time()
         pygame.display.flip()
-        self.debug_and_flip_time = time.time() - now
+        self.flip_time = time.time() - now
 
     def draw_Planet(self, planet):
         """Draw a planet."""
