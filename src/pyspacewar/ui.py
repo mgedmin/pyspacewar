@@ -1196,6 +1196,7 @@ class GameUI(object):
         self.ai = map(AIController, self.ships)
         self.ai_controlled = [False] * len(self.ships)
         self.missile_trails = {}
+        self.angular_momentum = {}
         self.viewport.origin = (self.ships[0].position +
                                 self.ships[1].position) / 2
         self.viewport.scale = 1
@@ -1452,24 +1453,81 @@ class GameUI(object):
         pt3 = ship.position - direction_vector - side_vector * 0.5
         points = map(self.viewport.screen_pos, [pt1, pt2, pt3])
         pygame.draw.aalines(self.screen, color, False, points)
+        (front, back, left_front, left_back,
+         right_front, right_back) = self.calcShipThrusters(ship)
         thrust_lines = []
-        if ship.forward_thrust or ship.engage_brakes:
-            thrust_lines.append(((-0.1, -0.9), (-0.1, -1.2)))
-            thrust_lines.append(((+0.1, -0.9), (+0.1, -1.2)))
-        if ship.rear_thrust or ship.engage_brakes:
-            thrust_lines.append(((-0.6, -0.2), (-0.6, +0.1)))
-            thrust_lines.append(((+0.6, -0.2), (+0.6, +0.1)))
-        if ship.left_thrust or ship.engage_brakes:
-            thrust_lines.append(((-0.2, +0.8), (-0.4, +0.8)))
-            thrust_lines.append(((+0.8, -0.8), (+0.6, -0.8)))
-        if ship.right_thrust or ship.engage_brakes:
-            thrust_lines.append(((+0.2, +0.8), (+0.4, +0.8)))
-            thrust_lines.append(((-0.8, -0.8), (-0.6, -0.8)))
+        if back:
+            thrust_lines.append(((-0.1, -0.9), (-0.1, -0.9-back)))
+            thrust_lines.append(((+0.1, -0.9), (+0.1, -0.9-back)))
+        if front:
+            thrust_lines.append(((-0.6, -0.2), (-0.6, -0.2+front)))
+            thrust_lines.append(((+0.6, -0.2), (+0.6, -0.2+front)))
+        if left_front:
+            thrust_lines.append(((-0.2, +0.8), (-0.2-left_front, +0.8)))
+        if right_front:
+            thrust_lines.append(((+0.2, +0.8), (+0.2+right_front, +0.8)))
+        if left_back:
+            thrust_lines.append(((-0.6, -0.8), (-0.6-left_back, -0.8)))
+        if right_back:
+            thrust_lines.append(((+0.6, -0.8), (+0.6+right_back, -0.8)))
         for (s1, d1), (s2, d2) in thrust_lines:
             pt1 = ship.position + direction_vector * d1 + side_vector * s1
             pt2 = ship.position + direction_vector * d2 + side_vector * s2
             pt1, pt2 = map(self.viewport.screen_pos, [pt1, pt2])
             pygame.draw.aaline(self.screen, (255, 120, 20), pt1, pt2)
+
+    def calcShipThrusters(self, ship):
+        """Calculate the output of the ship's thrusters.
+
+        Returns (front, back, left_front, left_back, right_front, right_back)
+        where each value is the ratio of world units to the ship size.
+
+        Keeps track of the ship's rotation and only shows turn thrusters firing
+        if there was any change.  Updates self.angular_momentum as a side
+        effect.
+        """
+        front = back = left_front = left_back = right_front = right_back = 0
+        if ship.forward_thrust:
+            back += ship.forward_thrust * 0.3 / ship.forward_power
+        if ship.rear_thrust:
+            front += ship.rear_thrust * 0.15 / ship.backward_power
+        rotation = ship.left_thrust - ship.right_thrust
+        prev_rotation = self.angular_momentum.get(ship, 0)
+        self.angular_momentum[ship] = rotation
+        if rotation > prev_rotation:
+            amount = (rotation - prev_rotation) * 0.15 / ship.rotation_speed
+            left_back += amount
+            right_front += amount
+        elif rotation < prev_rotation:
+            amount = (prev_rotation - rotation) * 0.15 / ship.rotation_speed
+            left_front += amount
+            right_back += amount
+        if ship.engage_brakes:
+            delta_v = ship.velocity * (ship.brake_factor - 1)
+            front_back_proj = delta_v.dot_product(ship.direction_vector)
+            front_back_proj *= 0.45 / (ship.forward_power+ship.backward_power)
+            if front_back_proj > 0:
+                back += front_back_proj
+            elif front_back_proj < 0:
+                front -= front_back_proj
+            left_right_proj = delta_v.dot_product(
+                                        ship.direction_vector.perpendicular())
+            left_right_proj *= 0.45 / (ship.forward_power+ship.backward_power)
+            if left_right_proj > 0:
+                left_front += left_right_proj
+                left_back += left_right_proj
+            elif left_right_proj < 0:
+                right_front -= left_right_proj
+                right_back -= left_right_proj
+        # Very high accelerations (caused by braking or the AI code) look
+        # slightly ridiculous.  Clamp all the values
+        front = min(front, 0.2)
+        back = min(back, 0.4)
+        left_front = min(left_front, 0.2)
+        left_back = min(left_back, 0.2)
+        right_front = min(right_front, 0.2)
+        right_back = min(right_back, 0.2)
+        return (front, back, left_front, left_back, right_front, right_back)
 
     def update_missile_trails(self):
         """Update missile trails."""

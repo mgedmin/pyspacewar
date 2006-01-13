@@ -1,22 +1,20 @@
-Features that block 1.0 release:
+Features that block the 1.0 release:
 
 - invisible ships on Mac OS X (draw_aalines doesn't work?)
-- when the game is too slow and starts dropping frames, debug timing shows
-  that it still spends 7 to 30 ms idling.  Why?
 
 Features that would be nice for 1.0, but that I could live without:
 
-- optimize: what are the 11 ms spent on "other" in draw? what are the 11 ms
-  spent on "other" outside update/draw/wait?
 - on-line help (list keybindings, maybe say a few words)
 - some music/sound effects
 - frag limit; once reached, a player becomes victorious and both players
   are warped to a new planet system
 - credits next to the version number?
-- better drawing of brake thrusters
-- better drawing of turn thrusters (consider angular momentum)
-- sprites for the ships
+- sprites for the ships (or at least fill the triangles with solid color)
 - some sort of warp-in effect when the ships respawn
+- optimize: what are the 11 ms spent on "other" in draw? what are the 11 ms
+  spent on "other" outside update/draw/wait?
+- optimize: when the game is too slow and starts dropping frames, debug timing
+  shows that it still spends 7 to 30 ms idling.  Why?
 
 Smaller wishlist items:
 

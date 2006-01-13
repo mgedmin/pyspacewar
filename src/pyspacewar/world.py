@@ -83,6 +83,15 @@ class Vector(tuple):
 
     __rmul__ = __mul__
 
+    def dot_product(self, other):
+        """Compute the dot product of two vectors.
+
+            >>> Vector(3, 5).dot_product(Vector(-1, 2))
+            7
+
+        """
+        return self.x * other.x + self.y * other.y
+
     def __div__(self, divisor):
         """Divide the vector by a scalar.
 

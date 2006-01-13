@@ -1,4 +1,4 @@
-January 13, 2006: Bugfixing continues:
+January 14, 2006: Bugfixing continues, as well as some small features:
 
   - Use pygame.font.SysFont to locate Verdana.ttf on your system.
   - Fix "surfaces must not be locked during blit" bug.
@@ -6,6 +6,7 @@ January 13, 2006: Bugfixing continues:
   - Added a background image.
   - Made debug timings HUDs less intrusive.
   - Added an ability to specify the desired video mode on the command line.
+  - The thrusters are now drawn more accurately.
 
 January 8, 2006: After a week of intensive work, I released version 0.9.0.
 User-visible changes:
