@@ -37,6 +37,9 @@ Larger wishlist items:
 
 Planned refactorings and cleanups:
 
+- use Rects to simplify a lot of layout code
+- keep track of dirty rectangles; pygame.display.flip() may take more than
+  50 ms on some machines
 - unit tests for ai.py
 - refactor ai.py
 - move Vector into a new module vector.py

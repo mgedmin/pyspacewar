@@ -167,7 +167,7 @@ class Game(object):
             game.randomly_place(planet, world_radius,
                                 game.planet_placement_margin)
         for n in range(ships):
-            granularity = cls.ROTATION_SPEED
+            granularity = cls.ROTATION_SPEED * cls.DELTA_TIME
             direction = rng.randrange(360 / granularity) * granularity
             ship = Ship(appearance=n, direction=direction)
             # Install a standard engine
