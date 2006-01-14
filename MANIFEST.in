@@ -1,6 +1,7 @@
 include MANIFEST.in
 include benchmark.py
 include test.py
+include pyspacewar.pyw
 include *.txt
 include src/pyspacewar/VERSION.txt
 include src/pyspacewar/images/*
