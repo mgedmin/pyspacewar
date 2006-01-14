@@ -1292,6 +1292,9 @@ class GameUI(object):
             elif event.type == KEYDOWN:
                 if event.key == K_F12:
                     self.toggle_debug_info()
+                elif (event.key in (K_RETURN, K_KP_ENTER) and
+                      event.mod & KMOD_ALT):
+                    self.toggle_fullscreen()
                 else:
                     self.ui_mode.handle_key_press(event)
             elif event.type == MOUSEBUTTONDOWN:

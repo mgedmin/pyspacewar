@@ -52,7 +52,7 @@ Other Controls
 ESC             - escape to menu (pauses current game)
 PAUSE           - pause the game
 O               - hide/show missile orbits
-F               - toggle full-screen mode
+F, ALT+ENTER    - toggle full-screen mode
 +, -            - zoom in/out
 mouse wheel     - zoom in/out
 left click      - escape to menu (pauses current game)
