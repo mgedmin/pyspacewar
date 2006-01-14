@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """
 A game inspired by Spacewar.
 
@@ -23,59 +23,11 @@ $Id$
 
 import os
 import sys
-import optparse
 
+# Set up python path if running from a source tree.
+pkgdir = os.path.join(os.path.dirname(__file__), 'src')
+if os.path.isdir(pkgdir):
+    sys.path.insert(0, pkgdir)
 
-def setup_path():
-    """Set up python path if running from a source tree."""
-    pkgdir = os.path.join(os.path.dirname(__file__), 'src')
-    if os.path.isdir(pkgdir):
-        sys.path.insert(0, pkgdir)
-
-
-def use_psyco():
-    """Use Psyco (if available) to speed things up."""
-    try:
-        import psyco
-        psyco.full()
-    except ImportError:
-        pass
-
-
-def main():
-    setup_path()
-    use_psyco()
-    from pyspacewar.ui import GameUI
-    ui = GameUI()
-    parser = optparse.OptionParser()
-    parser.add_option('-f', '--fullscreen', default=False,
-                      help='start in full-screen mode',
-                      action='store_true', dest='fullscreen')
-    parser.add_option('-d', '--debug', default=False,
-                      help='show debug timings',
-                      action='store_true', dest='debug')
-    parser.add_option('-m', '--mode', default=None, metavar='WxH',
-                      help='video mode for fullscreen (e.g. -m 640x480);'
-                           ' note that in windowed mode the window size be 20%'
-                           ' smaller',
-                      action='store', dest='mode')
-    opts, args = parser.parse_args()
-    ui.fullscreen = opts.fullscreen
-    ui.show_debug_info = opts.debug
-    if opts.mode:
-        try:
-            w, h = opts.mode.split('x')
-            ui.fullscreen_mode = int(w), int(h)
-        except ValueError:
-            print >> sys.stderr, ('pyspacewar: error: invalid mode: %s'
-                                  % opts.mode)
-            sys.exit(1)
-    ui.init()
-    while True:
-        ui.wait_for_tick()
-        ui.interact()
-        ui.draw()
-
-
-if __name__ == '__main__':
-    main()
+from pyspacewar.main import main
+main()
