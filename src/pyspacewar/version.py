@@ -5,7 +5,7 @@ $Id$
 """
 
 svn_revision = "$Revision$"[11:-2]
-version = "0.9.1"
+version = "0.9.1svn"
 
 if version.endswith('svn'):
     version += svn_revision

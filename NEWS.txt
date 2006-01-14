@@ -1,3 +1,9 @@
+January 14, 2006: 
+
+  - Fixed the -f and -d command line options.
+  - Missiles are now larger and brighter than their orbit trail dots.
+  - Alt+Enter now also toggles fullscreen mode.
+
 January 14, 2006: Released version 0.9.1 with some bug fixes and small
 features:
 

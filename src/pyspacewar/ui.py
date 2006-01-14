@@ -1087,7 +1087,7 @@ class GameUI(object):
             self.trail_colors[appearance] = [[],]
             r, g, b = color
             r1, g1, b1 = r*.1, g*.1, b*.1
-            r2, g2, b2 = r*.8, g*.8, b*.8
+            r2, g2, b2 = r*.5, g*.5, b*.5
             for n in range(1, self.MAX_TRAIL+1):
                 dr, dg, db = (r2-r1) / n, (g2-g1) / n, (b2-b1) / n
                 colors_for_length_n = [
@@ -1568,7 +1568,14 @@ class GameUI(object):
     def draw_Missile(self, missile):
         """Draw a missile."""
         color = self.ship_colors[missile.appearance]
-        self.screen.set_at(self.viewport.screen_pos(missile.position), color)
+        x, y = self.viewport.screen_pos(missile.position)
+        self.screen.set_at((x, y), color)
+        if self.viewport.scale > 0.5:
+            color = colorblend(color, (0, 0, 0), 0.4)
+            self.screen.set_at((x+1, y), color)
+            self.screen.set_at((x, y+1), color)
+            self.screen.set_at((x-1, y), color)
+            self.screen.set_at((x, y-1), color)
 
     def draw_Debris(self, debris):
         """Draw debris."""
