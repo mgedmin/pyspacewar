@@ -1098,7 +1098,7 @@ class GameUI(object):
     def _init_pygame(self):
         """Initialize pygame, but don't create an output window just yet."""
         pygame.init()
-        pygame.display.set_caption('PySpace War')
+        pygame.display.set_caption('PySpaceWar')
         icon = pygame.image.load(find('images', 'pyspacewar-32x32.png'))
         pygame.display.set_icon(icon)
         pygame.mouse.set_visible(False)
