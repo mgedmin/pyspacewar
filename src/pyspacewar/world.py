@@ -532,9 +532,9 @@ class Ship(Object):
     rotation_speed = 5      # Lateral thruster power (angles per time unit)
     launch_speed = 3.0      # Missile launch speed
     missile_recoil = 0.01   # Missile recoil factor
-    missile_time_limit = 1200 # Missile self-destruct timer
     missile_damage = 0.6    # Damage done by the missile
     collision_damage = 0.05 # Damage done by a collision
+    missile_time_limit = (1200, 1300) # Range for missile self-destruct timer
 
     def __init__(self, position=Vector(0, 0), velocity=Vector(0, 0), size=10,
                  direction=0, appearance=0):
@@ -665,10 +665,11 @@ class Ship(Object):
         if self.dead:
             return
         direction_vector = self.direction_vector
+        time_limit = self.world.rng.uniform(*self.missile_time_limit)
         missile = Missile(self.position + direction_vector * self.size,
                           self.velocity + direction_vector * self.launch_speed,
                           self.appearance, launched_by=self,
-                          time_limit=self.missile_time_limit)
+                          time_limit=time_limit)
         recoil = direction_vector * self.launch_speed * self.missile_recoil
         self.velocity -= recoil
         self.world.add(missile)
