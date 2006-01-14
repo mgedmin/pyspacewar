@@ -25,8 +25,6 @@ def determine_version():
     return version
 version = determine_version()
 
-planet_images = glob.glob(os.path.join(pkgdir, 'images', 'planet*.png'))
-
 setup(name='pyspacewar',
       version=version,
       author='Marius Gedminas',
@@ -51,5 +49,5 @@ setup(name='pyspacewar',
       scripts=['pyspacewar'],
       packages=['pyspacewar'],
       package_dir={'pyspacewar': 'src/pyspacewar'},
-      package_data={'pyspacewar': ['VERSION.txt', 'images/*']},
+      package_data={'pyspacewar': ['images/*']},
      )
