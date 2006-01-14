@@ -52,6 +52,18 @@ def colorblend(col1, col2, alpha=0.5):
     return (int(alpha*r1+beta*r2), int(alpha*g1+beta*g2), int(alpha*b1+beta*b2))
 
 
+def colorblend_img(img, color, alpha=0.5):
+    """Blend a surface with a colors."""
+    import Numeric
+    beta = 1 - alpha
+    pixels = pygame.surfarray.pixels3d(img)
+    array = pixels.astype(Numeric.Int)
+    array *= int(alpha * 255)
+    for channel in range(3):
+        array[:,:,channel] += int((beta * 255) * color[channel])
+    pixels[:] = (array / 255).astype(Numeric.UnsignedInt8)
+
+
 class Viewport(object):
     """A viewport to the universe.
 
@@ -1060,7 +1072,7 @@ class GameUI(object):
         self.version_text = 'PySpaceWar version %s' % self.version
         self._init_pygame()
         self._init_trail_colors()
-        self._load_planet_images()
+        self._load_images()
         self._load_background()
         self._init_fonts()
         self._set_display_mode()
@@ -1143,17 +1155,19 @@ class GameUI(object):
         """Convert loaded images to native format for faster blitting.
 
         Must be called after _set_display_mode, and, of course, after
-        _load_planet_images.
+        _load_images.
         """
         self.planet_images = [img.convert_alpha()
                               for img in self.planet_images]
 
-    def _load_planet_images(self):
-        """Load bitmaps of planets."""
+    def _load_images(self):
+        """Load bitmaps of planets and ships."""
         self.planet_images = map(pygame.image.load,
                                  glob.glob(find('images', 'planet*.png')))
         if not self.planet_images:
             raise RuntimeError("Could not find planet bitmaps")
+        self.ship_images = [pygame.image.load(find('images', 'ship1.png')),
+                            pygame.image.load(find('images', 'ship2.png'))]
 
     def _load_background(self):
         """Load background bitmap."""
@@ -1449,18 +1463,36 @@ class GameUI(object):
 
     def draw_Ship(self, ship):
         """Draw a ship."""
-        color = self.ship_colors[ship.appearance]
-        if ship.dead:
-            ratio = self.game.time_to_respawn(ship) / self.game.respawn_time
-            color = colorblend(color, (0x20, 0x20, 0x20), 0.2)
-            color = colorblend(color, (0, 0, 0), ratio)
         direction_vector = ship.direction_vector * ship.size
         side_vector = direction_vector.perpendicular()
-        pt1 = ship.position - direction_vector + side_vector * 0.5
-        pt2 = ship.position + direction_vector
-        pt3 = ship.position - direction_vector - side_vector * 0.5
-        points = map(self.viewport.screen_pos, [pt1, pt2, pt3])
-        pygame.draw.aalines(self.screen, color, False, points)
+
+        if True: # sprites
+            image = self.ship_images[ship.appearance]
+            image = pygame.transform.rotozoom(image, ship.direction - 90,
+                                              self.viewport.scale)
+            rect = image.get_rect()
+            if ship.dead:
+                ratio = self.game.time_to_respawn(ship) / self.game.respawn_time
+                ## black = pygame.Surface(rect.size)
+                ## black.fill((0, 0, 0))
+                ## black.set_alpha(255 - 200 * ratio)
+                ## image.blit(black, (0, 0))
+                colorblend_img(image, (0x20, 0x20, 0x20), 0.2)
+                colorblend_img(image, (0, 0, 0), ratio)
+            rect.center = self.viewport.screen_pos(ship.position)
+            self.screen.blit(image, rect)
+        else: # vectors
+            color = self.ship_colors[ship.appearance]
+            if ship.dead:
+                ratio = self.game.time_to_respawn(ship) / self.game.respawn_time
+                color = colorblend(color, (0x20, 0x20, 0x20), 0.2)
+                color = colorblend(color, (0, 0, 0), ratio)
+            pt1 = ship.position - direction_vector + side_vector * 0.5
+            pt2 = ship.position + direction_vector
+            pt3 = ship.position - direction_vector - side_vector * 0.5
+            points = map(self.viewport.screen_pos, [pt1, pt2, pt3])
+            pygame.draw.aalines(self.screen, color, False, points)
+
         (front, back, left_front, left_back,
          right_front, right_back) = self.calcShipThrusters(ship)
         thrust_lines = []
