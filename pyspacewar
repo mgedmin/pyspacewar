@@ -61,7 +61,7 @@ def main():
                       action='store', dest='mode')
     opts, args = parser.parse_args()
     ui.fullscreen = opts.fullscreen
-    ui.show_debug_info = opts.fullscreen
+    ui.show_debug_info = opts.debug
     if opts.mode:
         try:
             w, h = opts.mode.split('x')
