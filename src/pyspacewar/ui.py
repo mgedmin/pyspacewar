@@ -418,6 +418,11 @@ class HUDCompass(HUDElement):
         self.yalign = yalign
 
     def draw(self, surface):
+        if surface.get_bitsize() >= 24:
+            # Only 24 and 32 bpp modes support aaline
+            draw_line = pygame.draw.aaline
+        else:
+            draw_line = pygame.draw.line
         x = y = self.radius
         self.surface.fill((1, 1, 1))
         self.surface.set_colorkey((1, 1, 1))
@@ -448,14 +453,14 @@ class HUDCompass(HUDElement):
         d = d.scaled(self.radius * 0.9)
         x2 = x + int(d.x)
         y2 = y - int(d.y)
-        pygame.draw.aaline(self.surface, self.fgcolor2, (x, y), (x2, y2))
+        draw_line(self.surface, self.fgcolor2, (x, y), (x2, y2))
 
         v = self.ship.velocity * self.velocity_scale
         if v.length() > self.radius * 0.9:
             v = v.scaled(self.radius * 0.9)
         x2 = x + int(v.x)
         y2 = y - int(v.y)
-        pygame.draw.aaline(self.surface, self.fgcolor1, (x, y), (x2, y2))
+        draw_line(self.surface, self.fgcolor1, (x, y), (x2, y2))
 
         surface.blit(self.surface, self.position(surface))
 
@@ -1133,6 +1138,11 @@ class GameUI(object):
             windowed_mode = (int(w * 0.8), int(h * 0.8))
             self.screen = pygame.display.set_mode(windowed_mode, RESIZABLE)
         self._prepare_background()
+        if self.screen.get_bitsize() >= 24:
+            # Only 24 and 32 bpp modes support aaline
+            self.draw_line = pygame.draw.aaline
+        else:
+            self.draw_line = pygame.draw.line
 
     def _resize_window(self, size):
         """Resize the PyGame window as requested."""
@@ -1456,11 +1466,12 @@ class GameUI(object):
             color = colorblend(color, (0, 0, 0), ratio)
         direction_vector = ship.direction_vector * ship.size
         side_vector = direction_vector.perpendicular()
-        pt1 = ship.position - direction_vector + side_vector * 0.5
-        pt2 = ship.position + direction_vector
-        pt3 = ship.position - direction_vector - side_vector * 0.5
-        points = map(self.viewport.screen_pos, [pt1, pt2, pt3])
-        pygame.draw.aalines(self.screen, color, False, points)
+        sp = self.viewport.screen_pos
+        pt1 = sp(ship.position - direction_vector + side_vector * 0.5)
+        pt2 = sp(ship.position + direction_vector)
+        pt3 = sp(ship.position - direction_vector - side_vector * 0.5)
+        self.draw_line(self.screen, color, pt1, pt2)
+        self.draw_line(self.screen, color, pt2, pt3)
         (front, back, left_front, left_back,
          right_front, right_back) = self.calcShipThrusters(ship)
         thrust_lines = []
@@ -1479,10 +1490,9 @@ class GameUI(object):
         if right_back:
             thrust_lines.append(((+0.6, -0.8), (+0.6+right_back, -0.8)))
         for (s1, d1), (s2, d2) in thrust_lines:
-            pt1 = ship.position + direction_vector * d1 + side_vector * s1
-            pt2 = ship.position + direction_vector * d2 + side_vector * s2
-            pt1, pt2 = map(self.viewport.screen_pos, [pt1, pt2])
-            pygame.draw.aaline(self.screen, (255, 120, 20), pt1, pt2)
+            pt1 = sp(ship.position + direction_vector * d1 + side_vector * s1)
+            pt2 = sp(ship.position + direction_vector * d2 + side_vector * s2)
+            self.draw_line(self.screen, (255, 120, 20), pt1, pt2)
 
     def calcShipThrusters(self, ship):
         """Calculate the output of the ship's thrusters.
