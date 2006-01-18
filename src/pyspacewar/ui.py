@@ -867,6 +867,7 @@ class UIMode(object):
     """
 
     paused = False
+    mouse_visible = False
 
     def __init__(self, ui):
         self.ui = ui
@@ -880,11 +881,19 @@ class UIMode(object):
 
     def enter(self, prev_mode=None):
         """Enter the mode."""
-        pass
+        if self.prev_mode is None:
+            # Only do this once, otherwise two modes might get in a loop
+            self.prev_mode = prev_mode
+        pygame.mouse.set_visible(self.mouse_visible)
 
     def leave(self, next_mode=None):
         """Leave the mode."""
         pass
+
+    def return_to_previous_mode(self):
+        """Return to the previous game mode."""
+        if self.prev_mode is not None:
+            self.ui.ui_mode = self.prev_mode
 
     def draw(self, screen):
         """Draw extra things pertaining to the mode."""
@@ -944,13 +953,6 @@ class PauseMode(UIMode):
 
     paused = True
 
-    def enter(self, prev_mode=None):
-        """Enter the mode."""
-        if self.prev_mode is None:
-            # Don't let double PAUSE make me forget how to unpause.  Not that a
-            # double PAUSE can happen, if the key bindings are right.
-            self.prev_mode = prev_mode
-
     def draw(self, screen):
         """Draw extra things pertaining to the mode."""
         self.prev_mode.draw(screen)
@@ -958,11 +960,11 @@ class PauseMode(UIMode):
     def handle_any_other_key(self, event):
         """Handle a KEYDOWN event for unknown keys."""
         if not is_modifier_key(event.key):
-            self.ui.ui_mode = self.prev_mode
+            self.return_to_previous_mode()
 
     def handle_mouse_release(self, event):
         """Handle a MOUSEBUTTONUP event."""
-        self.ui.ui_mode = self.prev_mode
+        self.return_to_previous_mode()
 
 
 class DemoMode(UIMode):
@@ -1014,6 +1016,8 @@ class TitleMode(DemoMode):
 class MenuMode(UIMode):
     """Abstract base class for menu modes."""
 
+    mouse_visible = True
+
     def init(self):
         """Initialize the mode."""
         self.init_menu()
@@ -1036,17 +1040,6 @@ class MenuMode(UIMode):
         self.menu_items = [
             ('Quit',            self.ui.quit),
         ]
-
-    def enter(self, prev_mode=None):
-        """Enter the mode."""
-        pygame.mouse.set_visible(True)
-        if self.prev_mode is None:
-            # Don't let PAUSE make me forget how to unpause
-            self.prev_mode = prev_mode
-
-    def leave(self, next_mode=None):
-        """Leave the mode."""
-        pygame.mouse.set_visible(False)
 
     def _select_menu_item(self, pos):
         """Select menu item under cursor."""
@@ -1103,7 +1096,7 @@ class MenuMode(UIMode):
 
     def close_menu(self):
         """Close the menu and return to the previous game mode."""
-        self.ui.ui_mode = self.prev_mode
+        self.return_to_previous_mode()
 
 
 class MainMenuMode(MenuMode):
@@ -1123,7 +1116,8 @@ class MainMenuMode(MenuMode):
         ]
         self.on_key(K_PAUSE, self.ui.pause)
         self.on_key(K_ESCAPE, self.ui.watch_demo)
-        self.on_key(K_q, self.ui.quit)
+        self.on_key(K_q, self.ui.quit) # hidden shortcut
+        self.on_key(K_h, self.ui.help) # hidden shortcut
 
 
 class GameMenuMode(MenuMode):
@@ -1261,14 +1255,7 @@ class HelpMode(UIMode):
     """Mode: show on-line help."""
 
     paused = True
-
-    def enter(self, prev_mode=None):
-        """Enter the mode."""
-        pygame.mouse.set_visible(True)
-
-    def leave(self, next_mode=None):
-        """Leave the mode."""
-        pygame.mouse.set_visible(False)
+    mouse_visible = True
 
     def draw(self, screen):
         """Draw extra things pertaining to the mode."""
@@ -1277,7 +1264,7 @@ class HelpMode(UIMode):
     def init(self):
         """Initialize the mode."""
         self.on_key(K_f, self.ui.toggle_fullscreen)
-        self.on_key(K_ESCAPE, self.ui.main_menu)
+        self.on_key(K_ESCAPE, self.return_to_previous_mode)
         self.on_key(K_RETURN, self.next_page)
         self.on_key(K_KP_ENTER, self.next_page)
         self.on_key(K_SPACE, self.next_page)
@@ -1291,7 +1278,7 @@ class HelpMode(UIMode):
     def handle_mouse_release(self, event):
         """Handle a MOUSEBUTTONUP event."""
         if self.help_text.page + 1 == self.help_text.n_pages:
-            self.ui.main_menu()
+            self.return_to_previous_mode()
         else:
             self.next_page()
 
@@ -1302,7 +1289,6 @@ class HelpMode(UIMode):
     def next_page(self):
         """Turn to next page"""
         self.help_text.page += 1
-
 
 
 class GameUI(object):
