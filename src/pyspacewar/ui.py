@@ -70,6 +70,18 @@ ship.
 """
 
 
+def mode_looks_sane((w, h)):
+    """Check if video mode looks sane.
+
+    This function assumes (w, h) already came from pygame.display.list_modes.
+    However, not all such modes actually work.  On my Linux laptop that has
+    a dual-monitor setup, the dual-head virtual mode (2048x768) appears as
+    the largest video mode returned by list_modes.  However it does not work
+    at all as a full-screen mode, and looks weird when windowed..
+    """
+    return bool(w / h < 2)
+
+
 def is_modifier_key(key):
     """Is this key a modifier?"""
     return key in MODIFIER_KEYS
@@ -893,7 +905,7 @@ class UIMode(object):
         """Initialize the mode."""
         pass
 
-    def enter(self, prev_mode=None):
+    def enter(self, prev_mode):
         """Enter the mode."""
         if self.prev_mode is None:
             # Only do this once, otherwise two modes might get in a loop
@@ -1165,6 +1177,8 @@ class OptionsMenuMode(MenuMode):
     def init_menu(self):
         """Initialize the mode."""
         self.menu_items = [
+            ('Screen size: %dx%d' % self.ui.fullscreen_mode,
+             self.ui.screen_resolution_menu),
             (self.ui.fullscreen and 'Windowed mode'
                                  or 'Full screen mode',
              self.toggle_fullscreen),
@@ -1173,6 +1187,13 @@ class OptionsMenuMode(MenuMode):
              self.toggle_missile_orbits),
             ('Return to main menu', self.close_menu),
         ]
+
+    def enter(self, prev_mode):
+        """Enter the mode."""
+        MenuMode.enter(self, prev_mode)
+        # If we're coming back from the screen resolution menu, we need
+        # to update the current resolution
+        self.reinit_menu()
 
     def init(self):
         """Initialize the mode."""
@@ -1189,6 +1210,27 @@ class OptionsMenuMode(MenuMode):
     def toggle_missile_orbits(self):
         """Toggle missile orbits and reflect the setting in the menu."""
         self.ui.toggle_missile_orbits()
+        self.reinit_menu()
+
+
+class ScreenResolutionMenuMode(MenuMode):
+    """Mode: screen resolution menu."""
+
+    paused = False
+
+    def init_menu(self):
+        """Initialize the mode."""
+        self.menu_items = [
+            ('%dx%d' % mode, lambda mode=mode: self.switch_to_mode(mode))
+            for mode in pygame.display.list_modes()
+            if mode_looks_sane(mode)
+        ] +  [
+            ('Return to options menu', self.close_menu),
+        ]
+
+    def switch_to_mode(self, mode):
+        """Switch to a specified video mode."""
+        self.ui.switch_to_mode(mode)
         self.reinit_menu()
 
 
@@ -1450,13 +1492,9 @@ class GameUI(object):
 
     def _choose_best_mode(self):
         """Choose a suitable display mode."""
-        for (w, h) in pygame.display.list_modes():
-            if w / h >= 2:
-                # Dual-head modes (e.g. two 1024x768 monitors side by side)
-                # return modes like (2048, 768).  These modes do not work
-                # well for PyGame, so skip them.
-                continue
-            return (w, h)
+        for mode in pygame.display.list_modes():
+            if mode_looks_sane(mode):
+                return mode
         return (1024, 768) # *shrug*
 
     def _set_display_mode(self):
@@ -1676,6 +1714,10 @@ class GameUI(object):
         """Enter the options menu."""
         self.ui_mode = OptionsMenuMode(self)
 
+    def screen_resolution_menu(self):
+        """Enter the screen resolution menu."""
+        self.ui_mode = ScreenResolutionMenuMode(self)
+
     def watch_demo(self):
         """Go back to demo mode."""
         self.ui_mode = DemoMode(self)
@@ -1715,6 +1757,11 @@ class GameUI(object):
     def toggle_fullscreen(self):
         """Toggle fullscreen mode."""
         self.fullscreen = not self.fullscreen
+        self._set_display_mode()
+
+    def switch_to_mode(self, mode):
+        """Toggle fullscreen mode."""
+        self.fullscreen_mode = mode
         self._set_display_mode()
 
     def zoom_in(self):

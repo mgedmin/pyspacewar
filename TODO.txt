@@ -27,14 +27,14 @@ Smaller wishlist items:
   show fps/#objects + detailed timings
 - automatically pause the game when you lose window focus
 - use pygame.time.get_ticks() instead of time.time() for timings
+- customizable video features (turn off alpha blending of HUD items or the
+  background image, to speed things up, etc.)
 
 Larger wishlist items:
 
 - game recording/playback (this can be a prototype for multiplayer)
 - multiplayer mode
-- options menu: video mode, customizable key bindings, video features (turn off
-  alpha blending of HUD items or the background image, to speed things up,
-  etc.)
+- customizable key bindings
 
 Planned refactorings and cleanups:
 
