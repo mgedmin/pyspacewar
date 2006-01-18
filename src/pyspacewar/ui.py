@@ -761,8 +761,7 @@ class HUDMenu(HUDElement):
 
     def __init__(self, font, items, xalign=0.5, yalign=0.5,
                  xpadding=32, ypadding=8, yspacing=16):
-        width = max([font.size(item)[0] for item in items]) + 2*xpadding
-        item_height = max([font.size(item)[1] for item in items]) + 2*ypadding
+        width, item_height = self.itemsize(font, items, xpadding, ypadding)
         height = max(0, (item_height + yspacing) * len(items) - yspacing)
         HUDElement.__init__(self, width, height, xalign, yalign)
         self.font = font
@@ -775,7 +774,21 @@ class HUDMenu(HUDElement):
         self.surface = pygame.Surface((self.width, self.height))
         self.surface.set_alpha(255 * 0.9)
         self.surface.set_colorkey((1, 1, 1))
-        self._draw()
+        self.invalidate()
+
+    def invalidate(self):
+        """Indicate that the menu needs to be redrawn."""
+        self._drawn_with = None
+
+    def itemsize(self, font, items, xpadding, ypadding):
+        """Calculate the size of the largest item."""
+        width = 0
+        height = 0
+        for item in items:
+            size = font.size(item)
+            width = max(width, size[0])
+            height = max(height, size[1])
+        return width + 2 * xpadding, height + 2 * ypadding
 
     def find(self, surface, (x, y)):
         """Find the item at given coordinates."""
@@ -1029,6 +1042,7 @@ class MenuMode(UIMode):
         self.on_key(K_RETURN, self.activate_item)
         self.on_key(K_KP_ENTER, self.activate_item)
         self.on_key(K_ESCAPE, self.close_menu)
+        self.menu.invalidate()
         # These might be overkill
         self.while_key(K_EQUALS, self.ui.zoom_in)
         self.while_key(K_MINUS, self.ui.zoom_out)
@@ -1042,6 +1056,13 @@ class MenuMode(UIMode):
         self.menu_items = [
             ('Quit',            self.ui.quit),
         ]
+
+    def reinit_menu(self):
+        """Reinitialize the menu."""
+        self.init_menu()
+        assert len(self.menu_items) == len(self.menu.items)
+        self.menu.items = [item[0] for item in self.menu_items]
+        self.menu.invalidate()
 
     def _select_menu_item(self, pos):
         """Select menu item under cursor."""
@@ -1111,6 +1132,7 @@ class MainMenuMode(MenuMode):
         self.menu_items = [
             ('Watch Demo',      self.ui.watch_demo),
             ('New Game',        self.ui.new_game_menu),
+            ('Options',         self.ui.options_menu),
             ('Help',            self.ui.help),
             ('Quit',            self.ui.quit),
         ]
@@ -1133,6 +1155,41 @@ class NewGameMenuMode(MenuMode):
             ('Gravity Wars',    self.ui.start_gravity_wars),
             ('No, thanks',      self.close_menu),
         ]
+
+
+class OptionsMenuMode(MenuMode):
+    """Mode: options menu."""
+
+    paused = False
+
+    def init_menu(self):
+        """Initialize the mode."""
+        self.menu_items = [
+            (self.ui.fullscreen and 'Windowed mode'
+                                 or 'Full screen mode',
+             self.toggle_fullscreen),
+            (self.ui.show_missile_trails and 'Hide missile orbits'
+                                          or 'Show missile orbits',
+             self.toggle_missile_orbits),
+            ('Return to main menu', self.close_menu),
+        ]
+
+    def init(self):
+        """Initialize the mode."""
+        MenuMode.init(self)
+        # Override a couple of key bindings to do extra stuff
+        self.on_key(K_o, self.toggle_missile_orbits)
+        self.on_key(K_f, self.toggle_fullscreen)
+
+    def toggle_fullscreen(self):
+        """Toggle full-screen mode and reflect the setting in the menu."""
+        self.ui.toggle_fullscreen()
+        self.reinit_menu()
+
+    def toggle_missile_orbits(self):
+        """Toggle missile orbits and reflect the setting in the menu."""
+        self.ui.toggle_missile_orbits()
+        self.reinit_menu()
 
 
 class GameMenuMode(MenuMode):
@@ -1612,8 +1669,12 @@ class GameUI(object):
         self.ui_mode = MainMenuMode(self)
 
     def new_game_menu(self):
-        """Enter the main menu."""
+        """Enter the new game menu."""
         self.ui_mode = NewGameMenuMode(self)
+
+    def options_menu(self):
+        """Enter the options menu."""
+        self.ui_mode = OptionsMenuMode(self)
 
     def watch_demo(self):
         """Go back to demo mode."""

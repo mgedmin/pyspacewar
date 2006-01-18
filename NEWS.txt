@@ -7,6 +7,8 @@ January 18, 2006:
   - Possibly fix the MacOS X "invisible fix" problem I saw (use 2 x aaline
     instead of aalines).
   - Added a help screen.
+  - Added an Options menu.
+  - Added a New Game menu (the main menu was becoming too cluttered).
 
 January 14, 2006: Released version 0.9.1 with some bug fixes and small
 features:
