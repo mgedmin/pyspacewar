@@ -4,16 +4,12 @@ Features that block the 1.0 release:
 
 Features that would be nice for 1.0, but that I could live without:
 
-- some music/sound effects
-- frag limit; once reached, a player becomes victorious and both players
-  are warped to a new planet system
-- credits next to the version number?
-- sprites for the ships (or at least fill the triangles with solid color)
 - some sort of warp-in effect when the ships respawn
-- optimize: what are the 11 ms spent on "other" in draw? what are the 11 ms
-  spent on "other" outside update/draw/wait?
-- optimize: when the game is too slow and starts dropping frames, debug timing
-  shows that it still spends 7 to 30 ms idling.  Why?
+- frag limit: once reached, a player becomes victorious and both players
+  are warped to a new planet system
+- optimize: I'd like it to work reasonably well on 600 MHz machines
+- customizable video features (turn off alpha blending of HUD items or the
+  background image, to speed things up, etc.)
 
 Smaller wishlist items:
 
@@ -27,14 +23,15 @@ Smaller wishlist items:
   show fps/#objects + detailed timings
 - automatically pause the game when you lose window focus
 - use pygame.time.get_ticks() instead of time.time() for timings
-- customizable video features (turn off alpha blending of HUD items or the
-  background image, to speed things up, etc.)
 
 Larger wishlist items:
 
+- some music/sound effects
+- nice sprites for the ships (I have code in a branch that draws sprites, but
+  my drawings are ugly)
+- customizable key bindings
 - game recording/playback (this can be a prototype for multiplayer)
 - multiplayer mode
-- customizable key bindings
 
 Planned refactorings and cleanups:
 
@@ -47,3 +44,10 @@ Planned refactorings and cleanups:
 - move Vector into a new module vector.py
 - adjust other constants so that I could set Game.DELTA_TIME == 1.0
 - get rid of Game.DELTA_TIME and the dt argument to World.update
+
+Hints for optimization:
+
+- what are those 10 ms spent on "other" outside update/draw/wait?
+- what exactly takes 6 ms to draw outside page flipping and missile trails?
+- when the game is too slow and starts dropping frames, debug timing
+  shows that it still spends 7 to 30 ms idling.  Why?

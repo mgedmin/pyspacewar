@@ -67,6 +67,21 @@ ship.
   mouse wheel     \u2014 zoom in/out
   left click      \u2014 game menu
   right drag      \u2014 drag the viewport around
+
+=Credits=
+
+  Developer       \u2014 Marius Gedminas
+  AI              \u2014 Ignas Mikalaj\u016bnas
+  Graphics        \u2014 IGE - Outer Space (planet images)
+                  \u2014 Hubble Space Telescope (background)
+                  \u2014 Marius Gedminas (everything else)
+
+PySpaceWar is powered by PyGame, Python and SDL.
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
 """
 
 
