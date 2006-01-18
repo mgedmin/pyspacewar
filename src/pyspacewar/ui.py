@@ -426,6 +426,7 @@ class HUDFormattedText(HUDElement):
         font = self.font
         leftindent = 0
         keep_with_next = False
+        justify = False
         if paragraph.startswith('=') and paragraph.endswith('='):
             # =Title=
             paragraph = paragraph[1:-1]
@@ -435,6 +436,9 @@ class HUDFormattedText(HUDElement):
             # Indented block
             leftindent += self.xpadding
             width -= self.xpadding
+        else:
+            # Regular text
+            justify = True
         word_spacing = font.size(' ')[0]
         line_spacing = font.get_linesize()
         bits = []
@@ -446,9 +450,16 @@ class HUDFormattedText(HUDElement):
             groups = self.split_items_into_groups(items, width, word_spacing)
             for group in groups:
                 x = leftindent
+                extra_spacing = 0
+                if justify and len(group) > 1 and group is not groups[-1]:
+                    extra_spacing = width
+                    for img_width, img in group:
+                        extra_spacing -= img_width
+                    extra_spacing -= word_spacing * (len(group) - 1)
+                    extra_spacing = float(extra_spacing) / (len(group) - 1)
                 for img_width, img in group:
-                    bits.append((img, (x, y)))
-                    x += img_width + word_spacing
+                    bits.append((img, (int(x), y)))
+                    x += img_width + word_spacing + extra_spacing
                 y += line_spacing
         return y, bits, keep_with_next
 
@@ -457,6 +468,8 @@ class HUDFormattedText(HUDElement):
 
         Returns a list of pages, where each page is a list of of images (one
         for each word) with relative coordinates.
+
+        Currently the page layout engine doesn't try to split paragraphs.
         """
         width, height = page_size
         paragraph_spacing = self.font.get_linesize()
