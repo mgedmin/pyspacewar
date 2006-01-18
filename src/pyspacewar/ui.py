@@ -26,6 +26,49 @@ MODIFIER_KEYS = sets.Set([K_NUMLOCK, K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK,
                           K_RMETA, K_LMETA, K_LSUPER, K_RSUPER, K_MODE])
 
 
+HELP_TEXT = u"""\
+=Welcome to PySpaceWar=
+
+Two ships duel in a gravity field.   Gravity doesn't affect the ships
+themselves (which have spanking new anti-gravity devices), but it affects
+missiles launced by the ships.  The law of inertia applies to the ships \u2014
+if you accelerate in one direction, you will continue to move in that direction
+until you accelerate in another direction.
+
+The two player mode is good for target practice, and to get the feel of your
+ship.
+
+=Player 1 Controls=
+
+  LEFT, RIGHT     \u2014 rotate
+  UP              \u2014 accelerate in the direction you're facing
+  DOWN            \u2014 accelerate in the opposite direction
+  RCTRL           \u2014 launch a missile
+  RALT            \u2014 brake (lose 5% speed)
+  1               \u2014 enable/disable computer control
+
+=Player 2 Controls=
+
+  A, D            \u2014 rotate
+  W               \u2014 accelerate in the direction you're facing
+  S               \u2014 accelerate in the opposite direction
+  LCTRL           \u2014 launch a missile
+  LALT            \u2014 brake (lose 5% speed)
+  2               \u2014 enable/disable computer control
+
+=Other Controls=
+
+  ESC             \u2014 escape to menu (pauses current game)
+  PAUSE           \u2014 pause the game
+  O               \u2014 hide/show missile orbits
+  F, ALT+ENTER    \u2014 toggle full-screen mode
+  +, -            \u2014 zoom in/out
+  mouse wheel     \u2014 zoom in/out
+  left click      \u2014 escape to menu (pauses current game)
+  right drag      \u2014 drag the viewport around
+"""
+
+
 def is_modifier_key(key):
     """Is this key a modifier?"""
     return key in MODIFIER_KEYS
@@ -300,6 +343,166 @@ class HUDLabel(HUDElement):
         """Draw the element."""
         x, y = self.position(surface)
         surface.blit(self.rendered_text, (x, y))
+
+
+class HUDFormattedText(HUDElement):
+    """A static text screen."""
+
+    bgcolor = (0x01, 0x02, 0x08)
+    color = (0xff, 0xff, 0xff)
+    page_number_color = (0x80, 0xcc, 0xff)
+    alpha = int(0.95 * 255)
+
+    xpadding = 40
+    ypadding = 40
+
+    def __init__(self, font, bold_font, text, xalign=0.5, yalign=0.5,
+                 xsize=1.0, ysize=1.0, small_font=None):
+        self.font = font
+        self.bold_font = bold_font
+        self.small_font = small_font or font
+        self.text = text
+        self.xsize = xsize
+        self.ysize = ysize
+        self.xalign = xalign
+        self.yalign = yalign
+        self.page = 0
+        self.n_pages = -1
+
+    def position(self, surface, margin=30):
+        """Calculate screen position for the widget."""
+        self.width = int((surface.get_width() - 2 * margin) * self.xsize)
+        self.height = int((surface.get_height() - 2 * margin) * self.ysize)
+        return HUDElement.position(self, surface, margin)
+
+    def draw(self, surface):
+        """Draw the element."""
+        x, y = self.position(surface) # calculates self.width/height as well
+        rect = Rect(x, y, self.width, self.height)
+        buffer = pygame.Surface(rect.size)
+        buffer.set_alpha(self.alpha)
+        buffer.set_colorkey((1, 1, 1))
+        buffer.fill(self.bgcolor)
+        for ax in (0, rect.width-1):
+            for ay in (0, rect.height-1):
+                buffer.set_at((ax, ay), (1, 1, 1))
+        surface.blit(buffer, rect.topleft)
+        rect.inflate_ip(-self.xpadding, -self.ypadding)
+        self.render_text(surface, rect)
+
+    def split_to_paragraphs(self, text):
+        """Split text into paragraphs."""
+        paragraphs = []
+        for paragraph in self.text.split('\n\n'):
+            if not paragraph.startswith(' '):
+                # Intented blocks preserve line breaks, all others are joined
+                paragraph = paragraph.replace('\n', ' ')
+            paragraphs.append(paragraph)
+        return paragraphs
+
+    def split_items_into_groups(self, items, size, spacing):
+        """Split a list of tuples (item_size, item) into groups such that
+        the sum of sizes + spacing * (group size - 1) in each group is <= size.
+
+        Think "word wrapping".
+        """
+        groups = []
+        cur_group_size = size + 1
+        for item_size, item in items:
+            if cur_group_size > 0 and cur_group_size + item_size > size:
+                cur_group = []
+                cur_group_size = 0
+                groups.append(cur_group)
+            cur_group_size += item_size + spacing
+            cur_group.append((item_size, item))
+        return groups
+
+    def layout_paragraph(self, paragraph, width):
+        """Render and lay out a single paragraph.
+
+        Returns (height, bits, keep_with_next) where bits is a list
+        of images (one for each word) with relative coordinates.
+        """
+        font = self.font
+        leftindent = 0
+        keep_with_next = False
+        if paragraph.startswith('=') and paragraph.endswith('='):
+            # =Title=
+            paragraph = paragraph[1:-1]
+            font = self.bold_font
+            keep_with_next = True
+        elif paragraph.startswith(' '):
+            # Indented block
+            leftindent += self.xpadding
+            width -= self.xpadding
+        word_spacing = font.size(' ')[0]
+        line_spacing = font.get_linesize()
+        bits = []
+        y = 0
+        for line in paragraph.splitlines():
+            words = [font.render(word, True, self.color)
+                     for word in line.split()]
+            items = [(img.get_width(), img) for img in words]
+            groups = self.split_items_into_groups(items, width, word_spacing)
+            for group in groups:
+                x = leftindent
+                for img_width, img in group:
+                    bits.append((img, (x, y)))
+                    x += img_width + word_spacing
+                y += line_spacing
+        return y, bits, keep_with_next
+
+    def layout_pages(self, text, page_size):
+        """Render and lay out text into pages.
+
+        Returns a list of pages, where each page is a list of of images (one
+        for each word) with relative coordinates.
+        """
+        width, height = page_size
+        paragraph_spacing = self.font.get_linesize()
+        last_item_size = 0
+        last_item_bits = []
+        items = []
+        for paragraph in self.split_to_paragraphs(self.text):
+            size, bits, keep_with_next = self.layout_paragraph(paragraph, width)
+            if last_item_bits: # join with previous
+                dy = last_item_size + paragraph_spacing
+                bits = last_item_bits + [(img, (x, y+dy))
+                                         for (img, (x, y)) in bits]
+                size += dy
+            if keep_with_next:
+                last_item_size = size
+                last_item_bits = bits
+            else:
+                items.append((size, bits))
+                last_item_size = 0
+                last_item_bits = []
+        if last_item_bits: # last paragraph had "keep with next" set
+            items.append((last_item_size, last_item_bits))
+        pages = self.split_items_into_groups(items, height, paragraph_spacing)
+        return pages
+
+    def render_text(self, surface, page_rect):
+        """Render the text onto surface."""
+        paragraph_spacing = self.font.get_linesize()
+        width, height = page_rect.size
+        height -= self.small_font.get_linesize() * 2
+        pages = self.layout_pages(self.text, (width, height))
+        self.n_pages = len(pages)
+        if not pages:
+            return
+        self.page = max(0, min(self.page, len(pages)-1))
+        left = page_rect.left
+        top = page_rect.top
+        for para_size, para in pages[self.page]:
+            for img, (x, y) in para:
+                surface.blit(img, (left + x, top + y))
+            top += para_size + paragraph_spacing
+        page_text = 'Page %d of %d' % (self.page + 1, self.n_pages)
+        img = self.small_font.render(page_text, True, self.page_number_color)
+        r = img.get_rect()
+        r.bottomright = page_rect.bottomright
+        surface.blit(img, r.topleft)
 
 
 class HUDInfoPanel(HUDElement):
@@ -814,7 +1017,7 @@ class MenuMode(UIMode):
             self.prev_mode = prev_mode
 
     def leave(self, next_mode=None):
-        """Enter the mode."""
+        """Leave the mode."""
         pygame.mouse.set_visible(False)
 
     def _select_menu_item(self, pos):
@@ -887,6 +1090,7 @@ class MainMenuMode(MenuMode):
             ('One Player Game', self.ui.start_single_player_game),
             ('Two Player Game', self.ui.start_two_player_game),
             ('Gravity Wars',    self.ui.start_gravity_wars),
+            ('Help',            self.ui.help),
             ('Quit',            self.ui.quit),
         ]
         self.on_key(K_PAUSE, self.ui.pause)
@@ -1023,6 +1227,54 @@ class GravityWarsMode(UIMode):
                 self.prompt.text = self.prompt.text[:-1]
             elif event.unicode.isdigit() or event.unicode in ('-', '.'):
                 self.prompt.text += event.unicode
+
+
+class HelpMode(UIMode):
+    """Mode: show on-line help."""
+
+    paused = True
+
+    def enter(self, prev_mode=None):
+        """Enter the mode."""
+        pygame.mouse.set_visible(True)
+
+    def leave(self, next_mode=None):
+        """Leave the mode."""
+        pygame.mouse.set_visible(False)
+
+    def draw(self, screen):
+        """Draw extra things pertaining to the mode."""
+        self.help_text.draw(screen)
+
+    def init(self):
+        """Initialize the mode."""
+        self.on_key(K_f, self.ui.toggle_fullscreen)
+        self.on_key(K_ESCAPE, self.ui.main_menu)
+        self.on_key(K_RETURN, self.next_page)
+        self.on_key(K_KP_ENTER, self.next_page)
+        self.on_key(K_SPACE, self.next_page)
+        self.on_key(K_PAGEDOWN, self.next_page)
+        self.on_key(K_PAGEUP, self.prev_page)
+        self.help_text = HUDFormattedText(self.ui.help_font,
+                                          self.ui.help_bold_font,
+                                          HELP_TEXT,
+                                          small_font=self.ui.hud_font)
+
+    def handle_mouse_release(self, event):
+        """Handle a MOUSEBUTTONUP event."""
+        if self.help_text.page + 1 == self.help_text.n_pages:
+            self.ui.main_menu()
+        else:
+            self.next_page()
+
+    def prev_page(self):
+        """Turn to next page"""
+        self.help_text.page -= 1
+
+    def next_page(self):
+        """Turn to next page"""
+        self.help_text.page += 1
+
 
 
 class GameUI(object):
@@ -1199,6 +1451,8 @@ class GameUI(object):
             if not os.path.exists(verdana_bold):
                 verdana_bold = verdana
         self.hud_font = pygame.font.Font(verdana, 14)
+        self.help_font = pygame.font.Font(verdana, 16)
+        self.help_bold_font = pygame.font.Font(verdana_bold, 16)
         self.input_font = pygame.font.Font(verdana, 24)
         self.menu_font = pygame.font.Font(verdana_bold, 30)
 
@@ -1346,6 +1600,10 @@ class GameUI(object):
         """Start a new two-player gravity wars game."""
         self._new_game(2)
         self.ui_mode = GravityWarsMode(self)
+
+    def help(self):
+        """Show the help screen."""
+        self.ui_mode = HelpMode(self)
 
     def game_menu(self):
         """Enter the game menu."""

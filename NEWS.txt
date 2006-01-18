@@ -1,4 +1,4 @@
-January 17, 2006:
+January 18, 2006:
 
   - Fixed the -f and -d command line options.
   - Missiles are now larger and brighter than their orbit trail dots.
@@ -6,6 +6,7 @@ January 17, 2006:
   - Make it work in 15 and 16 bit per pixel modes (no aaline).
   - Possibly fix the MacOS X "invisible fix" problem I saw (use 2 x aaline
     instead of aalines).
+  - Added a help screen.
 
 January 14, 2006: Released version 0.9.1 with some bug fixes and small
 features:

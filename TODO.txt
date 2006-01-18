@@ -1,10 +1,9 @@
 Features that block the 1.0 release:
 
-- invisible ships on Mac OS X (draw_aalines doesn't work?)
+- invisible ships on Mac OS X (I think this is fixed now)
 
 Features that would be nice for 1.0, but that I could live without:
 
-- on-line help (list keybindings, maybe say a few words)
 - some music/sound effects
 - frag limit; once reached, a player becomes victorious and both players
   are warped to a new planet system
@@ -18,6 +17,8 @@ Features that would be nice for 1.0, but that I could live without:
 
 Smaller wishlist items:
 
+- when the game is paused, don't keep redrawing the same things every frame
+  (especially in the help screen)
 - say 'Paused' somewhere when you press the Pause key (though I want it not to
   interfere with screenshots; maybe put it in the title bar if not
   in fullscreen mode?)
