@@ -27,7 +27,7 @@ MODIFIER_KEYS = sets.Set([K_NUMLOCK, K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK,
 
 
 HELP_TEXT = u"""\
-=Welcome to PySpaceWar=
+=PySpaceWar=
 
 Two ships duel in a gravity field.   Gravity doesn't affect the ships
 themselves (which have spanking new anti-gravity devices), but it affects
@@ -58,13 +58,13 @@ ship.
 
 =Other Controls=
 
-  ESC             \u2014 escape to menu (pauses current game)
+  ESC             \u2014 game menu
   PAUSE           \u2014 pause the game
   O               \u2014 hide/show missile orbits
   F, ALT+ENTER    \u2014 toggle full-screen mode
   +, -            \u2014 zoom in/out
   mouse wheel     \u2014 zoom in/out
-  left click      \u2014 escape to menu (pauses current game)
+  left click      \u2014 game menu
   right drag      \u2014 drag the viewport around
 """
 
@@ -356,6 +356,9 @@ class HUDFormattedText(HUDElement):
     xpadding = 40
     ypadding = 40
 
+    indent = 20
+    tabstop = 140
+
     def __init__(self, font, bold_font, text, xalign=0.5, yalign=0.5,
                  xsize=1.0, ysize=1.0, small_font=None):
         self.font = font
@@ -387,7 +390,7 @@ class HUDFormattedText(HUDElement):
             for ay in (0, rect.height-1):
                 buffer.set_at((ax, ay), (1, 1, 1))
         surface.blit(buffer, rect.topleft)
-        rect.inflate_ip(-self.xpadding, -self.ypadding)
+        rect.inflate_ip(-self.xpadding*2, -self.ypadding*2)
         self.render_text(surface, rect)
 
     def split_to_paragraphs(self, text):
@@ -425,6 +428,7 @@ class HUDFormattedText(HUDElement):
         """
         font = self.font
         leftindent = 0
+        tabstop = 0
         keep_with_next = False
         justify = False
         if paragraph.startswith('=') and paragraph.endswith('='):
@@ -434,8 +438,9 @@ class HUDFormattedText(HUDElement):
             keep_with_next = True
         elif paragraph.startswith(' '):
             # Indented block
-            leftindent += self.xpadding
-            width -= self.xpadding
+            leftindent += self.indent
+            width -= self.indent
+            tabstop = self.tabstop
         else:
             # Regular text
             justify = True
@@ -444,15 +449,25 @@ class HUDFormattedText(HUDElement):
         bits = []
         y = 0
         for line in paragraph.splitlines():
+            if tabstop and u'\u2014' in line:
+                prefix, line = line.split(u'\u2014', 1)
+                img = font.render(prefix.strip(), True, self.color)
+                bits.append((img, (leftindent, y)))
+                wrapwidth = width - tabstop
+                cur_tabstop = tabstop
+            else:
+                wrapwidth = width
+                cur_tabstop = 0
             words = [font.render(word, True, self.color)
                      for word in line.split()]
             items = [(img.get_width(), img) for img in words]
-            groups = self.split_items_into_groups(items, width, word_spacing)
+            groups = self.split_items_into_groups(items, wrapwidth,
+                                                  word_spacing)
             for group in groups:
-                x = leftindent
+                x = leftindent + cur_tabstop
                 extra_spacing = 0
                 if justify and len(group) > 1 and group is not groups[-1]:
-                    extra_spacing = width
+                    extra_spacing = wrapwidth
                     for img_width, img in group:
                         extra_spacing -= img_width
                     extra_spacing -= word_spacing * (len(group) - 1)
