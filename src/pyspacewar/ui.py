@@ -1028,6 +1028,7 @@ class MenuMode(UIMode):
         self.on_key(K_DOWN, self.select_next_item)
         self.on_key(K_RETURN, self.activate_item)
         self.on_key(K_KP_ENTER, self.activate_item)
+        self.on_key(K_ESCAPE, self.close_menu)
         # These might be overkill
         self.while_key(K_EQUALS, self.ui.zoom_in)
         self.while_key(K_MINUS, self.ui.zoom_out)
@@ -1109,17 +1110,29 @@ class MainMenuMode(MenuMode):
         """Initialize the mode."""
         self.menu_items = [
             ('Watch Demo',      self.ui.watch_demo),
-            ('One Player Game', self.ui.start_single_player_game),
-            ('Two Player Game', self.ui.start_two_player_game),
-            ('Gravity Wars',    self.ui.start_gravity_wars),
+            ('New Game',        self.ui.new_game_menu),
             ('Help',            self.ui.help),
             ('Quit',            self.ui.quit),
         ]
         self.on_key(K_PAUSE, self.ui.pause)
-        self.on_key(K_ESCAPE, self.ui.watch_demo)
         self.on_key(K_q, self.ui.quit) # hidden shortcut
         self.on_key(K_h, self.ui.help) # hidden shortcut
         self.on_key(K_F1, self.ui.help) # hidden shortcut
+
+
+class NewGameMenuMode(MenuMode):
+    """Mode: new game menu."""
+
+    paused = False
+
+    def init_menu(self):
+        """Initialize the mode."""
+        self.menu_items = [
+            ('One Player Game', self.ui.start_single_player_game),
+            ('Two Player Game', self.ui.start_two_player_game),
+            ('Gravity Wars',    self.ui.start_gravity_wars),
+            ('No, thanks',      self.close_menu),
+        ]
 
 
 class GameMenuMode(MenuMode):
@@ -1133,8 +1146,6 @@ class GameMenuMode(MenuMode):
             ('Resume game',     self.close_menu),
             ('End Game',        self.ui.end_game),
         ]
-        self.on_key(K_ESCAPE, self.close_menu)
-
 
 
 class PlayMode(UIMode):
@@ -1599,6 +1610,10 @@ class GameUI(object):
     def main_menu(self):
         """Enter the main menu."""
         self.ui_mode = MainMenuMode(self)
+
+    def new_game_menu(self):
+        """Enter the main menu."""
+        self.ui_mode = NewGameMenuMode(self)
 
     def watch_demo(self):
         """Go back to demo mode."""
