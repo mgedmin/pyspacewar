@@ -49,6 +49,7 @@ LALT            - brake (lose 5% speed)
 Other Controls
 --------------
 
+F1              - help
 ESC             - escape to menu (pauses current game)
 PAUSE           - pause the game
 O               - hide/show missile orbits

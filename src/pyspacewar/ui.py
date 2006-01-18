@@ -58,6 +58,7 @@ ship.
 
 =Other Controls=
 
+  F1              \u2014 help
   ESC             \u2014 game menu
   PAUSE           \u2014 pause the game
   O               \u2014 hide/show missile orbits
@@ -1118,6 +1119,7 @@ class MainMenuMode(MenuMode):
         self.on_key(K_ESCAPE, self.ui.watch_demo)
         self.on_key(K_q, self.ui.quit) # hidden shortcut
         self.on_key(K_h, self.ui.help) # hidden shortcut
+        self.on_key(K_F1, self.ui.help) # hidden shortcut
 
 
 class GameMenuMode(MenuMode):
@@ -1144,6 +1146,7 @@ class PlayMode(UIMode):
         """Initialize the mode."""
         self.on_key(K_PAUSE, self.ui.pause)
         self.on_key(K_ESCAPE, self.ui.game_menu)
+        self.on_key(K_F1, self.ui.help)
         self.on_key(K_o, self.ui.toggle_missile_orbits)
         self.on_key(K_f, self.ui.toggle_fullscreen)
         self.while_key(K_EQUALS, self.ui.zoom_in)
@@ -1182,6 +1185,7 @@ class GravityWarsMode(UIMode):
         """Initialize the mode."""
         self.on_key(K_PAUSE, self.ui.pause)
         self.on_key(K_ESCAPE, self.ui.game_menu)
+        self.on_key(K_F1, self.ui.help)
         self.on_key(K_o, self.ui.toggle_missile_orbits)
         self.on_key(K_f, self.ui.toggle_fullscreen)
         self.while_key(K_EQUALS, self.ui.zoom_in)
