@@ -30,6 +30,12 @@ How to make a PySpaceWar release
      vi index.html
      svn ci
 
-9. Add a 'svn' prefix in src/pyspacewar/version.py and commit.
-10. Announce the new release on PYPI, pygame.org, the pygame mailing list, my
+9. Add a 'svn' suffix in src/pyspacewar/version.py and commit.
+
+10. Announce the new release on PyPI, pygame.org, the pygame mailing list, my
     weblog.
+
+    PyPI: just run python setup.py register
+    PyGame: log in at http://pygame.org/
+    The list: pygame-users@seul.org
+
