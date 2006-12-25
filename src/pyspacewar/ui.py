@@ -12,6 +12,7 @@ import time
 import math
 import random
 import itertools
+import ConfigParser
 
 import pygame
 from pygame.locals import *
@@ -1748,6 +1749,35 @@ class GameUI(object):
         self.rev_controls = dict([(value, key)
                                   for (key, value) in self.controls.items()])
         assert len(self.controls) == len(self.rev_controls)
+
+    def load_settings(self, filename=None):
+        """Load settings from a configuration file."""
+        if not filename:
+            filename = os.path.expanduser('~/.pyspacewarrc')
+        config = self.get_config_parser()
+        config.read([filename])
+        for action in self.controls:
+            key = config.get('controls', action)
+            try:
+                key = int(key)
+            except ValueError:
+                key = None
+            self.set_control(action, key)
+
+    def save_settings(self, filename=None):
+        """Save settings to a configuration file."""
+        if not filename:
+            filename = os.path.expanduser('~/.pyspacewarrc')
+        config = self.get_config_parser()
+        config.write(file(filename, 'w'))
+
+    def get_config_parser(self):
+        """Create a ConfigParser initialized with current settings."""
+        config = ConfigParser.RawConfigParser()
+        config.add_section('controls')
+        for action, key in self.controls.items():
+            config.set('controls', action, key)
+        return config
 
     def init(self):
         """Initialize the user interface."""

@@ -23,6 +23,7 @@ def main():
     """Run PySpaceWar."""
     use_psyco()
     ui = GameUI()
+    ui.load_settings()
     parser = optparse.OptionParser()
     parser.add_option('-f', '--fullscreen', default=False,
                       help='start in full-screen mode',
@@ -47,8 +48,11 @@ def main():
                                   % opts.mode)
             sys.exit(1)
     ui.init()
-    while True:
-        ui.wait_for_tick()
-        ui.interact()
-        ui.draw()
+    try:
+        while True:
+            ui.wait_for_tick()
+            ui.interact()
+            ui.draw()
+    except (KeyboardInterrupt, SystemExit):
+        ui.save_settings()
 
