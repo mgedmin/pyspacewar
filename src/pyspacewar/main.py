@@ -25,9 +25,12 @@ def main():
     ui = GameUI()
     ui.load_settings()
     parser = optparse.OptionParser()
-    parser.add_option('-f', '--fullscreen', default=False,
+    parser.add_option('-f', '--fullscreen', default=None,
                       help='start in full-screen mode',
                       action='store_true', dest='fullscreen')
+    parser.add_option('-w', '--windowed',
+                      help='start in windowed mode',
+                      action='store_false', dest='fullscreen')
     parser.add_option('-d', '--debug', default=False,
                       help='show debug timings',
                       action='store_true', dest='debug')
@@ -37,8 +40,10 @@ def main():
                            ' smaller',
                       action='store', dest='mode')
     opts, args = parser.parse_args()
-    ui.fullscreen = opts.fullscreen
-    ui.show_debug_info = opts.debug
+    if opts.fullscreen is not None:
+        ui.fullscreen = opts.fullscreen
+    if opts.debug is not None:
+        ui.show_debug_info = opts.debug
     if opts.mode:
         try:
             w, h = opts.mode.split('x')

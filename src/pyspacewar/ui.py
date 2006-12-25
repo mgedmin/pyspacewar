@@ -1756,6 +1756,15 @@ class GameUI(object):
             filename = os.path.expanduser('~/.pyspacewarrc')
         config = self.get_config_parser()
         config.read([filename])
+        self.fullscreen = config.getboolean('video', 'fullscreen')
+        mode = config.get('video', 'mode')
+        try:
+            w, h = mode.split('x')
+            self.fullscreen_mode = int(w), int(h)
+        except ValueError:
+            self.fullscreen_mode = None
+        self.show_missile_trails = config.getboolean('video',
+                                                     'show_missile_trails')
         for action in self.controls:
             key = config.get('controls', action)
             try:
@@ -1774,6 +1783,14 @@ class GameUI(object):
     def get_config_parser(self):
         """Create a ConfigParser initialized with current settings."""
         config = ConfigParser.RawConfigParser()
+        config.add_section('video')
+        config.set('video', 'fullscreen', str(self.fullscreen))
+        if self.fullscreen_mode:
+            config.set('video', 'mode', '%dx%d' % self.fullscreen_mode)
+        else:
+            config.set('video', 'mode', '')
+        config.set('video', 'show_missile_trails',
+                   str(self.show_missile_trails))
         config.add_section('controls')
         for action, key in self.controls.items():
             config.set('controls', action, key)
