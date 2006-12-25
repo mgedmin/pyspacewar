@@ -1,4 +1,4 @@
-December 25, 2006: The Christmas release.
+December 25, 2006: Released version 0.9.3: the Christmas release.
 
   - Keyboard controls can now be customized.
   - Keyboard controls and video mode options are stored in a config file.
