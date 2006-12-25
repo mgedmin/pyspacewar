@@ -791,17 +791,33 @@ class HUDMenu(HUDElement):
         width, item_height = self.itemsize(font, items, xpadding, ypadding)
         height = max(0, (item_height + yspacing) * len(items) - yspacing)
         HUDElement.__init__(self, width, height, xalign, yalign)
+        self.full_height = height
         self.font = font
         self.items = items
         self.yspacing = yspacing
         self.xpadding = xpadding
         self.ypadding = ypadding
         self.selected_item = 0
+        self.top = 0
         self.item_height = item_height
-        self.surface = pygame.Surface((self.width, self.height))
+        self.surface = pygame.Surface((self.width, self.full_height))
         self.surface.set_alpha(255 * 0.9)
         self.surface.set_colorkey((1, 1, 1))
         self.invalidate()
+
+    def position(self, surface, margin=10):
+        """Calculate screen position for the widget."""
+        max_height = surface.get_height() - 2 * margin
+        item_spacing = self.item_height + self.yspacing
+        self.height = self.full_height
+        while self.height > max_height:
+            self.height -= item_spacing
+        if self.selected_item * item_spacing < self.top:
+            self.top = self.selected_item * item_spacing
+        while (self.selected_item * item_spacing + self.item_height >
+               self.top + self.height):
+            self.top += item_spacing
+        return HUDElement.position(self, surface, margin)
 
     def invalidate(self):
         """Indicate that the menu needs to be redrawn."""
@@ -820,6 +836,7 @@ class HUDMenu(HUDElement):
     def find(self, surface, (x, y)):
         """Find the item at given coordinates."""
         ix, iy = self.position(surface)
+        iy -= self.top
         for idx, item in enumerate(self.items):
             if (ix <= x < ix + self.width and
                 iy <= y < iy + self.item_height):
@@ -855,7 +872,8 @@ class HUDMenu(HUDElement):
         if self.selected_item != self._drawn_with:
             self._draw()
         x, y = self.position(surface)
-        surface.blit(self.surface, (x, y))
+        surface.blit(self.surface, (x, y),
+                     (0, self.top, self.width, self.height))
 
 
 class HUDInput(HUDElement):
