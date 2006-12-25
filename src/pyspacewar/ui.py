@@ -1045,6 +1045,7 @@ class UIMode(object):
 
     paused = False
     mouse_visible = False
+    keys_repeat = False
 
     inherit_pause_from_prev_mode = False
 
@@ -1066,6 +1067,10 @@ class UIMode(object):
             if self.inherit_pause_from_prev_mode and prev_mode is not None:
                 self.paused = prev_mode.paused
         pygame.mouse.set_visible(self.mouse_visible)
+        if self.keys_repeat:
+            pygame.key.set_repeat(250, 30)
+        else:
+            pygame.key.set_repeat()
 
     def leave(self, next_mode=None):
         """Leave the mode."""
@@ -1204,6 +1209,7 @@ class MenuMode(UIMode):
     """Abstract base class for menu modes."""
 
     mouse_visible = True
+    keys_repeat = True
     inherit_pause_from_prev_mode = True
 
     def init(self):
