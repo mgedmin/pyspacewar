@@ -92,7 +92,7 @@ def mode_looks_sane((w, h)):
     However, not all such modes actually work.  On my Linux laptop that has
     a dual-monitor setup, the dual-head virtual mode (2048x768) appears as
     the largest video mode returned by list_modes.  However it does not work
-    at all as a full-screen mode, and looks weird when windowed..
+    at all as a full-screen mode, and looks weird when windowed.
     """
     return bool(w / h < 2)
 
@@ -910,6 +910,8 @@ class UIMode(object):
     paused = False
     mouse_visible = False
 
+    inherit_pause_from_prev_mode = False
+
     def __init__(self, ui):
         self.ui = ui
         self.prev_mode = None
@@ -925,6 +927,8 @@ class UIMode(object):
         if self.prev_mode is None:
             # Only do this once, otherwise two modes might get in a loop
             self.prev_mode = prev_mode
+            if self.inherit_pause_from_prev_mode and prev_mode is not None:
+                self.paused = prev_mode.paused
         pygame.mouse.set_visible(self.mouse_visible)
 
     def leave(self, next_mode=None):
@@ -1058,6 +1062,7 @@ class MenuMode(UIMode):
     """Abstract base class for menu modes."""
 
     mouse_visible = True
+    inherit_pause_from_prev_mode = True
 
     def init(self):
         """Initialize the mode."""
@@ -1152,8 +1157,6 @@ class MenuMode(UIMode):
 class MainMenuMode(MenuMode):
     """Mode: main menu."""
 
-    paused = False
-
     def init_menu(self):
         """Initialize the mode."""
         self.menu_items = [
@@ -1172,8 +1175,6 @@ class MainMenuMode(MenuMode):
 class NewGameMenuMode(MenuMode):
     """Mode: new game menu."""
 
-    paused = False
-
     def init_menu(self):
         """Initialize the mode."""
         self.menu_items = [
@@ -1186,8 +1187,6 @@ class NewGameMenuMode(MenuMode):
 
 class OptionsMenuMode(MenuMode):
     """Mode: options menu."""
-
-    paused = False
 
     def init_menu(self):
         """Initialize the mode."""
@@ -1231,8 +1230,6 @@ class OptionsMenuMode(MenuMode):
 class ScreenResolutionMenuMode(MenuMode):
     """Mode: screen resolution menu."""
 
-    paused = False
-
     def init_menu(self):
         """Initialize the mode."""
         self.menu_items = [
@@ -1253,11 +1250,14 @@ class GameMenuMode(MenuMode):
     """Mode: in-game menu."""
 
     paused = True
+    inherit_pause_from_prev_mode = False
 
     def init_menu(self):
         """Initialize the mode."""
         self.menu_items = [
             ('Resume game',     self.close_menu),
+            ('Options',         self.ui.options_menu),
+            ('Help',            self.ui.help),
             ('End Game',        self.ui.end_game),
         ]
 
