@@ -26,6 +26,26 @@ MODIFIER_KEYS = sets.Set([K_NUMLOCK, K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK,
                           K_RMETA, K_LMETA, K_LSUPER, K_RSUPER, K_MODE])
 
 
+DEFAULT_CONTROLS = {
+    # Player 1
+    'P1_TOGGLE_AI': K_1,
+    'P1_LEFT': K_LEFT,
+    'P1_RIGHT': K_RIGHT,
+    'P1_FORWARD': K_UP,
+    'P1_BACKWARD': K_DOWN,
+    'P1_BRAKE': K_RALT,
+    'P1_FIRE': K_RCTRL,
+    # Player 2
+    'P2_TOGGLE_AI': K_2,
+    'P2_LEFT': K_a,
+    'P2_RIGHT': K_d,
+    'P2_FORWARD': K_w,
+    'P2_BACKWARD': K_s,
+    'P2_BRAKE': K_LALT,
+    'P2_FIRE': K_LCTRL,
+}
+
+
 HELP_TEXT = u"""\
 =PySpaceWar=
 
@@ -40,21 +60,21 @@ ship.
 
 =Player 1 Controls=
 
-  LEFT, RIGHT     \u2014 rotate
-  UP              \u2014 accelerate in the direction you're facing
-  DOWN            \u2014 accelerate in the opposite direction
-  RCTRL           \u2014 launch a missile
-  RALT            \u2014 brake (lose 5% speed)
-  1               \u2014 enable/disable computer control
+  P1_LEFT, P1_RIGHT \u2014 rotate
+  P1_FORWARD      \u2014 accelerate in the direction you're facing
+  P1_BACKWARD     \u2014 accelerate in the opposite direction
+  P1_FIRE         \u2014 launch a missile
+  P1_BRAKE        \u2014 brake (lose 5% speed)
+  P1_TOGGLE_AI    \u2014 enable/disable computer control
 
 =Player 2 Controls=
 
-  A, D            \u2014 rotate
-  W               \u2014 accelerate in the direction you're facing
-  S               \u2014 accelerate in the opposite direction
-  LCTRL           \u2014 launch a missile
-  LALT            \u2014 brake (lose 5% speed)
-  2               \u2014 enable/disable computer control
+  P2_LEFT, P2_RIGHT \u2014 rotate
+  P2_FORWARD      \u2014 accelerate in the direction you're facing
+  P2_BACKWARD     \u2014 accelerate in the opposite direction
+  P2_FIRE         \u2014 launch a missile
+  P2_BRAKE        \u2014 brake (lose 5% speed)
+  P2_TOGGLE_AI    \u2014 enable/disable computer control
 
 =Other Controls=
 
@@ -83,6 +103,32 @@ the terms of the GNU General Public License as published by the Free Software
 Foundation; either version 2 of the License, or (at your option) any later
 version.
 """
+
+
+def key_name(key):
+    """Return the name of the key.
+
+        >>> key_name(K_RCTRL)
+        'RIGHT CTRL'
+        >>> key_name(None)
+        '(unset)'
+
+    """
+    if not key:
+        return '(unset)'
+    return pygame.key.name(key).upper()
+
+
+def fixup_keys_in_text(text, controls):
+    """Replace action names with key names in help text.
+
+        >>> fixup_keys_in_text('Press FIRE to start', {'FIRE': K_RCTRL})
+        'Press RIGHT CTRL to start'
+
+    """
+    for action, key in controls.items():
+        text = text.replace(action, key_name(key))
+    return text
 
 
 def mode_looks_sane((w, h)):
@@ -800,10 +846,7 @@ class HUDMenu(HUDElement):
         self.selected_item = 0
         self.top = 0
         self.item_height = item_height
-        self.surface = pygame.Surface((self.width, self.full_height))
-        self.surface.set_alpha(255 * 0.9)
-        self.surface.set_colorkey((1, 1, 1))
-        self.invalidate()
+        self.resize()
 
     def position(self, surface, margin=10):
         """Calculate screen position for the widget."""
@@ -819,6 +862,12 @@ class HUDMenu(HUDElement):
             self.top += item_spacing
         return HUDElement.position(self, surface, margin)
 
+    def resize(self):
+        self.surface = pygame.Surface((self.width, self.full_height))
+        self.surface.set_alpha(255 * 0.9)
+        self.surface.set_colorkey((1, 1, 1))
+        self.invalidate()
+
     def invalidate(self):
         """Indicate that the menu needs to be redrawn."""
         self._drawn_with = None
@@ -829,6 +878,8 @@ class HUDMenu(HUDElement):
         height = 0
         for item in items:
             size = font.size(item)
+            if '\t' in item:
+                size = (size[0] + xpadding * 2, size[1])
             width = max(width, size[0])
             height = max(height, size[1])
         return width + 2 * xpadding, height + 2 * ypadding
@@ -857,11 +908,25 @@ class HUDMenu(HUDElement):
             else:
                 fg_color = self.normal_fg_color
                 bg_color = self.normal_bg_color
-            img = self.font.render(item, True, fg_color)
             self.surface.fill(bg_color, (x, y, self.width, self.item_height))
-            self.surface.blit(img,
-                              (x + (self.width - img.get_width())/2,
-                               y + (self.item_height - img.get_height())/2))
+            if '\t' in item:
+                # align left and right
+                parts = item.split('\t', 1)
+                img = self.font.render(parts[0], True, fg_color)
+                margin = (self.item_height - img.get_height())/2
+                self.surface.blit(img, (x + self.xpadding, y + margin))
+                img = self.font.render(parts[1], True, fg_color)
+                self.surface.blit(img,
+                                  (x + self.width - img.get_width()
+                                     - self.xpadding,
+                                   y + margin))
+            else:
+                # center
+                img = self.font.render(item, True, fg_color)
+                margin = (self.item_height - img.get_height())/2
+                self.surface.blit(img,
+                                  (x + (self.width - img.get_width())/2,
+                                   y + margin))
             for ax in (0, self.width-1):
                 for ay in (0, self.item_height-1):
                     self.surface.set_at((x+ax, y+ay), (1, 1, 1))
@@ -874,6 +939,23 @@ class HUDMenu(HUDElement):
         x, y = self.position(surface)
         surface.blit(self.surface, (x, y),
                      (0, self.top, self.width, self.height))
+
+
+class HUDControlsMenu(HUDMenu):
+    """A scrolling menu for keyboard controls."""
+
+    def __init__(self, font, items, xalign=0.5, yalign=0.5,
+                 xpadding=8, ypadding=4, yspacing=2):
+        HUDMenu.__init__(self, font, items, xalign, yalign, xpadding,
+                         ypadding, yspacing)
+
+    def position(self, surface, margin=10):
+        """Calculate screen position for the widget."""
+        width = surface.get_width() - 2 * margin - 2 * self.xpadding
+        if width != self.width:
+            self.width = width
+            self.resize()
+        return HUDMenu.position(self, surface, margin)
 
 
 class HUDInput(HUDElement):
@@ -912,6 +994,42 @@ class HUDInput(HUDElement):
                 buffer.set_at((x, y), (1, 1, 1))
         surface.blit(buffer, (self.xmargin,
                               surface_h - self.ymargin - buffer.get_height()))
+
+
+class HUDMessage(HUDElement):
+    """An message box."""
+
+    fg_color = (220, 255, 255)
+    bg_color = (24, 120, 14)
+
+    def __init__(self, font, text, xpadding=16, ypadding=16, xalign=0.5,
+                 yalign=0.5):
+        width, height = font.size(text)
+        width += 2*xpadding
+        height += 2*ypadding
+        HUDElement.__init__(self, width, height, xalign, yalign)
+        self.xpadding = xpadding
+        self.ypadding = ypadding
+        self.font = font
+        self.text = text
+        self.surface = pygame.Surface((self.width, self.height))
+        self.surface.set_alpha(255 * 0.9)
+        self.surface.set_colorkey((1, 1, 1))
+        self.surface.fill(self.bg_color)
+        img = self.font.render(text, True, self.fg_color)
+        x = (self.width - img.get_width()) / 2
+        y = (self.height - img.get_height()) / 2
+        self.surface.blit(img, (x, y))
+        for dx, dy in (0, 0), (1, 0), (0, 1):
+            self.surface.set_at((dx, dy), (1, 1, 1))
+            self.surface.set_at((self.width-1-dx, dy), (1, 1, 1))
+            self.surface.set_at((dx, self.height-1-dy), (1, 1, 1))
+            self.surface.set_at((self.width-1-dx, self.height-1-dy), (1, 1, 1))
+
+    def draw(self, surface):
+        """Draw the element."""
+        x, y = self.position(surface)
+        surface.blit(self.surface, (x, y))
 
 
 class UIMode(object):
@@ -977,11 +1095,16 @@ class UIMode(object):
 
     def handle_key_press(self, event):
         """Handle a KEYDOWN event."""
-        handler_and_args = self._keymap_once.get(event.key)
+        key = event.key
+        if key in self.ui.rev_controls:
+            action = self.ui.rev_controls[key]
+            if action in self._keymap_once or action in self._keymap_repeat:
+                key = action
+        handler_and_args = self._keymap_once.get(key)
         if handler_and_args:
             handler, args = handler_and_args
             handler(*args)
-        elif event.key not in self._keymap_repeat:
+        elif key not in self._keymap_repeat:
             self.handle_any_other_key(event)
 
     def handle_any_other_key(self, event):
@@ -991,6 +1114,7 @@ class UIMode(object):
     def handle_held_keys(self, pressed):
         """Handle any keys that are pressed."""
         for key, (handler, args) in self._keymap_repeat.items():
+            key = self.ui.controls.get(key, key)
             if pressed[key]:
                 handler(*args)
 
@@ -1085,8 +1209,9 @@ class MenuMode(UIMode):
     def init(self):
         """Initialize the mode."""
         self.init_menu()
-        self.menu = HUDMenu(self.ui.menu_font,
-                            [item[0] for item in self.menu_items])
+        self.menu = self.create_menu()
+        if self.has_no_action(self.menu.selected_item):
+            self.select_next_item()
         self.on_key(K_UP, self.select_prev_item)
         self.on_key(K_DOWN, self.select_next_item)
         self.on_key(K_RETURN, self.activate_item)
@@ -1107,6 +1232,15 @@ class MenuMode(UIMode):
             ('Quit',            self.ui.quit),
         ]
 
+    def create_menu(self):
+        """Create the menu control for display."""
+        return HUDMenu(self.ui.menu_font,
+                            [item[0] for item in self.menu_items])
+
+    def has_no_action(self, item_idx):
+        """Is this menu item just an unselectable label?"""
+        return len(self.menu_items[item_idx]) == 1
+
     def reinit_menu(self):
         """Reinitialize the menu."""
         self.init_menu()
@@ -1117,7 +1251,7 @@ class MenuMode(UIMode):
     def _select_menu_item(self, pos):
         """Select menu item under cursor."""
         which = self.menu.find(self.ui.screen, pos)
-        if which != -1:
+        if which != -1 and not self.has_no_action(which):
             self.menu.selected_item = which
         return which
 
@@ -1153,19 +1287,25 @@ class MenuMode(UIMode):
         if self.menu.selected_item == 0:
             self.menu.selected_item = len(self.menu.items)
         self.menu.selected_item -= 1
+        if self.has_no_action(self.menu.selected_item):
+            self.select_prev_item()
 
     def select_next_item(self):
         """Select the next menu item."""
         self.menu.selected_item += 1
         if self.menu.selected_item == len(self.menu.items):
             self.menu.selected_item = 0
+            self.menu.top = 0
+        if self.has_no_action(self.menu.selected_item):
+            self.select_next_item()
 
     def activate_item(self):
         """Activate the selected menu item."""
         action = self.menu_items[self.menu.selected_item][1:]
-        handler = action[0]
-        args = action[1:]
-        handler(*args)
+        if action:
+            handler = action[0]
+            args = action[1:]
+            handler(*args)
 
     def close_menu(self):
         """Close the menu and return to the previous game mode."""
@@ -1217,6 +1357,7 @@ class OptionsMenuMode(MenuMode):
             (self.ui.show_missile_trails and 'Hide missile orbits'
                                           or 'Show missile orbits',
              self.toggle_missile_orbits),
+            ('Controls', self.ui.controls_menu),
             ('Return to main menu', self.close_menu),
         ]
 
@@ -1264,6 +1405,78 @@ class ScreenResolutionMenuMode(MenuMode):
         self.reinit_menu()
 
 
+class ControlsMenuMode(MenuMode):
+    """Mode: controls menu."""
+
+    def items(self, label, items):
+        return ([(label, )] +
+                [(title + '\t' + key_name(self.ui.controls[action]),
+                  self.set_control, title, action)
+                 for title, action in items])
+
+    def init_menu(self):
+        self.menu_items = self.items('Player 1', [
+                ('Turn left', 'P1_LEFT'),
+                ('Turn right', 'P1_RIGHT'),
+                ('Accelerate', 'P1_FORWARD'),
+                ('Decelerate', 'P1_BACKWARD'),
+                ('Launch missile', 'P1_FIRE'),
+                ('Brake', 'P1_BRAKE'),
+                ('Toggle computer control', 'P1_TOGGLE_AI'),
+        ]) + self.items('Player 2', [
+                ('Turn left', 'P2_LEFT'),
+                ('Turn right', 'P2_RIGHT'),
+                ('Accelerate', 'P2_FORWARD'),
+                ('Decelerate', 'P2_BACKWARD'),
+                ('Launch missile', 'P2_FIRE'),
+                ('Brake', 'P2_BRAKE'),
+                ('Toggle computer control', 'P2_TOGGLE_AI'),
+        ]) + [
+            ('Return to options menu', self.close_menu),
+        ]
+
+    def create_menu(self):
+        """Create the menu control for display."""
+        return HUDControlsMenu(self.ui.input_font,
+                               [item[0] for item in self.menu_items])
+
+    def set_control(self, action, key):
+        """Change a control"""
+        self.ui.ui_mode = WaitingForControlMode(self.ui, action, key)
+
+
+class WaitingForControlMode(UIMode):
+    """Mode: controls menu, waiting for a key press."""
+
+    inherit_pause_from_prev_mode = True
+
+    def __init__(self, ui, action, key):
+        self.action = action
+        self.key = key
+        UIMode.__init__(self, ui)
+
+    def init(self):
+        self.prompt = HUDMessage(self.ui.menu_font,
+                                 "Press a key or ESC to cancel")
+        self.on_key(K_PAUSE, self.ui.pause)
+        self.on_key(K_ESCAPE, self.return_to_previous_mode)
+
+    def draw(self, screen):
+        """Draw extra things pertaining to the mode."""
+        self.prev_mode.draw(screen)
+        self.prompt.draw(screen)
+
+    def handle_any_other_key(self, event):
+        """Handle a KEYDOWN event for unknown keys."""
+        self.ui.set_control(self.key, event.key)
+        self.prev_mode.reinit_menu()
+        self.return_to_previous_mode()
+
+    def handle_mouse_release(self, event):
+        """Handle a MOUSEBUTTONUP event."""
+        self.return_to_previous_mode()
+
+
 class GameMenuMode(MenuMode):
     """Mode: in-game menu."""
 
@@ -1295,21 +1508,21 @@ class PlayMode(UIMode):
         self.while_key(K_EQUALS, self.ui.zoom_in)
         self.while_key(K_MINUS, self.ui.zoom_out)
         # Player 1
-        self.on_key(K_1, self.ui.toggle_ai, 0)
-        self.while_key(K_LEFT, self.ui.turn_left, 0)
-        self.while_key(K_RIGHT, self.ui.turn_right, 0)
-        self.while_key(K_UP, self.ui.accelerate, 0)
-        self.while_key(K_DOWN, self.ui.backwards, 0)
-        self.while_key(K_RALT, self.ui.brake, 0)
-        self.on_key(K_RCTRL, self.ui.launch_missile, 0)
+        self.on_key('P1_TOGGLE_AI', self.ui.toggle_ai, 0)
+        self.while_key('P1_LEFT', self.ui.turn_left, 0)
+        self.while_key('P1_RIGHT', self.ui.turn_right, 0)
+        self.while_key('P1_FORWARD', self.ui.accelerate, 0)
+        self.while_key('P1_BACKWARD', self.ui.backwards, 0)
+        self.while_key('P1_BRAKE', self.ui.brake, 0)
+        self.on_key('P1_FIRE', self.ui.launch_missile, 0)
         # Player 2
-        self.on_key(K_2, self.ui.toggle_ai, 1)
-        self.while_key(K_a, self.ui.turn_left, 1)
-        self.while_key(K_d, self.ui.turn_right, 1)
-        self.while_key(K_w, self.ui.accelerate, 1)
-        self.while_key(K_s, self.ui.backwards, 1)
-        self.while_key(K_LALT, self.ui.brake, 1)
-        self.on_key(K_LCTRL, self.ui.launch_missile, 1)
+        self.on_key('P2_TOGGLE_AI', self.ui.toggle_ai, 1)
+        self.while_key('P2_LEFT', self.ui.turn_left, 1)
+        self.while_key('P2_RIGHT', self.ui.turn_right, 1)
+        self.while_key('P2_FORWARD', self.ui.accelerate, 1)
+        self.while_key('P2_BACKWARD', self.ui.backwards, 1)
+        self.while_key('P2_BRAKE', self.ui.brake, 1)
+        self.on_key('P2_FIRE', self.ui.launch_missile, 1)
 
     def handle_mouse_release(self, event):
         """Handle a MOUSEBUTTONUP event."""
@@ -1404,10 +1617,6 @@ class HelpMode(UIMode):
     paused = True
     mouse_visible = True
 
-    def draw(self, screen):
-        """Draw extra things pertaining to the mode."""
-        self.help_text.draw(screen)
-
     def init(self):
         """Initialize the mode."""
         self.on_key(K_f, self.ui.toggle_fullscreen)
@@ -1419,8 +1628,13 @@ class HelpMode(UIMode):
         self.on_key(K_PAGEUP, self.prev_page)
         self.help_text = HUDFormattedText(self.ui.help_font,
                                           self.ui.help_bold_font,
-                                          HELP_TEXT,
+                                          fixup_keys_in_text(HELP_TEXT,
+                                                             self.ui.controls),
                                           small_font=self.ui.hud_font)
+
+    def draw(self, screen):
+        """Draw extra things pertaining to the mode."""
+        self.help_text.draw(screen)
 
     def handle_mouse_release(self, event):
         """Handle a MOUSEBUTTONUP event."""
@@ -1471,6 +1685,10 @@ class GameUI(object):
 
     def __init__(self):
         self.rng = random.Random()
+        self.controls = dict(DEFAULT_CONTROLS)
+        self.rev_controls = dict([(value, key)
+                                  for (key, value) in self.controls.items()])
+        assert len(self.controls) == len(self.rev_controls)
 
     def init(self):
         """Initialize the user interface."""
@@ -1751,6 +1969,10 @@ class GameUI(object):
         """Enter the screen resolution menu."""
         self.ui_mode = ScreenResolutionMenuMode(self)
 
+    def controls_menu(self):
+        """Enter the controls menu."""
+        self.ui_mode = ControlsMenuMode(self)
+
     def watch_demo(self):
         """Go back to demo mode."""
         self.ui_mode = DemoMode(self)
@@ -1796,6 +2018,14 @@ class GameUI(object):
         """Toggle fullscreen mode."""
         self.fullscreen_mode = mode
         self._set_display_mode()
+
+    def set_control(self, action, key):
+        """Change a key mapping"""
+        if key in self.rev_controls:
+            old_action = self.rev_controls[key]
+            self.controls[old_action] = None
+        self.controls[action] = key
+        self.rev_controls[key] = action
 
     def zoom_in(self):
         """Zoom in."""

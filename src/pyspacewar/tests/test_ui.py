@@ -216,12 +216,19 @@ def doctest_FrameRateCounter_fps():
     """
 
 
+def setUp(test=None):
+    import pygame
+    pygame.init() # so that pygame.key.name() works
+    # unfortunately, on linux, if $DISPLAY is unset, pygame.init doesn't
+    # complain, but pygame.key.name() returns 'unknown key' for all keys
+
+
 def test_suite():
     path = os.path.join(os.path.dirname(__file__), os.path.pardir)
     if path not in sys.path:
         sys.path.append(path)
     return unittest.TestSuite([
-                        doctest.DocTestSuite('ui'),
+                        doctest.DocTestSuite('ui', setUp=setUp),
                         doctest.DocTestSuite()])
 
 
