@@ -9,6 +9,7 @@ import sys
 import sets
 import glob
 import time
+import math
 import random
 import itertools
 
@@ -167,6 +168,29 @@ def colorblend(col1, col2, alpha=0.5):
     r2, g2, b2 = col2
     beta = 1-alpha
     return (int(alpha*r1+beta*r2), int(alpha*g1+beta*g2), int(alpha*b1+beta*b2))
+
+
+def smooth(x, xmax, y1, y2):
+    """Calculate a smooth transition from y1 to y2 as x moves from 0 to xmax.
+
+        >>> for x in range(10):
+        ...     print '*' * int(smooth(x, 9, 1, 10))
+        *
+        *
+        *
+        **
+        ****
+        ******
+        ********
+        *********
+        *********
+        *********
+
+    """
+    t = -5 + 10 * (float(x) / xmax)
+    value = 1 / (1 + math.exp(-t))
+    return y1 + (y2 - y1) * value
+
 
 
 class Viewport(object):
@@ -1001,6 +1025,7 @@ class HUDMessage(HUDElement):
 
     fg_color = (220, 255, 255)
     bg_color = (24, 120, 14)
+    alpha = int(255 * 0.9)
 
     def __init__(self, font, text, xpadding=16, ypadding=16, xalign=0.5,
                  yalign=0.5):
@@ -1013,7 +1038,6 @@ class HUDMessage(HUDElement):
         self.font = font
         self.text = text
         self.surface = pygame.Surface((self.width, self.height))
-        self.surface.set_alpha(255 * 0.9)
         self.surface.set_colorkey((1, 1, 1))
         self.surface.fill(self.bg_color)
         img = self.font.render(text, True, self.fg_color)
@@ -1029,6 +1053,7 @@ class HUDMessage(HUDElement):
     def draw(self, surface):
         """Draw the element."""
         x, y = self.position(surface)
+        self.surface.set_alpha(self.alpha)
         surface.blit(self.surface, (x, y))
 
 
@@ -1145,9 +1170,37 @@ class PauseMode(UIMode):
 
     paused = True
 
+    show_message_after = 1 # seconds
+    fade_in_time = 5 # seconds
+
+    def enter(self, prev_mode):
+        """Enter the mode."""
+        UIMode.enter(self, prev_mode)
+        self.message = None
+        self.pause_entered = time.time()
+        self.animate = self.wait_for_fade
+
     def draw(self, screen):
         """Draw extra things pertaining to the mode."""
         self.prev_mode.draw(screen)
+        if self.animate:
+            self.animate()
+        if self.message:
+            self.message.draw(screen)
+
+    def wait_for_fade(self):
+        if time.time() >= self.pause_entered + self.show_message_after:
+            self.message = HUDMessage(self.ui.menu_font, "Paused")
+            self.message.alpha = 0
+            self.animate = self.fade_in
+
+    def fade_in(self):
+        t = time.time() - self.pause_entered - self.show_message_after
+        if t > self.fade_in_time:
+            self.message.alpha = int(255 * 0.9)
+            self.animate = None
+        else:
+            self.message.alpha = int(smooth(t, self.fade_in_time, 0, 255 * 0.9))
 
     def handle_any_other_key(self, event):
         """Handle a KEYDOWN event for unknown keys."""
