@@ -1578,7 +1578,7 @@ class GameUI(object):
     def _init_fonts(self):
         """Load fonts."""
         verdana = pygame.font.match_font('Verdana')
-        verdana_bold =  pygame.font.match_font('Verdana', bold=True)
+        verdana_bold = pygame.font.match_font('Verdana', bold=True)
         # Work around a bug in pygame:
         # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2970161
         if verdana and os.path.basename(verdana).lower() == 'verdanaz.ttf':
