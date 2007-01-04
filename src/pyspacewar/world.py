@@ -551,6 +551,7 @@ class Ship(Object):
         self.health = 1.0
         self.frags = 0
         self.dead = False
+        self.spawn_time = 0 # the value of world.time when last respawned
 
     def _set_direction(self, direction):
         """Set the direction of the ship.
@@ -659,6 +660,8 @@ class Ship(Object):
         """Respawn back into the world."""
         self.dead = False
         self.health = 1.0
+        if self.world:
+            self.spawn_time = self.world.time
 
     def launch(self):
         """Launch a missile."""

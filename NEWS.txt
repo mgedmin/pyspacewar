@@ -1,3 +1,7 @@
+January 5, 2006: Happy New Year!
+
+  - Show an animation (expanding bubble) when ships respawn.
+
 December 25, 2006: Released version 0.9.3: the Christmas release.
 
   - Keyboard controls can now be customized.

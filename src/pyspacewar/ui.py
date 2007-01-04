@@ -171,6 +171,26 @@ def colorblend(col1, col2, alpha=0.5):
     return (int(alpha*r1+beta*r2), int(alpha*g1+beta*g2), int(alpha*b1+beta*b2))
 
 
+def linear(x, xmax, y1, y2):
+    """Calculate a linear transition from y1 to y2 as x moves from 0 to xmax.
+
+        >>> for x in range(10):
+        ...     print '*' * int(linear(x, 9, 1, 10))
+        *
+        **
+        ***
+        ****
+        *****
+        ******
+        *******
+        ********
+        *********
+        **********
+
+    """
+    return y1 + (y2 - y1) * float(x) / xmax
+
+
 def smooth(x, xmax, y1, y2):
     """Calculate a smooth transition from y1 to y2 as x moves from 0 to xmax.
 
@@ -191,7 +211,6 @@ def smooth(x, xmax, y1, y2):
     t = -5 + 10 * (float(x) / xmax)
     value = 1 / (1 + math.exp(-t))
     return y1 + (y2 - y1) * value
-
 
 
 class Viewport(object):
@@ -1734,6 +1753,8 @@ class GameUI(object):
 
     visibility_margin = 120 # Keep ships at least 120px from screen edges
 
+    respawn_animation = 100 # Time (game ticks) to show respawn animation
+
     _ui_mode = None         # Previous user interface mode
 
     # Some debug information
@@ -2232,6 +2253,8 @@ class GameUI(object):
             ratio = self.game.time_to_respawn(ship) / self.game.respawn_time
             color = colorblend(color, (0x20, 0x20, 0x20), 0.2)
             color = colorblend(color, (0, 0, 0), ratio)
+        elif self.game.world.time - ship.spawn_time < self.respawn_animation:
+            self.draw_Ship_spawn_animation(ship)
         direction_vector = ship.direction_vector * ship.size
         side_vector = direction_vector.perpendicular()
         sp = self.viewport.screen_pos
@@ -2314,6 +2337,15 @@ class GameUI(object):
         right_front = min(right_front, 0.2)
         right_back = min(right_back, 0.2)
         return (front, back, left_front, left_back, right_front, right_back)
+
+    def draw_Ship_spawn_animation(self, ship):
+        sp = self.viewport.screen_pos(ship.position)
+        color = self.ship_colors[ship.appearance]
+        t = math.sqrt((self.game.world.time - ship.spawn_time)
+                      / self.respawn_animation)
+        radius = linear(t, 1, 1, 100)
+        color = colorblend((0, 0, 0), color, linear(t, 1, 0.2, 0.9))
+        pygame.draw.circle(self.screen, color, sp, int(radius), 1)
 
     def update_missile_trails(self):
         """Update missile trails."""
