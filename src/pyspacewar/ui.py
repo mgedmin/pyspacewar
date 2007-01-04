@@ -128,8 +128,8 @@ def fixup_keys_in_text(text, controls):
         'Press RIGHT CTRL to start'
 
     """
-    for action, key in controls.items():
-        text = text.replace(action, key_name(key))
+    for action, keys in controls.items():
+        text = text.replace(action, key_name(keys[0]))
     return text
 
 
@@ -1164,9 +1164,9 @@ class UIMode(object):
     def handle_held_keys(self, pressed):
         """Handle any keys that are pressed."""
         for key, (handler, args) in self._keymap_repeat.items():
-            key = self.ui.controls.get(key, key)
-            if pressed[key]:
-                handler(*args)
+            for key in self.ui.controls.get(key, [key]):
+                if key is not None and pressed[key]:
+                    handler(*args)
 
     def handle_mouse_press(self, event):
         """Handle a MOUSEBUTTONDOWN event."""
@@ -1487,9 +1487,16 @@ class ScreenResolutionMenuMode(MenuMode):
 class ControlsMenuMode(MenuMode):
     """Mode: controls menu."""
 
+    def init(self):
+        MenuMode.init(self)
+        self.on_key(K_BACKSPACE, self.clear_item)
+        self.on_key(K_DELETE, self.clear_item)
+        self.on_key(K_KP_PERIOD, self.clear_item)
+
     def items(self, label, items):
         return ([(label, )] +
-                [(title + '\t' + key_name(self.ui.controls[action]),
+                [(title + '\t' + ', '.join(map(key_name,
+                                               self.ui.controls[action])),
                   self.set_control, title, action)
                  for title, action in items])
 
@@ -1522,6 +1529,17 @@ class ControlsMenuMode(MenuMode):
     def set_control(self, action, key):
         """Change a control"""
         self.ui.ui_mode = WaitingForControlMode(self.ui, action, key)
+
+    def clear_item(self):
+        """Clear the selected menu item."""
+        action = self.menu_items[self.menu.selected_item][1:]
+        if action:
+            handler = action[0]
+            args = action[1:]
+            if handler == self.set_control:
+                title, action = args
+                self.ui.set_control(action, None)
+                self.reinit_menu()
 
 
 class WaitingForControlMode(UIMode):
@@ -1766,10 +1784,12 @@ class GameUI(object):
 
     def __init__(self):
         self.rng = random.Random()
-        self.controls = dict(DEFAULT_CONTROLS)
-        self.rev_controls = dict([(value, key)
-                                  for (key, value) in self.controls.items()])
-        assert len(self.controls) == len(self.rev_controls)
+        self.controls = {}
+        for action in DEFAULT_CONTROLS:
+            self.controls[action] = [None]
+        self.rev_controls = {}
+        for action, key in DEFAULT_CONTROLS.items():
+            self.set_control(action, key)
 
     def load_settings(self, filename=None):
         """Load settings from a configuration file."""
@@ -1788,11 +1808,15 @@ class GameUI(object):
                                                      'show_missile_trails')
         for action in self.controls:
             key = config.get('controls', action)
-            try:
-                key = int(key)
-            except ValueError:
-                key = None
-            self.set_control(action, key)
+            if key:
+                # clear all current keys first
+                self.set_control(action, None)
+            for key in key.split():
+                try:
+                    key = int(key)
+                except ValueError:
+                    key = None
+                self.set_control(action, key)
 
     def save_settings(self, filename=None):
         """Save settings to a configuration file."""
@@ -1813,8 +1837,8 @@ class GameUI(object):
         config.set('video', 'show_missile_trails',
                    str(self.show_missile_trails))
         config.add_section('controls')
-        for action, key in self.controls.items():
-            config.set('controls', action, key)
+        for action, keys in self.controls.items():
+            config.set('controls', action, ' '.join(map(str, keys)))
         return config
 
     def init(self):
@@ -2149,14 +2173,17 @@ class GameUI(object):
     def set_control(self, action, key):
         """Change a key mapping"""
         if key in self.rev_controls:
-            # key was previously bound to something else
             old_action = self.rev_controls[key]
-            self.controls[old_action] = None
-        old_key = self.controls[action]
-        if old_key:
-            # some other key was previously bound to this action
-            del self.rev_controls[old_key]
-        self.controls[action] = key
+            self.controls[old_action].remove(key)
+            if not self.controls[old_action]:
+                self.controls[old_action] = [None]
+        keys = self.controls[action]
+        if len(keys) > 1 or key is None or keys == [None]:
+            for old_key in keys:
+                if old_key is not None:
+                    del self.rev_controls[old_key]
+            self.controls[action] = []
+        self.controls[action].append(key)
         if key is not None:
             self.rev_controls[key] = action
 
