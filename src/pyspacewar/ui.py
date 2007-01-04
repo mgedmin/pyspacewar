@@ -1898,10 +1898,10 @@ class GameUI(object):
 
     def _choose_best_mode(self):
         """Choose a suitable display mode."""
-        for mode in pygame.display.list_modes():
-            if mode_looks_sane(mode):
-                return mode
-        return (1024, 768) # *shrug*
+        # Previously this function used to pick the largest sane video mode
+        # Sadly, my laptop is not fast enough to sustain 20 fps at 1024x768
+        # when there are too many missiles around.
+        return (800, 600)
 
     def _set_display_mode(self):
         """Set display mode."""
