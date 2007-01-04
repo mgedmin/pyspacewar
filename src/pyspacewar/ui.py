@@ -993,7 +993,7 @@ class HUDControlsMenu(HUDMenu):
         HUDMenu.__init__(self, font, items, xalign, yalign, xpadding,
                          ypadding, yspacing)
 
-    def position(self, surface, margin=10):
+    def position(self, surface, margin=20):
         """Calculate screen position for the widget."""
         width = surface.get_width() - 2 * margin - 2 * self.xpadding
         if width != self.width:
@@ -1492,6 +1492,10 @@ class ControlsMenuMode(MenuMode):
         self.on_key(K_BACKSPACE, self.clear_item)
         self.on_key(K_DELETE, self.clear_item)
         self.on_key(K_KP_PERIOD, self.clear_item)
+        self.version = HUDLabel(self.ui.hud_font,
+                                "Press ENTER to change a binding,"
+                                " BACKSPACE to clear it",
+                                0.5, 1)
 
     def items(self, label, items):
         return ([(label, )] +
