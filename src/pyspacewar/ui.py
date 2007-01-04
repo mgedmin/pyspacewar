@@ -2149,10 +2149,16 @@ class GameUI(object):
     def set_control(self, action, key):
         """Change a key mapping"""
         if key in self.rev_controls:
+            # key was previously bound to something else
             old_action = self.rev_controls[key]
             self.controls[old_action] = None
+        old_key = self.controls[action]
+        if old_key:
+            # some other key was previously bound to this action
+            del self.rev_controls[old_key]
         self.controls[action] = key
-        self.rev_controls[key] = action
+        if key is not None:
+            self.rev_controls[key] = action
 
     def zoom_in(self):
         """Zoom in."""
