@@ -555,6 +555,7 @@ class Ship(Object):
         self.frags = 0
         self.dead = False
         self.spawn_time = 0 # the value of world.time when last respawned
+        self.launch_effect = None
         self.hit_effect = None
         self.explode_effect = None
         self.respawn_effect = None
@@ -688,6 +689,8 @@ class Ship(Object):
         recoil = direction_vector * self.launch_speed * self.missile_recoil
         self.velocity -= recoil
         self.world.add(missile)
+        if self.launch_effect:
+            self.launch_effect(self, missile)
 
 
 class Missile(Object):

@@ -2010,6 +2010,7 @@ class GameUI(object):
                              rng=self.rng)
         self.ships = self.game.ships
         for ship in self.ships:
+            ship.launch_effect = self.launch_effect_Ship
             ship.bounce_effect = self.bounce_effect_Ship
             ship.hit_effect = self.hit_effect_Ship
             ship.explode_effect = self.explode_effect_Ship
@@ -2269,6 +2270,11 @@ class GameUI(object):
         """Manual ship control: launch a missile."""
         if not self.ai_controlled[player_id]:
             self.ships[player_id].launch()
+
+    def launch_effect_Ship(self, ship, obstacle):
+        """Play a sound effect when the player's ship bounces off something."""
+        player_id = self.ships.index(ship)
+        if not self.ai_controlled[player_id]:
             self.fire_sound.play()
 
     def bounce_effect_Ship(self, ship, obstacle):
