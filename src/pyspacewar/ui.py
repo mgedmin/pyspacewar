@@ -2249,6 +2249,7 @@ class GameUI(object):
     def end_game(self):
         """End the game in progress."""
         self._new_game(0)
+        self.watch_demo()
         self.ui_mode = MainMenuMode(self)
 
     def toggle_fullscreen(self):
