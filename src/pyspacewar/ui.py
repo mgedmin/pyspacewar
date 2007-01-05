@@ -1976,6 +1976,7 @@ class GameUI(object):
                                                     'electricshock.wav'))
         self.hit_sound = pygame.mixer.Sound(find('sounds', 'Grenade2.wav'))
         self.explode_sound = pygame.mixer.Sound(find('sounds', 'bomb.wav'))
+        self.respawn_sound = pygame.mixer.Sound(find('sounds', 'coin2.wav'))
         self.menu_sound = pygame.mixer.Sound(find('sounds', 'briefcs1.wav'))
 
     def _init_fonts(self):
@@ -2008,6 +2009,7 @@ class GameUI(object):
             ship.bounce_effect = self.bounce_effect_Ship
             ship.hit_effect = self.hit_effect_Ship
             ship.explode_effect = self.explode_effect_Ship
+            ship.respawn_effect = self.respawn_effect_Ship
         self.ai = map(AIController, self.ships)
         self.ai_controlled = [False] * len(self.ships)
         self.missile_trails = {}
@@ -2281,6 +2283,12 @@ class GameUI(object):
         player_id = self.ships.index(ship)
         if not self.ai_controlled[player_id]:
             self.explode_sound.play()
+
+    def respawn_effect_Ship(self, ship):
+        """Play a sound effect when the player's ship respawns."""
+        player_id = self.ships.index(ship)
+        if not self.ai_controlled[player_id]:
+            self.respawn_sound.play()
 
     def draw(self):
         """Draw the state of the game"""
