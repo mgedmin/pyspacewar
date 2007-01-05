@@ -1091,6 +1091,7 @@ class UIMode(object):
     paused = False
     mouse_visible = False
     keys_repeat = False
+    music = None
 
     inherit_pause_from_prev_mode = False
 
@@ -1116,6 +1117,8 @@ class UIMode(object):
             pygame.key.set_repeat(250, 30)
         else:
             pygame.key.set_repeat()
+        if self.music:
+            self.ui.play_music(self.music)
 
     def leave(self, next_mode=None):
         """Leave the mode."""
@@ -1236,6 +1239,7 @@ class DemoMode(UIMode):
     """Mode: demo."""
 
     paused = False
+    music = 'demo'
 
     def init(self):
         """Initialize the mode."""
@@ -1599,6 +1603,7 @@ class PlayMode(UIMode):
     """Mode: play the game."""
 
     paused = False
+    music = 'game'
 
     def init(self):
         """Initialize the mode."""
@@ -1638,6 +1643,7 @@ class GravityWarsMode(UIMode):
     """Mode: play gravity wars."""
 
     paused = False
+    music = 'gravitywars'
 
     def init(self):
         """Initialize the mode."""
@@ -1780,6 +1786,8 @@ class GameUI(object):
 
     _ui_mode = None         # Previous user interface mode
 
+    now_playing = None      # Filename of the current music track
+
     # Some debug information
     time_to_draw = 0            # Time to draw everything
     time_to_draw_trails = 0     # Time to draw missile trails
@@ -1853,6 +1861,7 @@ class GameUI(object):
         self._init_pygame()
         self._init_trail_colors()
         self._load_sounds()
+        self._load_music()
         self._load_planet_images()
         self._load_background()
         self._init_fonts()
@@ -1982,6 +1991,32 @@ class GameUI(object):
         self.explode_sound = pygame.mixer.Sound(find('sounds', 'bomb.wav'))
         self.respawn_sound = pygame.mixer.Sound(find('sounds', 'coin2.wav'))
         self.menu_sound = pygame.mixer.Sound(find('sounds', 'briefcs1.wav'))
+
+    def _load_music(self):
+        """Load music files."""
+        self.music_files = {
+                'demo': find('music', 'demo.ogg'),
+                'game': find('music', 'game.ogg'),
+                'gravitywars': find('music', 'gravitywars.ogg'),
+            }
+
+    def play_music(self, which):
+        """Loop the music file for a certain mode."""
+        if which == self.now_playing:
+            return
+        filename = self.music_files.get(which)
+        if not filename:
+            pygame.mixer.music.stop()
+        else:
+            try:
+                pygame.mixer.music.load(filename)
+                pygame.mixer.music.play(-1)
+            except pygame.error:
+                # Don't print warnings while I don't have any music actually
+                # bundled with pyspacewar
+                # print "pyspacewar: could not load %s" % filename
+                pygame.mixer.music.stop()
+        self.now_playing = which
 
     def _init_fonts(self):
         """Load fonts."""
