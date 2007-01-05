@@ -1969,7 +1969,7 @@ class GameUI(object):
             self.background_surface = scaled.convert()
 
     def _load_sounds(self):
-        """Load bitmaps of planets."""
+        """Load sound effects."""
         self.thruster_sound_playing = False
         self.thruster_sound = pygame.mixer.Sound(find('sounds',
                                                       'Pink_Noise1.wav'))
