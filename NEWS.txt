@@ -1,13 +1,11 @@
 January 5, 2006: Happy New Year!
 
+  - Add sound effects.
   - Show an animation (expanding bubble) when ships respawn.
-  - Bugfix: after remapping the controls the old keys used to continue to
-    perform the same actions.
-  - Allow up to two keys bound to the same action.
+  - Allow up to two keys to be bound to the same action.
   - Use 800x600 by default; if your computer is fast enough, you can change to
     a better video mode; if not, give a better first impression by avoiding
     sluggishness.
-  - Sound effects!
 
 December 25, 2006: Released version 0.9.3: the Christmas release.
 
