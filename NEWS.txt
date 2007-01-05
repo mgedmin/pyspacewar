@@ -7,7 +7,7 @@ January 5, 2006: Happy New Year!
   - Use 800x600 by default; if your computer is fast enough, you can change to
     a better video mode; if not, give a better first impression by avoiding
     sluggishness.
-  - Sound effects!  Well, one sound effect.
+  - Sound effects!
 
 December 25, 2006: Released version 0.9.3: the Christmas release.
 

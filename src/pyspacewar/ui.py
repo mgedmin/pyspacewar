@@ -1973,6 +1973,8 @@ class GameUI(object):
                                                   'Gun_Silencer.wav'))
         self.bounce_sound = pygame.mixer.Sound(find('sounds',
                                                     'electricshock.wav'))
+        self.hit_sound = pygame.mixer.Sound(find('sounds', 'Grenade2.wav'))
+        self.explode_sound = pygame.mixer.Sound(find('sounds', 'bomb.wav'))
 
     def _init_fonts(self):
         """Load fonts."""
@@ -2002,6 +2004,8 @@ class GameUI(object):
         self.ships = self.game.ships
         for ship in self.ships:
             ship.bounce_effect = self.bounce_effect_Ship
+            ship.hit_effect = self.hit_effect_Ship
+            ship.explode_effect = self.explode_effect_Ship
         self.ai = map(AIController, self.ships)
         self.ai_controlled = [False] * len(self.ships)
         self.missile_trails = {}
@@ -2259,8 +2263,20 @@ class GameUI(object):
     def bounce_effect_Ship(self, ship, obstacle):
         """Play a sound effect when the player's ship bounces off something."""
         player_id = self.ships.index(ship)
-        if not self.ai_controlled[player_id]:
+        if not self.ai_controlled[player_id] and not ship.dead:
             self.bounce_sound.play()
+
+    def hit_effect_Ship(self, ship, missile):
+        """Play a sound effect when the player's ship is hit."""
+        player_id = self.ships.index(ship)
+        if not self.ai_controlled[player_id]:
+            self.hit_sound.play()
+
+    def explode_effect_Ship(self, ship, killer):
+        """Play a sound effect when the player's ship explodes."""
+        player_id = self.ships.index(ship)
+        if not self.ai_controlled[player_id]:
+            self.explode_sound.play()
 
     def draw(self):
         """Draw the state of the game"""

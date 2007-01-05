@@ -555,6 +555,8 @@ class Ship(Object):
         self.frags = 0
         self.dead = False
         self.spawn_time = 0 # the value of world.time when last respawned
+        self.hit_effect = None
+        self.explode_effect = None
 
     def _set_direction(self, direction):
         """Set the direction of the ship.
@@ -639,6 +641,8 @@ class Ship(Object):
             self.health -= self.missile_damage
             killed_by = other.launched_by
             self.velocity += other.velocity * self.missile_recoil
+            if self.hit_effect:
+                self.hit_effect(self, other)
         else:
             self.health -= self.collision_damage
             self.bounce(other)
@@ -658,6 +662,8 @@ class Ship(Object):
             killed_by.frags += 1
         self.add_debris(time=50, maxdistance=self.size * 0.5,
                         howmany=self.world.rng.randrange(9, 21))
+        if self.explode_effect:
+            self.explode_effect(self, killed_by)
 
     def respawn(self):
         """Respawn back into the world."""
