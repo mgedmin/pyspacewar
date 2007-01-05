@@ -213,6 +213,19 @@ def smooth(x, xmax, y1, y2):
     return y1 + (y2 - y1) * value
 
 
+class NoSound(object):
+    """A pygame.mixer.Sound stub for when you cannot load a sound file."""
+
+    def play(*args):
+        pass
+
+    def stop(*args):
+        pass
+
+    def set_volume(*args):
+        pass
+
+
 class Viewport(object):
     """A viewport to the universe.
 
@@ -1979,18 +1992,29 @@ class GameUI(object):
 
     def _load_sounds(self):
         """Load sound effects."""
+        config = ConfigParser.RawConfigParser()
+        config.add_section('sounds')
+        config.read([find('sounds', 'sounds.ini')])
+
+        def load_sound(name):
+            if config.has_option('sounds', name):
+                filename = config.get('sounds', name)
+                if filename:
+                    try:
+                        return pygame.mixer.Sound(find('sounds', filename))
+                    except pygame.error:
+                        print "pyspacewar: could not load %s" % filename
+            return NoSound()
+
         self.thruster_sound_playing = False
-        self.thruster_sound = pygame.mixer.Sound(find('sounds',
-                                                      'Pink_Noise1.wav'))
+        self.thruster_sound = load_sound('thruster')
         self.thruster_sound.set_volume(0.5)
-        self.fire_sound = pygame.mixer.Sound(find('sounds',
-                                                  'Gun_Silencer.wav'))
-        self.bounce_sound = pygame.mixer.Sound(find('sounds',
-                                                    'electricshock.wav'))
-        self.hit_sound = pygame.mixer.Sound(find('sounds', 'Grenade2.wav'))
-        self.explode_sound = pygame.mixer.Sound(find('sounds', 'bomb.wav'))
-        self.respawn_sound = pygame.mixer.Sound(find('sounds', 'coin2.wav'))
-        self.menu_sound = pygame.mixer.Sound(find('sounds', 'briefcs1.wav'))
+        self.fire_sound = load_sound('fire')
+        self.bounce_sound = load_sound('bounce')
+        self.hit_sound = load_sound('hit')
+        self.explode_sound = load_sound('explode')
+        self.respawn_sound = load_sound('respawn')
+        self.menu_sound = load_sound('menu')
 
     def _load_music(self):
         """Load music files."""
