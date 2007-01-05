@@ -1851,6 +1851,7 @@ class GameUI(object):
         self.version_text = 'PySpaceWar version %s' % self.version
         self._init_pygame()
         self._init_trail_colors()
+        self._load_sounds()
         self._load_planet_images()
         self._load_background()
         self._init_fonts()
@@ -1965,6 +1966,11 @@ class GameUI(object):
             # The call to surface.convert dramatically affects performance
             # of subsequent blits
             self.background_surface = scaled.convert()
+
+    def _load_sounds(self):
+        """Load bitmaps of planets."""
+        self.fire_sound = pygame.mixer.Sound(find('sounds',
+                                                  'Gun_Silencer.wav'))
 
     def _init_fonts(self):
         """Load fonts."""
@@ -2244,6 +2250,7 @@ class GameUI(object):
         """Manual ship control: launch a missile."""
         if not self.ai_controlled[player_id]:
             self.ships[player_id].launch()
+            self.fire_sound.play()
 
     def draw(self):
         """Draw the state of the game"""
