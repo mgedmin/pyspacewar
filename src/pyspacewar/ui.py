@@ -2292,8 +2292,7 @@ class GameUI(object):
     def respawn_effect_Ship(self, ship):
         """Play a sound effect when the player's ship respawns."""
         player_id = self.ships.index(ship)
-        if not self.ai_controlled[player_id]:
-            self.respawn_sound.play()
+        self.respawn_sound.play()
 
     def update_continuous_sounds(self):
         """Loop certain sound effects while certain conditions hold true."""
