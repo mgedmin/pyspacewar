@@ -1994,11 +1994,15 @@ class GameUI(object):
 
     def _load_music(self):
         """Load music files."""
-        self.music_files = {
-                'demo': find('music', 'demo.ogg'),
-                'game': find('music', 'game.ogg'),
-                'gravitywars': find('music', 'gravitywars.ogg'),
-            }
+        config = ConfigParser.RawConfigParser()
+        config.add_section('music')
+        config.read([find('music', 'music.ini')])
+        self.music_files = {}
+        for what in ['demo', 'game', 'gravitywars']:
+            if config.has_option('music', what):
+                filename = config.get('music', what)
+                if filename:
+                    self.music_files[what] = find('music', filename)
 
     def play_music(self, which):
         """Loop the music file for a certain mode."""
@@ -2012,9 +2016,7 @@ class GameUI(object):
                 pygame.mixer.music.load(filename)
                 pygame.mixer.music.play(-1)
             except pygame.error:
-                # Don't print warnings while I don't have any music actually
-                # bundled with pyspacewar
-                # print "pyspacewar: could not load %s" % filename
+                print "pyspacewar: could not load %s" % filename
                 pygame.mixer.music.stop()
         self.now_playing = which
 
