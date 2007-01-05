@@ -1971,6 +1971,8 @@ class GameUI(object):
         """Load bitmaps of planets."""
         self.fire_sound = pygame.mixer.Sound(find('sounds',
                                                   'Gun_Silencer.wav'))
+        self.bounce_sound = pygame.mixer.Sound(find('sounds',
+                                                    'electricshock.wav'))
 
     def _init_fonts(self):
         """Load fonts."""
@@ -1998,6 +2000,8 @@ class GameUI(object):
                              planet_kinds=len(self.planet_images),
                              rng=self.rng)
         self.ships = self.game.ships
+        for ship in self.ships:
+            ship.bounce_effect = self.bounce_effect_Ship
         self.ai = map(AIController, self.ships)
         self.ai_controlled = [False] * len(self.ships)
         self.missile_trails = {}
@@ -2252,6 +2256,12 @@ class GameUI(object):
             self.ships[player_id].launch()
             self.fire_sound.play()
 
+    def bounce_effect_Ship(self, ship, obstacle):
+        """Play a sound effect when the player's ship bounces off something."""
+        player_id = self.ships.index(ship)
+        if not self.ai_controlled[player_id]:
+            self.bounce_sound.play()
+
     def draw(self):
         """Draw the state of the game"""
         self.time_to_draw = 0
@@ -2444,4 +2454,3 @@ class GameUI(object):
         else:
             self.update_missile_trails()
             self.framedrop_needed = not self.game.wait_for_tick()
-

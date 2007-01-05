@@ -345,6 +345,7 @@ class Object(object):
         self.velocity = velocity
         self.appearance = appearance
         self.world = None
+        self.bounce_effect = None
 
     def distanceTo(self, other):
         """Calculate the distance to another object.
@@ -462,6 +463,8 @@ class Object(object):
         # Let's also make sure the objects do not overlap
         collision_distance = other.radius + self.radius
         self.position = other.position + normal.scaled(collision_distance)
+        if self.bounce_effect:
+            self.bounce_effect(self, other)
 
     def add_debris(self, howmany=None, maxdistance=1.0, time=5.0):
         """Add some debris."""
