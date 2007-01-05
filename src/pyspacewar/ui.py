@@ -1382,6 +1382,7 @@ class MenuMode(UIMode):
         """Activate the selected menu item."""
         action = self.menu_items[self.menu.selected_item][1:]
         if action:
+            self.ui.menu_sound.play()
             handler = action[0]
             args = action[1:]
             handler(*args)
@@ -1975,6 +1976,7 @@ class GameUI(object):
                                                     'electricshock.wav'))
         self.hit_sound = pygame.mixer.Sound(find('sounds', 'Grenade2.wav'))
         self.explode_sound = pygame.mixer.Sound(find('sounds', 'bomb.wav'))
+        self.menu_sound = pygame.mixer.Sound(find('sounds', 'briefcs1.wav'))
 
     def _init_fonts(self):
         """Load fonts."""
@@ -2124,6 +2126,7 @@ class GameUI(object):
 
     def main_menu(self):
         """Enter the main menu."""
+        self.menu_sound.play()
         self.ui_mode = MainMenuMode(self)
 
     def new_game_menu(self):
@@ -2167,6 +2170,7 @@ class GameUI(object):
 
     def game_menu(self):
         """Enter the game menu."""
+        self.menu_sound.play()
         self.ui_mode = GameMenuMode(self)
 
     def resume_game(self):
