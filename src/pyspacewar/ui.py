@@ -124,7 +124,7 @@ def key_name(key):
 def fixup_keys_in_text(text, controls):
     """Replace action names with key names in help text.
 
-        >>> fixup_keys_in_text('Press FIRE to start', {'FIRE': K_RCTRL})
+        >>> fixup_keys_in_text('Press FIRE to start', {'FIRE': [K_RCTRL]})
         'Press RIGHT CTRL to start'
 
     """
