@@ -1398,10 +1398,10 @@ class MainMenuMode(MenuMode):
     def init_menu(self):
         """Initialize the mode."""
         self.menu_items = [
-            ('Watch Demo',      self.ui.watch_demo),
             ('New Game',        self.ui.new_game_menu),
             ('Options',         self.ui.options_menu),
             ('Help',            self.ui.help),
+            ('Watch Demo',      self.ui.watch_demo),
             ('Quit',            self.ui.quit),
         ]
         self.on_key(K_PAUSE, self.ui.pause)
