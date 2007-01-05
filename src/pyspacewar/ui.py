@@ -1970,6 +1970,10 @@ class GameUI(object):
 
     def _load_sounds(self):
         """Load bitmaps of planets."""
+        self.thruster_sound_playing = False
+        self.thruster_sound = pygame.mixer.Sound(find('sounds',
+                                                      'Pink_Noise1.wav'))
+        self.thruster_sound.set_volume(0.5)
         self.fire_sound = pygame.mixer.Sound(find('sounds',
                                                   'Gun_Silencer.wav'))
         self.bounce_sound = pygame.mixer.Sound(find('sounds',
@@ -2117,6 +2121,7 @@ class GameUI(object):
                 self.ui_mode.handle_mouse_motion(event)
         pressed = pygame.key.get_pressed()
         self.ui_mode.handle_held_keys(pressed)
+        self.update_continuous_sounds()
 
     def quit(self):
         """Exit the game."""
@@ -2289,6 +2294,20 @@ class GameUI(object):
         player_id = self.ships.index(ship)
         if not self.ai_controlled[player_id]:
             self.respawn_sound.play()
+
+    def update_continuous_sounds(self):
+        """Loop certain sound effects while certain conditions hold true."""
+        makes_noise = False
+        for player_id, ship in enumerate(self.ships):
+            if not self.ai_controlled[player_id]:
+                makes_noise = (ship.forward_thrust or ship.rear_thrust or
+                               ship.left_thrust or ship.right_thrust or
+                               ship.engage_brakes) or makes_noise
+        if self.thruster_sound_playing and not makes_noise:
+            self.thruster_sound.stop()
+        elif not self.thruster_sound_playing and makes_noise:
+            self.thruster_sound.play(-1)
+        self.thruster_sound_playing = makes_noise
 
     def draw(self):
         """Draw the state of the game"""
