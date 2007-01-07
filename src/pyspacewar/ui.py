@@ -213,19 +213,6 @@ def smooth(x, xmax, y1, y2):
     return y1 + (y2 - y1) * value
 
 
-class NoSound(object):
-    """A pygame.mixer.Sound stub for when you cannot load a sound file."""
-
-    def play(*args):
-        pass
-
-    def stop(*args):
-        pass
-
-    def set_volume(*args):
-        pass
-
-
 class Viewport(object):
     """A viewport to the universe.
 
@@ -1399,7 +1386,7 @@ class MenuMode(UIMode):
         """Activate the selected menu item."""
         action = self.menu_items[self.menu.selected_item][1:]
         if action:
-            self.ui.menu_sound.play()
+            self.ui.play_sound('menu')
             handler = action[0]
             args = action[1:]
             handler(*args)
@@ -2008,26 +1995,20 @@ class GameUI(object):
         config = ConfigParser.RawConfigParser()
         config.add_section('sounds')
         config.read([find('sounds', 'sounds.ini')])
-
-        def load_sound(name):
+        self.sounds = {}
+        self.sound_looping = {}
+        for name in ['thruster', 'fire', 'bounce', 'hit', 'explode', 'respawn',
+                     'menu']:
             if config.has_option('sounds', name):
                 filename = config.get('sounds', name)
                 if filename:
                     try:
-                        return pygame.mixer.Sound(find('sounds', filename))
+                        sound = pygame.mixer.Sound(find('sounds', filename))
+                        self.sounds[name] = sound
                     except pygame.error:
                         print "pyspacewar: could not load %s" % filename
-            return NoSound()
-
-        self.thruster_sound_playing = False
-        self.thruster_sound = load_sound('thruster')
-        self.thruster_sound.set_volume(0.5)
-        self.fire_sound = load_sound('fire')
-        self.bounce_sound = load_sound('bounce')
-        self.hit_sound = load_sound('hit')
-        self.explode_sound = load_sound('explode')
-        self.respawn_sound = load_sound('respawn')
-        self.menu_sound = load_sound('menu')
+        if 'thruster' in self.sounds:
+            self.sounds['thruster'].set_volume(0.5)
 
     def _load_music(self):
         """Load music files."""
@@ -2056,6 +2037,23 @@ class GameUI(object):
                 print "pyspacewar: could not load %s" % filename
                 pygame.mixer.music.stop()
         self.now_playing = which
+
+    def play_sound(self, which):
+        """Play a certain sound effect."""
+        if which in self.sounds:
+            self.sounds[which].play()
+
+    def start_sound(self, which):
+        """Start looping a certain sound effect."""
+        if not self.sound_looping.get(which) and which in self.sounds:
+            self.sounds[which].play(-1)
+            self.sound_looping[which] = True
+
+    def stop_sound(self, which):
+        """Stop playing a certain sound effect."""
+        if self.sound_looping.get(which) and which in self.sounds:
+            self.sounds[which].stop()
+            self.sound_looping[which] = False
 
     def _init_fonts(self):
         """Load fonts."""
@@ -2208,7 +2206,7 @@ class GameUI(object):
 
     def main_menu(self):
         """Enter the main menu."""
-        self.menu_sound.play()
+        self.play_sound('menu')
         self.ui_mode = MainMenuMode(self)
 
     def new_game_menu(self):
@@ -2252,7 +2250,7 @@ class GameUI(object):
 
     def game_menu(self):
         """Enter the game menu."""
-        self.menu_sound.play()
+        self.play_sound('menu')
         self.ui_mode = GameMenuMode(self)
 
     def resume_game(self):
@@ -2354,7 +2352,7 @@ class GameUI(object):
         """Play a sound effect when the player's ship bounces off something."""
         player_id = self.ships.index(ship)
         if not self.ai_controlled[player_id] or self.sound_in_vacuum:
-            self.fire_sound.play()
+            self.play_sound('fire')
 
     def bounce_effect_Ship(self, ship, obstacle):
         """Play a sound effect when the player's ship bounces off something."""
@@ -2362,24 +2360,24 @@ class GameUI(object):
         if not ship.dead:
             # It sounds weird to hear that sound when dead ships bounce
             if not self.ai_controlled[player_id] or self.sound_in_vacuum:
-                self.bounce_sound.play()
+                self.play_sound('bounce')
 
     def hit_effect_Ship(self, ship, missile):
         """Play a sound effect when the player's ship is hit."""
         player_id = self.ships.index(ship)
         if not self.ai_controlled[player_id] or self.sound_in_vacuum:
-            self.hit_sound.play()
+            self.play_sound('hit')
 
     def explode_effect_Ship(self, ship, killer):
         """Play a sound effect when the player's ship explodes."""
         player_id = self.ships.index(ship)
         if not self.ai_controlled[player_id] or self.sound_in_vacuum:
-            self.explode_sound.play()
+            self.play_sound('explode')
 
     def respawn_effect_Ship(self, ship):
         """Play a sound effect when the player's ship respawns."""
         player_id = self.ships.index(ship)
-        self.respawn_sound.play()
+        self.play_sound('respawn')
 
     def update_continuous_sounds(self):
         """Loop certain sound effects while certain conditions hold true."""
@@ -2389,11 +2387,10 @@ class GameUI(object):
                 makes_noise = (ship.forward_thrust or ship.rear_thrust or
                                ship.left_thrust or ship.right_thrust or
                                ship.engage_brakes) or makes_noise
-        if self.thruster_sound_playing and not makes_noise:
-            self.thruster_sound.stop()
-        elif not self.thruster_sound_playing and makes_noise:
-            self.thruster_sound.play(-1)
-        self.thruster_sound_playing = makes_noise
+        if makes_noise:
+            self.start_sound('thruster')
+        else:
+            self.stop_sound('thruster')
 
     def draw(self):
         """Draw the state of the game"""
