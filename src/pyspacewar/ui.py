@@ -1446,14 +1446,17 @@ class OptionsMenuMode(MenuMode):
     def init_menu(self):
         """Initialize the mode."""
         self.menu_items = [
-            ('Screen size: %dx%d' % self.ui.fullscreen_mode,
+            ('Screen size\t%dx%d' % self.ui.fullscreen_mode,
              self.ui.screen_resolution_menu),
-            (self.ui.fullscreen and 'Windowed mode'
-                                 or 'Full screen mode',
+            (self.ui.fullscreen and 'Full screen mode\ton'
+                                 or 'Full screen mode\toff',
              self.toggle_fullscreen),
-            (self.ui.show_missile_trails and 'Hide missile orbits'
-                                          or 'Show missile orbits',
+            (self.ui.show_missile_trails and 'Missile orbits\ton'
+                                          or 'Missile orbits\toff',
              self.toggle_missile_orbits),
+            (self.ui.sound_in_vacuum and 'Sound in vacuum\ton'
+                                      or 'Sound in vacuum\toff',
+             self.toggle_sound_in_vacuum),
             ('Controls', self.ui.controls_menu),
             ('Return to main menu', self.close_menu),
         ]
@@ -1480,6 +1483,11 @@ class OptionsMenuMode(MenuMode):
     def toggle_missile_orbits(self):
         """Toggle missile orbits and reflect the setting in the menu."""
         self.ui.toggle_missile_orbits()
+        self.reinit_menu()
+
+    def toggle_sound_in_vacuum(self):
+        """Toggle sound in vacuum and reflect the setting in the menu."""
+        self.ui.toggle_sound_in_vacuum()
         self.reinit_menu()
 
 
@@ -1783,6 +1791,7 @@ class GameUI(object):
     fullscreen = False              # Start in windowed mode
     fullscreen_mode = None          # Desired video mode (w, h)
     show_missile_trails = True      # Show missile trails by default
+    sound_in_vacuum = True          # Can you hear what happens to AI ships?
     show_debug_info = False         # Hide debug info by default
     desired_zoom_level = 1.0        # The desired zoom level
 
@@ -1832,6 +1841,8 @@ class GameUI(object):
             self.fullscreen_mode = None
         self.show_missile_trails = config.getboolean('video',
                                                      'show_missile_trails')
+        self.sound_in_vacuum = config.getboolean('sound',
+                                                 'sound_in_vacuum')
         for action in self.controls:
             key = config.get('controls', action)
             if key:
@@ -1862,6 +1873,8 @@ class GameUI(object):
             config.set('video', 'mode', '')
         config.set('video', 'show_missile_trails',
                    str(self.show_missile_trails))
+        config.add_section('sound')
+        config.set('sound', 'sound_in_vacuum', str(self.sound_in_vacuum))
         config.add_section('controls')
         for action, keys in self.controls.items():
             config.set('controls', action, ' '.join(map(str, keys)))
@@ -2295,6 +2308,10 @@ class GameUI(object):
         """Show/hide missile trails."""
         self.show_missile_trails = not self.show_missile_trails
 
+    def toggle_sound_in_vacuum(self):
+        """Toggle sound in vacuum."""
+        self.sound_in_vacuum = not self.sound_in_vacuum
+
     def toggle_ai(self, player_id):
         """Toggle AI control for player."""
         self.ai_controlled[player_id] = not self.ai_controlled[player_id]
@@ -2336,25 +2353,27 @@ class GameUI(object):
     def launch_effect_Ship(self, ship, obstacle):
         """Play a sound effect when the player's ship bounces off something."""
         player_id = self.ships.index(ship)
-        if not self.ai_controlled[player_id]:
+        if not self.ai_controlled[player_id] or self.sound_in_vacuum:
             self.fire_sound.play()
 
     def bounce_effect_Ship(self, ship, obstacle):
         """Play a sound effect when the player's ship bounces off something."""
         player_id = self.ships.index(ship)
-        if not self.ai_controlled[player_id] and not ship.dead:
-            self.bounce_sound.play()
+        if not ship.dead:
+            # It sounds weird to hear that sound when dead ships bounce
+            if not self.ai_controlled[player_id] or self.sound_in_vacuum:
+                self.bounce_sound.play()
 
     def hit_effect_Ship(self, ship, missile):
         """Play a sound effect when the player's ship is hit."""
         player_id = self.ships.index(ship)
-        if not self.ai_controlled[player_id]:
+        if not self.ai_controlled[player_id] or self.sound_in_vacuum:
             self.hit_sound.play()
 
     def explode_effect_Ship(self, ship, killer):
         """Play a sound effect when the player's ship explodes."""
         player_id = self.ships.index(ship)
-        if not self.ai_controlled[player_id]:
+        if not self.ai_controlled[player_id] or self.sound_in_vacuum:
             self.explode_sound.play()
 
     def respawn_effect_Ship(self, ship):
@@ -2366,7 +2385,7 @@ class GameUI(object):
         """Loop certain sound effects while certain conditions hold true."""
         makes_noise = False
         for player_id, ship in enumerate(self.ships):
-            if not self.ai_controlled[player_id]:
+            if not self.ai_controlled[player_id] or self.sound_in_vacuum:
                 makes_noise = (ship.forward_thrust or ship.rear_thrust or
                                ship.left_thrust or ship.right_thrust or
                                ship.engage_brakes) or makes_noise

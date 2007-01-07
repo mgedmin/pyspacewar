@@ -1,4 +1,4 @@
-January 5, 2006: Happy New Year!
+January 7, 2006: Happy New Year!
 
   - Add sound effects.
   - Show an animation (expanding bubble) when ships respawn.
@@ -6,6 +6,11 @@ January 5, 2006: Happy New Year!
   - Use 800x600 by default; if your computer is fast enough, you can change to
     a better video mode; if not, give a better first impression by avoiding
     sluggishness.
+  - Change the options menu: show the current state (e.g. "missile orbits: on")
+    instead of the action that would change it ("hide missile orbits").  Add
+    an option to toggle sound propagation in vacuum (or, in practical terms,
+    whether you hear a sound when a missile hits the computer-controlled ship
+    or when it explodes).
 
 December 25, 2006: Released version 0.9.3: the Christmas release.
 
