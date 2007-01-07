@@ -1432,17 +1432,20 @@ class OptionsMenuMode(MenuMode):
 
     def init_menu(self):
         """Initialize the mode."""
+        def title(label, on):
+            return label + '\t' + (on and 'on' or 'off')
         self.menu_items = [
             ('Screen size\t%dx%d' % self.ui.fullscreen_mode,
              self.ui.screen_resolution_menu),
-            (self.ui.fullscreen and 'Full screen mode\ton'
-                                 or 'Full screen mode\toff',
+            (title('Full screen mode', self.ui.fullscreen),
              self.toggle_fullscreen),
-            (self.ui.show_missile_trails and 'Missile orbits\ton'
-                                          or 'Missile orbits\toff',
+            (title('Missile orbits', self.ui.show_missile_trails),
              self.toggle_missile_orbits),
-            (self.ui.sound_in_vacuum and 'Sound in vacuum\ton'
-                                      or 'Sound in vacuum\toff',
+            (title('Music', self.ui.music),
+             self.toggle_music),
+            (title('Sound', self.ui.sound),
+             self.toggle_sound),
+            (title('Sound in vacuum', self.ui.sound_in_vacuum),
              self.toggle_sound_in_vacuum),
             ('Controls', self.ui.controls_menu),
             ('Return to main menu', self.close_menu),
@@ -1470,6 +1473,16 @@ class OptionsMenuMode(MenuMode):
     def toggle_missile_orbits(self):
         """Toggle missile orbits and reflect the setting in the menu."""
         self.ui.toggle_missile_orbits()
+        self.reinit_menu()
+
+    def toggle_music(self):
+        """Toggle music and reflect the setting in the menu."""
+        self.ui.toggle_music()
+        self.reinit_menu()
+
+    def toggle_sound(self):
+        """Toggle sound effects and reflect the setting in the menu."""
+        self.ui.toggle_sound()
         self.reinit_menu()
 
     def toggle_sound_in_vacuum(self):
@@ -1778,6 +1791,8 @@ class GameUI(object):
     fullscreen = False              # Start in windowed mode
     fullscreen_mode = None          # Desired video mode (w, h)
     show_missile_trails = True      # Show missile trails by default
+    music = True                    # Do we have background music?
+    sound = True                    # Do we have sound effects?
     sound_in_vacuum = True          # Can you hear what happens to AI ships?
     show_debug_info = False         # Hide debug info by default
     desired_zoom_level = 1.0        # The desired zoom level
@@ -1828,8 +1843,9 @@ class GameUI(object):
             self.fullscreen_mode = None
         self.show_missile_trails = config.getboolean('video',
                                                      'show_missile_trails')
-        self.sound_in_vacuum = config.getboolean('sound',
-                                                 'sound_in_vacuum')
+        self.music = config.getboolean('sound', 'music')
+        self.sound = config.getboolean('sound', 'sound')
+        self.sound_in_vacuum = config.getboolean('sound', 'sound_in_vacuum')
         for action in self.controls:
             key = config.get('controls', action)
             if key:
@@ -1861,6 +1877,8 @@ class GameUI(object):
         config.set('video', 'show_missile_trails',
                    str(self.show_missile_trails))
         config.add_section('sound')
+        config.set('sound', 'music', str(self.music))
+        config.set('sound', 'sound', str(self.sound))
         config.set('sound', 'sound_in_vacuum', str(self.sound_in_vacuum))
         config.add_section('controls')
         for action, keys in self.controls.items():
@@ -1996,7 +2014,7 @@ class GameUI(object):
         config.add_section('sounds')
         config.read([find('sounds', 'sounds.ini')])
         self.sounds = {}
-        self.sound_looping = {}
+        self.sound_looping = sets.Set()
         for name in ['thruster', 'fire', 'bounce', 'hit', 'explode', 'respawn',
                      'menu']:
             if config.has_option('sounds', name):
@@ -2022,9 +2040,12 @@ class GameUI(object):
                 if filename:
                     self.music_files[what] = find('music', filename)
 
-    def play_music(self, which):
+    def play_music(self, which, restart=False):
         """Loop the music file for a certain mode."""
-        if which == self.now_playing:
+        if which == self.now_playing and not restart:
+            return
+        self.now_playing = which
+        if not self.music:
             return
         filename = self.music_files.get(which)
         if not filename:
@@ -2036,24 +2057,24 @@ class GameUI(object):
             except pygame.error:
                 print "pyspacewar: could not load %s" % filename
                 pygame.mixer.music.stop()
-        self.now_playing = which
 
     def play_sound(self, which):
         """Play a certain sound effect."""
-        if which in self.sounds:
+        if which in self.sounds and self.sound:
             self.sounds[which].play()
 
     def start_sound(self, which):
         """Start looping a certain sound effect."""
-        if not self.sound_looping.get(which) and which in self.sounds:
-            self.sounds[which].play(-1)
-            self.sound_looping[which] = True
+        if which not in self.sound_looping and which in self.sounds:
+            if self.sound:
+                self.sounds[which].play(-1)
+            self.sound_looping.add(which)
 
     def stop_sound(self, which):
         """Stop playing a certain sound effect."""
-        if self.sound_looping.get(which) and which in self.sounds:
+        if which in self.sound_looping:
             self.sounds[which].stop()
-            self.sound_looping[which] = False
+            self.sound_looping.remove(which)
 
     def _init_fonts(self):
         """Load fonts."""
@@ -2305,6 +2326,23 @@ class GameUI(object):
     def toggle_missile_orbits(self):
         """Show/hide missile trails."""
         self.show_missile_trails = not self.show_missile_trails
+
+    def toggle_music(self):
+        """Toggle music."""
+        self.music = not self.music
+        if self.music:
+            self.play_music(self.now_playing, restart=True)
+        else:
+            pygame.mixer.music.stop()
+
+    def toggle_sound(self):
+        """Toggle sound effects."""
+        self.sound = not self.sound
+        for sound in self.sound_looping:
+            if self.sound:
+                self.sounds[sound].play(-1)
+            else:
+                self.sounds[sound].stop()
 
     def toggle_sound_in_vacuum(self):
         """Toggle sound in vacuum."""
