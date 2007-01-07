@@ -1435,20 +1435,28 @@ class OptionsMenuMode(MenuMode):
         def title(label, on):
             return label + '\t' + (on and 'on' or 'off')
         self.menu_items = [
+            ('Video', self.ui.video_options_menu),
+            ('Sound', self.ui.sound_options_menu),
+            ('Controls', self.ui.controls_menu),
+            ('Return to main menu', self.close_menu),
+        ]
+
+
+class VideoOptionsMenuMode(MenuMode):
+    """Mode: video options menu."""
+
+    def init_menu(self):
+        """Initialize the mode."""
+        def title(label, on):
+            return label + '\t' + (on and 'on' or 'off')
+        self.menu_items = [
             ('Screen size\t%dx%d' % self.ui.fullscreen_mode,
              self.ui.screen_resolution_menu),
             (title('Full screen mode', self.ui.fullscreen),
              self.toggle_fullscreen),
             (title('Missile orbits', self.ui.show_missile_trails),
              self.toggle_missile_orbits),
-            (title('Music', self.ui.music),
-             self.toggle_music),
-            (title('Sound', self.ui.sound),
-             self.toggle_sound),
-            (title('Sound in vacuum', self.ui.sound_in_vacuum),
-             self.toggle_sound_in_vacuum),
-            ('Controls', self.ui.controls_menu),
-            ('Return to main menu', self.close_menu),
+            ('Return to options menu', self.close_menu),
         ]
 
     def enter(self, prev_mode):
@@ -1458,13 +1466,6 @@ class OptionsMenuMode(MenuMode):
         # to update the current resolution
         self.reinit_menu()
 
-    def init(self):
-        """Initialize the mode."""
-        MenuMode.init(self)
-        # Override a couple of key bindings to do extra stuff
-        self.on_key(K_o, self.toggle_missile_orbits)
-        self.on_key(K_f, self.toggle_fullscreen)
-
     def toggle_fullscreen(self):
         """Toggle full-screen mode and reflect the setting in the menu."""
         self.ui.toggle_fullscreen()
@@ -1473,21 +1474,6 @@ class OptionsMenuMode(MenuMode):
     def toggle_missile_orbits(self):
         """Toggle missile orbits and reflect the setting in the menu."""
         self.ui.toggle_missile_orbits()
-        self.reinit_menu()
-
-    def toggle_music(self):
-        """Toggle music and reflect the setting in the menu."""
-        self.ui.toggle_music()
-        self.reinit_menu()
-
-    def toggle_sound(self):
-        """Toggle sound effects and reflect the setting in the menu."""
-        self.ui.toggle_sound()
-        self.reinit_menu()
-
-    def toggle_sound_in_vacuum(self):
-        """Toggle sound in vacuum and reflect the setting in the menu."""
-        self.ui.toggle_sound_in_vacuum()
         self.reinit_menu()
 
 
@@ -1507,6 +1493,39 @@ class ScreenResolutionMenuMode(MenuMode):
     def switch_to_mode(self, mode):
         """Switch to a specified video mode."""
         self.ui.switch_to_mode(mode)
+        self.reinit_menu()
+
+
+class SoundOptionsMenuMode(MenuMode):
+    """Mode: sound options menu."""
+
+    def init_menu(self):
+        """Initialize the mode."""
+        def title(label, on):
+            return label + '\t' + (on and 'on' or 'off')
+        self.menu_items = [
+            (title('Music', self.ui.music),
+             self.toggle_music),
+            (title('Sound', self.ui.sound),
+             self.toggle_sound),
+            (title('Sound in vacuum', self.ui.sound_in_vacuum),
+             self.toggle_sound_in_vacuum),
+            ('Return to options menu', self.close_menu),
+        ]
+
+    def toggle_music(self):
+        """Toggle music and reflect the setting in the menu."""
+        self.ui.toggle_music()
+        self.reinit_menu()
+
+    def toggle_sound(self):
+        """Toggle sound effects and reflect the setting in the menu."""
+        self.ui.toggle_sound()
+        self.reinit_menu()
+
+    def toggle_sound_in_vacuum(self):
+        """Toggle sound in vacuum and reflect the setting in the menu."""
+        self.ui.toggle_sound_in_vacuum()
         self.reinit_menu()
 
 
@@ -2237,6 +2256,14 @@ class GameUI(object):
     def options_menu(self):
         """Enter the options menu."""
         self.ui_mode = OptionsMenuMode(self)
+
+    def video_options_menu(self):
+        """Enter the video options menu."""
+        self.ui_mode = VideoOptionsMenuMode(self)
+
+    def sound_options_menu(self):
+        """Enter the sound options menu."""
+        self.ui_mode = SoundOptionsMenuMode(self)
 
     def screen_resolution_menu(self):
         """Enter the screen resolution menu."""
