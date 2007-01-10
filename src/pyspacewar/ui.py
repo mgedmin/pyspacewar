@@ -36,7 +36,7 @@ DEFAULT_CONTROLS = {
     'P1_FORWARD': K_UP,
     'P1_BACKWARD': K_DOWN,
     'P1_BRAKE': K_RALT,
-    'P1_FIRE': K_RCTRL,
+    'P1_FIRE': [K_RETURN, K_RCTRL],
     # Player 2
     'P2_TOGGLE_AI': K_2,
     'P2_LEFT': K_a,
@@ -1829,7 +1829,7 @@ class GameUI(object):
 
     fullscreen = False              # Start in windowed mode
     fullscreen_mode = None          # Desired video mode (w, h)
-    show_missile_trails = True      # Show missile trails by default
+    show_missile_trails = False     # Show missile trails by default
     show_background = False         # Show background image
     music = True                    # Do we have background music?
     sound = True                    # Do we have sound effects?
@@ -1838,7 +1838,7 @@ class GameUI(object):
     lightweight_hud = True          # Smaller HUD (for PDAs and such)
     desired_zoom_level = 1.0        # The desired zoom level
 
-    min_fps = 10                    # Minimum FPS
+    min_fps = 10                    # Minimum FPS (don't drop frames below this)
 
     ship_colors = [
         (255, 255, 255),            # Player 1 has a white ship
@@ -1867,12 +1867,16 @@ class GameUI(object):
             self.controls[action] = [None]
         self.rev_controls = {}
         for action, key in DEFAULT_CONTROLS.items():
-            self.set_control(action, key)
+            if isinstance(key, (list, tuple)):
+                for key in key:
+                    self.set_control(action, key)
+            else:
+                self.set_control(action, key)
 
     def load_settings(self, filename=None):
         """Load settings from a configuration file."""
         if not filename:
-            filename = os.path.expanduser('~/.pyspacewarrc')
+            filename = os.path.expanduser('~/.pyspacewarliterc')
         config = self.get_config_parser()
         config.read([filename])
         self.fullscreen = config.getboolean('video', 'fullscreen')
@@ -1984,7 +1988,8 @@ class GameUI(object):
         # Previously this function used to pick the largest sane video mode
         # Sadly, my laptop is not fast enough to sustain 20 fps at 1024x768
         # when there are too many missiles around.
-        return (800, 600)
+        # The Nokia 770 has a 800x480 screen.
+        return (800, 480)
 
     def _set_display_mode(self):
         """Set display mode."""
