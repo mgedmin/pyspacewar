@@ -729,6 +729,26 @@ class HUDShipInfo(HUDInfoPanel):
         surface.fill(self.color1, (x+1, y+1, w, 2))
 
 
+class HUDShipInfoLite(HUDInfoPanel):
+    """Heads-up ship status display (lightweight version)."""
+
+    def __init__(self, ship, font, xalign=0, yalign=0,
+                 colors=HUDInfoPanel.STD_COLORS):
+        HUDInfoPanel.__init__(self, font, 12, 1.75, xalign, yalign, colors)
+        self.ship = ship
+        self.surface.set_alpha(255) # should be faster, I hope
+
+    def draw(self, surface):
+        self.draw_rows(surface,
+                ('frags', '%d' % self.ship.frags),)
+        x, y = self.position(surface)
+        x += 1
+        y += self.height - 5
+        w = max(0, int((self.width - 4) * self.ship.health))
+        pygame.draw.rect(surface, self.color2, (x, y, self.width-2, 4), 1)
+        surface.fill(self.color1, (x+1, y+1, w, 2))
+
+
 class HUDCompass(HUDElement):
     """Heads-up ship compass display.
 
@@ -1810,10 +1830,12 @@ class GameUI(object):
     fullscreen = False              # Start in windowed mode
     fullscreen_mode = None          # Desired video mode (w, h)
     show_missile_trails = True      # Show missile trails by default
+    show_background = False         # Show background image
     music = True                    # Do we have background music?
     sound = True                    # Do we have sound effects?
     sound_in_vacuum = True          # Can you hear what happens to AI ships?
     show_debug_info = False         # Hide debug info by default
+    lightweight_hud = True          # Smaller HUD (for PDAs and such)
     desired_zoom_level = 1.0        # The desired zoom level
 
     min_fps = 10                    # Minimum FPS
@@ -2195,15 +2217,22 @@ class GameUI(object):
                                 (self.total_time * 1000)),
                         ]),
             ])
-        self.hud = HUDCollection([
-            HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
-            HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
-                        HUDShipInfo.GREEN_COLORS),
-            HUDCompass(self.game.world, self.ships[0], self.viewport, 1, 1,
-                       HUDCompass.BLUE_COLORS),
-            HUDCompass(self.game.world, self.ships[1], self.viewport, 0, 1,
-                       HUDCompass.GREEN_COLORS),
-        ])
+        if self.lightweight_hud:
+            self.hud = HUDCollection([
+                HUDShipInfoLite(self.ships[0], self.hud_font, 1, 0),
+                HUDShipInfoLite(self.ships[1], self.hud_font, 0, 0,
+                                HUDShipInfo.GREEN_COLORS),
+            ])
+        else:
+            self.hud = HUDCollection([
+                HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
+                HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
+                            HUDShipInfo.GREEN_COLORS),
+                HUDCompass(self.game.world, self.ships[0], self.viewport, 1, 1,
+                           HUDCompass.BLUE_COLORS),
+                HUDCompass(self.game.world, self.ships[1], self.viewport, 0, 1,
+                           HUDCompass.GREEN_COLORS),
+            ])
 
     def _keep_ships_visible(self):
         """Update viewport origin/scale so that all ships are on screen."""
@@ -2466,7 +2495,10 @@ class GameUI(object):
         if not drop_this_frame:
             start = time.time()
             self._keep_ships_visible()
-            self.screen.blit(self.background_surface, (0, 0))
+            if self.show_background:
+                self.screen.blit(self.background_surface, (0, 0))
+            else:
+                self.screen.fill((0, 0, 0))
             if self.show_missile_trails:
                 self.draw_missile_trails()
             for obj in self.game.world.objects:
