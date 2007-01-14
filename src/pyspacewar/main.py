@@ -31,6 +31,18 @@ def main():
     parser.add_option('-w', '--windowed',
                       help='start in windowed mode',
                       action='store_false', dest='fullscreen')
+    parser.add_option('--sound', default=None,
+                      help='enable sound',
+                      action='store_true', dest='sound')
+    parser.add_option('--no-sound',
+                      help='disable sound',
+                      action='store_false', dest='sound')
+    parser.add_option('--music', default=None,
+                      help='enable music',
+                      action='store_true', dest='music')
+    parser.add_option('--no-music',
+                      help='disable music',
+                      action='store_false', dest='music')
     parser.add_option('-d', '--debug', default=False,
                       help='show debug timings',
                       action='store_true', dest='debug')
@@ -44,6 +56,10 @@ def main():
         ui.fullscreen = opts.fullscreen
     if opts.debug is not None:
         ui.show_debug_info = opts.debug
+    if opts.sound is not None:
+        ui.sound = opts.sound
+    if opts.music is not None:
+        ui.music = opts.music
     if opts.mode:
         try:
             w, h = opts.mode.split('x')
