@@ -103,7 +103,7 @@ def doctest_World():
 
 
 def doctest_World_collision_detection_in_update():
-    """Tests for collicition detection
+    """Tests for collision detection
 
         >>> from world import World, Vector
         >>> w = World()
@@ -290,7 +290,7 @@ def doctest_Ship_controls():
         0.1 0.05
 
     These commands are remembered and executed when you call ``move``, not
-    immediatelly.
+    immediately.
 
         >>> ship.velocity
         Vector(0, 0)
@@ -398,6 +398,7 @@ def doctest_Ship_gravity():
 
     """
 
+
 def doctest_Ship_collision():
     """Tests for Ship.collision.
 
@@ -491,7 +492,7 @@ def doctest_Ship_death():
         >>> len(ship.world.objects) > 1
         True
 
-    A dying ship cannot not fire its engines
+    A dying ship cannot fire its engines
 
         >>> ship = Ship()
         >>> ship.world = World()
@@ -596,7 +597,7 @@ def doctest_Missile_explode():
         >>> len(world.objects) > 0
         True
 
-    A missile may not explode more than once (this can happen if a missile
+    A missile cannot explode more than once (this can happen if a missile
     collides with two objects at the same time; or collides with an object
     at the same time when its self-destruct timer activates).
 
