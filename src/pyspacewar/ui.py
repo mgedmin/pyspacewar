@@ -861,7 +861,7 @@ class HUDTitle(HUDElement):
         # It might be possible to do this in a simpler way: see
         # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2915311
         # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2814793
-        array[:] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
+        array[...] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
         del array
         surface.blit(self.image, (x, y))
         if not self.paused:
