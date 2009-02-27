@@ -5,8 +5,6 @@ import glob
 from distutils.core import setup
 
 long_description = """\
-A game loosely inspired by the original Spacewar.
-
 Two ships duel in a gravity field.   Gravity doesn't affect
 the ships themselves (which have spanking new anti-gravity
 devices), but it affects missiles launced by the ships.
