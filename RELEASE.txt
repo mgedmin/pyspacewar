@@ -9,8 +9,8 @@ How to make a PySpaceWar release
 3. Commit.
 4. Tag the release
 
-     svn cp svn+ssh://fridge/home/mg/svn/newton/trunk \
-            svn+ssh://fridge/home/mg/svn/newton/tags/$version
+     svn cp svn+ssh://fridge/home/mg/svn/pyspacewar/trunk \
+            svn+ssh://fridge/home/mg/svn/pyspacewar/tags/$version
 
 5. Create a temporary directory and check out the tag
 
@@ -21,17 +21,19 @@ How to make a PySpaceWar release
      python setup.py sdist --formats=gztar,zip
 
 7. Test the archives: go to a temporary directory, untar the tarball, run the
-   game, run the unit tests.
+   game (./pyspacewar), run the unit tests (./test.py).
 
 8. Upload the tarballs and update the pyspacewar website
 
-     cp dist/* ~/www/pyspacewar/
+     python setup.py sdist --formats=gztar,zip register upload
+     mv dist/* ~/www/pyspacewar/
      cd ~/www/pyspacewar
      svn add *$version*
      vi index.html
+       update the News and Download sections at the very least
      svn ci
 
-9. Add a 'svn' suffix in src/pyspacewar/version.py and commit.
+9. Add a '+svn' suffix in src/pyspacewar/version.py and commit.
 
 10. Announce the new release on PyPI, pygame.org, the pygame mailing list, my
     weblog.
