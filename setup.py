@@ -13,7 +13,11 @@ You can play against the computer, or two players can play
 with one keyboard.  There is also a Gravity Wars mode, where
 the two ships do not move, and the players repeatedly
 specify the direction and velocity of their missiles.
-"""
+
+Latest changes
+--------------
+
+""" + '\n\n'.join(file('NEWS.txt').read().split('\n\n')[:2])
 
 pkgdir = os.path.join('src', 'pyspacewar')
 def determine_version():
