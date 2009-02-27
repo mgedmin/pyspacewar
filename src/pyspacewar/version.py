@@ -4,13 +4,22 @@ PySpaceWar version number tracker.
 $Id$
 """
 
-svn_revision = "$Revision$"[11:-2]
-version = "0.9.4svn"
+version = "0.9.4+svn"
+
+
+def get_svn_revision(unknown=''):
+    """Return the latest revision number of the files in the package."""
+    import os, subprocess, pyspacewar
+    package_root = os.path.dirname(__file__)
+    try:
+        p = subprocess.Popen(['svnversion', package_root],
+                             stdout=subprocess.PIPE)
+    except OSError:
+        return unknown
+    else:
+        return p.communicate()[0].strip()
+
 
 if version.endswith('svn'):
-    version += svn_revision
-    # This is slightly misleading: svn_revision contains the last changed
-    # revision number for version.py, not the revision number of the whole
-    # repository.  Using os.popen('svnversion').read() would be better, but
-    # only if the end-user has subversion installed.
+    version += get_svn_revision()
 
