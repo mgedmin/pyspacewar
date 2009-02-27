@@ -1,6 +1,16 @@
-January 7, 2006: Happy New Year!
+February 27, 2009: Released version 0.9.5:
 
-  - Add sound effects.
+  - Fixed crash on 64-bit Linux machines.
+  - Now using http://launchpad.net/ for bug tracking.
+
+June 30, 2008: Released version 0.9.4:
+
+  - New icon by Jakub Szypulka, plus all the other goodies from last year.
+
+January 7, 2007: Happy New Year!
+
+  - Add sound effects and support for background music (now if I only had some
+    music...).
   - Show an animation (expanding bubble) when ships respawn.
   - Allow up to two keys to be bound to the same action.
   - Use 800x600 by default; if your computer is fast enough, you can change to
@@ -11,6 +21,7 @@ January 7, 2006: Happy New Year!
     an option to toggle sound propagation in vacuum (or, in practical terms,
     whether you hear a sound when a missile hits the computer-controlled ship
     or when it explodes).
+  - Forgot to actually make a release :(
 
 December 25, 2006: Released version 0.9.3: the Christmas release.
 
