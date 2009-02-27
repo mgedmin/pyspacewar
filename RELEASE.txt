@@ -20,8 +20,9 @@ How to make a PySpaceWar release
 
      python setup.py sdist --formats=gztar,zip
 
-7. Test the archives: go to a temporary, untar the tarball, run the game,
-   run the unit tests.
+7. Test the archives: go to a temporary directory, untar the tarball, run the
+   game, run the unit tests.
+
 8. Upload the tarballs and update the pyspacewar website
 
      cp dist/* ~/www/pyspacewar/
