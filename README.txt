@@ -83,3 +83,8 @@ strategy game (http://www.ospace.net/).
 The background image is a darkened version of a public domain Hubble Space
 Telescope picture of the NGC 3949 galaxy, downloaded from
 http://hubblesite.org/newscenter/newsdesk/archive/releases/2004/25/
+
+Icons were contributed by Jakub Szypulka and licenced under the Creative
+Commons Share-Alike 3.0 licence.  See
+http://cubestuff.wordpress.com/2007/12/23/pyspacewar-goes-tango
+
