@@ -825,14 +825,20 @@ class HUDTitle(HUDElement):
         self.image = image
         self.alpha = 255
         try:
-            import Numeric
+            import numpy
         except ImportError:
-            self.image = self.image.convert()
-            self.image.set_colorkey((0, 0, 0))
-            self.draw = self.draw_plainly
+            try:
+                import Numeric
+            except ImportError:
+                self.image = self.image.convert()
+                self.image.set_colorkey((0, 0, 0))
+                self.draw = self.draw_plainly
+            else:
+                self.mask = pygame.surfarray.array_alpha(image).astype(Numeric.Int)
+                self.draw = self.draw_using_Numeric
         else:
-            self.mask = pygame.surfarray.array_alpha(image).astype(Numeric.Int)
-            self.draw = self.draw_using_Numeric
+            self.mask = pygame.surfarray.array_alpha(image)
+            self.draw = self.draw_using_numpy
 
     def draw_plainly(self, surface):
         """Draw the element.
@@ -851,7 +857,7 @@ class HUDTitle(HUDElement):
     def draw_using_Numeric(self, surface):
         """Draw the element.
 
-        Scales the picture alpha channel smoothly using NumPy.
+        Scales the picture alpha channel smoothly using Numeric Python.
         """
         if self.alpha < 1:
             return
@@ -862,6 +868,25 @@ class HUDTitle(HUDElement):
         # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2915311
         # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2814793
         array[...] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
+        del array
+        surface.blit(self.image, (x, y))
+        if not self.paused:
+            self.alpha *= 0.95
+
+    def draw_using_numpy(self, surface):
+        """Draw the element.
+
+        Scales the picture alpha channel smoothly using NumPy.
+        """
+        if self.alpha < 1:
+            return
+        import numpy
+        x, y = self.position(surface)
+        array = pygame.surfarray.pixels_alpha(self.image)
+        # It might be possible to do this in a simpler way: see
+        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2915311
+        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2814793
+        array[...] = (self.mask * self.alpha / 255).astype('b')
         del array
         surface.blit(self.image, (x, y))
         if not self.paused:
