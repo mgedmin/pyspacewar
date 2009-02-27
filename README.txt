@@ -11,6 +11,8 @@ players repeatedly specify the direction and velocity of their missiles.
 
 Web page: http://mg.pov.lt/pyspacewar
 
+Bug tracker: https://bugs.launchpad.net/pyspacewar
+
 Requirements:
  * Python (http://www.python.org/), at least version 2.3
  * PyGame (http://www.pygame.org/)
