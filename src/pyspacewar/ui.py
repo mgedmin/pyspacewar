@@ -868,7 +868,7 @@ class HUDTitle(HUDElement):
         # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2915311
         # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2814793
         array[...] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
-        del array
+        del array # unlock the surface before blitting
         surface.blit(self.image, (x, y))
         if not self.paused:
             self.alpha *= 0.95
@@ -883,11 +883,8 @@ class HUDTitle(HUDElement):
         import numpy
         x, y = self.position(surface)
         array = pygame.surfarray.pixels_alpha(self.image)
-        # It might be possible to do this in a simpler way: see
-        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2915311
-        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2814793
-        array[...] = (self.mask * self.alpha / 255).astype('b')
-        del array
+        array[...] = (self.mask * (self.alpha / 255.)).astype(numpy.uint8)
+        del array # unlock the surface before blitting
         surface.blit(self.image, (x, y))
         if not self.paused:
             self.alpha *= 0.95
