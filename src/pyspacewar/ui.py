@@ -814,6 +814,80 @@ class HUDCompass(HUDElement):
         surface.blit(self.surface, self.position(surface))
 
 
+class FadingImage(object):
+    """An image that can smoothly fade away.
+
+    Uses a color key and surface alpha, as an approximation of smooth fade
+    out.
+    """
+
+    def __init__(self, image):
+        self.image = image.convert()
+        self.image.set_colorkey((0, 0, 0))
+
+    def draw(self, surface, x, y, alpha):
+        """Draw the image.
+
+        ``alpha`` is a floating point value between 0 and 255.
+        """
+        self.image.set_alpha(alpha)
+        surface.blit(self.image, (x, y))
+
+
+class NumericFadingImage(object):
+    """An image that can smoothly fade away.
+
+    Implemented using Numeric arrays to scale the alpha channel on the fly.
+    """
+
+    def __init__(self, image):
+        import Numeric
+        self.image = image
+        self.mask = pygame.surfarray.array_alpha(image).astype(Numeric.Int)
+        if hasattr(pygame.surfarray, 'use_arraytype'):
+            # This is a global switch, which breaks the abstraction a bit. :(
+            pygame.surfarray.use_arraytype('numeric')
+
+    def draw(self, surface, x, y, alpha):
+        """Draw the image.
+
+        ``alpha`` is a floating point value between 0 and 255.
+        """
+        import Numeric
+        array = pygame.surfarray.pixels_alpha(self.image)
+        # It might be possible to do this in a simpler way: see
+        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2915311
+        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2814793
+        array[...] = (self.mask * alpha / 255).astype(Numeric.UnsignedInt8)
+        del array # unlock the surface before blitting
+        surface.blit(self.image, (x, y))
+
+
+class NumPyFadingImage(object):
+    """An image that can smoothly fade away.
+
+    Implemented using NumPy arrays to scale the alpha channel on the fly.
+    """
+
+    def __init__(self, image):
+        import numpy
+        self.image = image
+        self.mask = pygame.surfarray.array_alpha(image)
+        if hasattr(pygame.surfarray, 'use_arraytype'):
+            # This is a global switch, which breaks the abstraction a bit. :(
+            pygame.surfarray.use_arraytype('numpy')
+
+    def draw(self, surface, x, y, alpha):
+        """Draw the image.
+
+        ``alpha`` is a floating point value between 0 and 255.
+        """
+        import numpy
+        numpy.multiply(self.mask, alpha / 255,
+                       pygame.surfarray.pixels_alpha(self.image))
+        surface.blit(self.image, (x, y))
+
+
 class HUDTitle(HUDElement):
     """Fading out title."""
 
@@ -822,73 +896,21 @@ class HUDTitle(HUDElement):
     def __init__(self, image, xalign=0.5, yalign=0.25):
         HUDElement.__init__(self, image.get_width(), image.get_height(),
                             xalign, yalign)
-        self.image = image
         self.alpha = 255
-        try:
-            import numpy
-        except ImportError:
+        for cls in NumPyFadingImage, NumericFadingImage, FadingImage:
             try:
-                import Numeric
+                self.image = cls(image)
             except ImportError:
-                self.image = self.image.convert()
-                self.image.set_colorkey((0, 0, 0))
-                self.draw = self.draw_plainly
+                pass
             else:
-                # It's possible I should do
-                #   pygame.surfarray.use_arraytype('Numeric')
-                # here if the user has PyGame 1.9 or later, has Numeric and
-                # doesn't have NumPy.
-                self.mask = pygame.surfarray.array_alpha(image).astype(Numeric.Int)
-                self.draw = self.draw_using_Numeric
-        else:
-            pygame.surfarray.use_arraytype('numpy')
-            self.mask = pygame.surfarray.array_alpha(image)
-            self.draw = self.draw_using_numpy
+                break
 
-    def draw_plainly(self, surface):
-        """Draw the element.
-
-        Uses a color key and surface alpha, as an approximation of smooth fade
-        out.
-        """
+    def draw(self, surface):
+        """Draw the element."""
         if self.alpha < 1:
             return
         x, y = self.position(surface)
-        self.image.set_alpha(self.alpha)
-        surface.blit(self.image, (x, y))
-        if not self.paused:
-            self.alpha *= 0.95
-
-    def draw_using_Numeric(self, surface):
-        """Draw the element.
-
-        Scales the picture alpha channel smoothly using Numeric Python.
-        """
-        if self.alpha < 1:
-            return
-        import Numeric
-        x, y = self.position(surface)
-        array = pygame.surfarray.pixels_alpha(self.image)
-        # It might be possible to do this in a simpler way: see
-        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2915311
-        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2814793
-        array[...] = (self.mask * self.alpha / 255).astype(Numeric.UnsignedInt8)
-        del array # unlock the surface before blitting
-        surface.blit(self.image, (x, y))
-        if not self.paused:
-            self.alpha *= 0.95
-
-    def draw_using_numpy(self, surface):
-        """Draw the element.
-
-        Scales the picture alpha channel smoothly using NumPy.
-        """
-        if self.alpha < 1:
-            return
-        import numpy
-        numpy.multiply(self.mask, self.alpha / 255,
-                       pygame.surfarray.pixels_alpha(self.image))
-        surface.blit(self.image, self.position(surface))
+        self.image.draw(surface, x, y, self.alpha)
         if not self.paused:
             self.alpha *= 0.95
 
