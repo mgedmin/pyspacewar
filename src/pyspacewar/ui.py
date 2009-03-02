@@ -897,6 +897,8 @@ class HUDTitle(HUDElement):
         HUDElement.__init__(self, image.get_width(), image.get_height(),
                             xalign, yalign)
         self.alpha = 255
+        # XXX do we even need NumPyFadingImage and NumericFadingImage?
+        # isn't FadingImage doing what we need already in the simplest way?
         for cls in NumPyFadingImage, NumericFadingImage, FadingImage:
             try:
                 self.image = cls(image)
