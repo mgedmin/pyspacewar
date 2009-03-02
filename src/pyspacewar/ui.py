@@ -817,12 +817,18 @@ class HUDCompass(HUDElement):
 class FadingImage(object):
     """An image that can smoothly fade away.
 
-    Uses a color key and surface alpha, as an approximation of smooth fade
-    out.
+    Uses a color key and surface alpha, as an approximation of a smooth fade
+    out.  Drops the alpha information in the source image, so instead of
+    smooth anti-aliased text being faded out the users will see ragged text
+    being faded out.
+
+    This happens quickly enough so that nobody will likely notice -- it took me
+    a good ten minutes to remember why I even had the more advanced fading
+    methods ;)
     """
 
     def __init__(self, image):
-        self.image = image.convert()
+        self.image = image.convert() # drop the alpha channel
         self.image.set_colorkey((0, 0, 0))
 
     def draw(self, surface, x, y, alpha):
@@ -897,8 +903,6 @@ class HUDTitle(HUDElement):
         HUDElement.__init__(self, image.get_width(), image.get_height(),
                             xalign, yalign)
         self.alpha = 255
-        # XXX do we even need NumPyFadingImage and NumericFadingImage?
-        # isn't FadingImage doing what we need already in the simplest way?
         for cls in NumPyFadingImage, NumericFadingImage, FadingImage:
             try:
                 self.image = cls(image)
