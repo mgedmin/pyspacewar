@@ -834,9 +834,14 @@ class HUDTitle(HUDElement):
                 self.image.set_colorkey((0, 0, 0))
                 self.draw = self.draw_plainly
             else:
+                # It's possible I should do
+                #   pygame.surfarray.use_arraytype('Numeric')
+                # here if the user has PyGame 1.9 or later, has Numeric and
+                # doesn't have NumPy.
                 self.mask = pygame.surfarray.array_alpha(image).astype(Numeric.Int)
                 self.draw = self.draw_using_Numeric
         else:
+            pygame.surfarray.use_arraytype('numpy')
             self.mask = pygame.surfarray.array_alpha(image)
             self.draw = self.draw_using_numpy
 
@@ -881,11 +886,9 @@ class HUDTitle(HUDElement):
         if self.alpha < 1:
             return
         import numpy
-        x, y = self.position(surface)
-        array = pygame.surfarray.pixels_alpha(self.image)
-        array[...] = (self.mask * (self.alpha / 255.)).astype(numpy.uint8)
-        del array # unlock the surface before blitting
-        surface.blit(self.image, (x, y))
+        numpy.multiply(self.mask, self.alpha / 255,
+                       pygame.surfarray.pixels_alpha(self.image))
+        surface.blit(self.image, self.position(surface))
         if not self.paused:
             self.alpha *= 0.95
 
