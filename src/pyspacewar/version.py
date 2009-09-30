@@ -4,7 +4,7 @@ PySpaceWar version number tracker.
 $Id$
 """
 
-version = "0.9.5+svn"
+version = "0.9.6"
 
 
 def get_svn_revision(unknown=''):

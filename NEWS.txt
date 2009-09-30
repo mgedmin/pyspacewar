@@ -1,3 +1,8 @@
+September 30, 2009: Released version 0.9.6:
+
+- Fixed deprecation warning on Python 2.6.
+- Dropped support for Python 2.3.
+
 February 27, 2009: Released version 0.9.5:
 
 - Fixed crash on 64-bit Linux machines.

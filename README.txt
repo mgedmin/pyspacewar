@@ -14,7 +14,7 @@ Web page: http://mg.pov.lt/pyspacewar
 Bug tracker: https://bugs.launchpad.net/pyspacewar
 
 Requirements:
- * Python (http://www.python.org/), at least version 2.3
+ * Python (http://www.python.org/), at least version 2.4
  * PyGame (http://www.pygame.org/)
 
 
