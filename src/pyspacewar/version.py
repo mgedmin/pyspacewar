@@ -4,22 +4,22 @@ PySpaceWar version number tracker.
 $Id$
 """
 
-version = "0.9.6"
+version = "0.9.7dev"
 
 
-def get_svn_revision(unknown=''):
+def get_bzr_revision(unknown='', format=' (bzr rev %s)'):
     """Return the latest revision number of the files in the package."""
     import os, subprocess, pyspacewar
     package_root = os.path.dirname(__file__)
     try:
-        p = subprocess.Popen(['svnversion', package_root],
+        p = subprocess.Popen(['bzr', 'revno', package_root],
                              stdout=subprocess.PIPE)
     except OSError:
         return unknown
     else:
-        return p.communicate()[0].strip()
+        return format % p.communicate()[0].strip()
 
 
-if version.endswith('svn'):
-    version += get_svn_revision()
+if version.endswith('dev'):
+    version += get_bzr_revision()
 
