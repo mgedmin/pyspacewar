@@ -1,7 +1,5 @@
 """
 PySpaceWar version number tracker.
-
-$Id$
 """
 
 version = "0.9.7dev"

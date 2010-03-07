@@ -1,8 +1,6 @@
 """
 PySpaceWar game logic: creation of worlds, respawning of ships, synchronizing
 with wall clock.
-
-$Id$
 """
 
 import time

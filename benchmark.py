@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """
 PySpaceWar benchmarks for optimisation work
-
-$Id$
 """
 
 import os

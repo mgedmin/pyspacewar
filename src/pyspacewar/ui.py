@@ -1,7 +1,5 @@
 """
 Graphical user interface for PySpaceWar
-
-$Id$
 """
 
 import os

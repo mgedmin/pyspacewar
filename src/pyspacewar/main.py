@@ -1,7 +1,5 @@
 """
 PySpaceWar command line processing and main loop
-
-$Id$
 """
 
 import sys
