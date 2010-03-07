@@ -2,7 +2,7 @@
 PySpaceWar version number tracker.
 """
 
-version = "0.9.7"
+version = "0.9.8dev"
 
 
 def get_bzr_revision(unknown='', format='+r%s'):
