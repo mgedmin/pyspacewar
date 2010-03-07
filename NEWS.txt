@@ -1,6 +1,8 @@
 New version, not released yet:
 
 - Don't crash on startup when audio is not available, disable sounds instead.
+- Switched version control system from self-hosted Subversion to Bazaar on
+  Launchpad (bzr branch lp:pyspacewar).
 
 September 30, 2009: Released version 0.9.6:
 
