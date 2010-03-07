@@ -1,4 +1,4 @@
-New version, not released yet:
+March 8, 2010: Released version 0.9.7:
 
 - Don't crash on startup when audio is not available, disable sounds instead.
 - Switched version control system from self-hosted Subversion to Bazaar on
