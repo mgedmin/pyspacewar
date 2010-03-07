@@ -1,3 +1,7 @@
+New version, not released yet:
+
+- Don't crash on startup when audio is not available, disable sounds instead.
+
 September 30, 2009: Released version 0.9.6:
 
 - Fixed deprecation warning on Python 2.6.

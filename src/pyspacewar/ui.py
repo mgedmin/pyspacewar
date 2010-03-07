@@ -1555,10 +1555,14 @@ class SoundOptionsMenuMode(MenuMode):
         """Initialize the mode."""
         def title(label, on):
             return label + '\t' + (on and 'on' or 'off')
+        if self.ui.sound_available:
+            extra = ''
+        else:
+            extra = ' (not available)'
         self.menu_items = [
-            (title('Music', self.ui.music),
+            (title('Music' + extra, self.ui.music),
              self.toggle_music),
-            (title('Sound', self.ui.sound),
+            (title('Sound' + extra, self.ui.sound),
              self.toggle_sound),
             (title('Sound in vacuum', self.ui.sound_in_vacuum),
              self.toggle_sound_in_vacuum),
@@ -2008,6 +2012,15 @@ class GameUI(object):
         pygame.mouse.set_visible(False)
         if not self.fullscreen_mode:
             self.fullscreen_mode = self._choose_best_mode()
+        self.sound_available = bool(pygame.mixer.get_init())
+        if not self.sound_available:
+            # Try again, at least we'll get an error message, maybe?
+            try:
+                pygame.mixer.init()
+            except pygame.error, e:
+                print "pyspacewar: disabling sound: %s" % e
+            else:
+                self.sound_available = True
 
     def _choose_best_mode(self):
         """Choose a suitable display mode."""
@@ -2081,11 +2094,13 @@ class GameUI(object):
 
     def _load_sounds(self):
         """Load sound effects."""
+        self.sounds = {}
+        self.sound_looping = set()
+        if not self.sound_available:
+            return
         config = ConfigParser.RawConfigParser()
         config.add_section('sounds')
         config.read([find('sounds', 'sounds.ini')])
-        self.sounds = {}
-        self.sound_looping = set()
         for name in ['thruster', 'fire', 'bounce', 'hit', 'explode', 'respawn',
                      'menu']:
             if config.has_option('sounds', name):
@@ -2101,10 +2116,12 @@ class GameUI(object):
 
     def _load_music(self):
         """Load music files."""
+        self.music_files = {}
+        if not self.sound_available:
+            return
         config = ConfigParser.RawConfigParser()
         config.add_section('music')
         config.read([find('music', 'music.ini')])
-        self.music_files = {}
         for what in ['demo', 'game', 'gravitywars']:
             if config.has_option('music', what):
                 filename = config.get('music', what)
@@ -2113,6 +2130,8 @@ class GameUI(object):
 
     def play_music(self, which, restart=False):
         """Loop the music file for a certain mode."""
+        if not self.sound_available:
+            return
         if which == self.now_playing and not restart:
             return
         self.now_playing = which
@@ -2415,6 +2434,8 @@ class GameUI(object):
     def toggle_music(self):
         """Toggle music."""
         self.music = not self.music
+        if not self.sound_available:
+            return
         if self.music:
             self.play_music(self.now_playing, restart=True)
         else:
