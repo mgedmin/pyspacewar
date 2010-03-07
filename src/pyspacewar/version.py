@@ -5,7 +5,7 @@ PySpaceWar version number tracker.
 version = "0.9.7dev"
 
 
-def get_bzr_revision(unknown='', format=' (bzr rev %s)'):
+def get_bzr_revision(unknown='', format='+r%s'):
     """Return the latest revision number of the files in the package."""
     import os, subprocess, pyspacewar
     package_root = os.path.dirname(__file__)
