@@ -23,6 +23,8 @@ class Vector(tuple):
 
     """
 
+    __slots__ = ()
+
     # Nice accessories.  Sort of expensive, though: according to timeit,
     # v.x is 5 times slower than v[0].  It would be possible to shave off
     # 2.5 milliseconds off world update time by using [0], [1] instead of
