@@ -1,3 +1,11 @@
+Unreleased:
+
+- Switched version control system from Bazaar to Git, hosted on GitHub
+  (https://github.com/mgedmin/pyspacewar).  The old svn -> bzr conversion
+  was incomplete and lacked the oldest revisions; I've reconverted the
+  original svn into git this time and stiched the few newest revisions from
+  bzr.
+
 March 8, 2010: Released version 0.9.7:
 
 - Don't crash on startup when audio is not available, disable sounds instead.
