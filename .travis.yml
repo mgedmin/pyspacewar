@@ -1,6 +1,6 @@
 language: python
 env:
-    - TOXENV=py27
+    - TOXENV=py26
 install:
     - sudo apt-get install python-pygame
     - travis_retry pip install tox
