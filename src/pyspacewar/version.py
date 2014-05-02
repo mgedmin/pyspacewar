@@ -5,12 +5,14 @@ PySpaceWar version number tracker.
 version = "0.9.8dev"
 
 
-def get_bzr_revision(unknown='', format='+r%s'):
+def get_git_revision(unknown='', format=' (git %s)'):
     """Return the latest revision number of the files in the package."""
-    import os, subprocess, pyspacewar
+    import os
+    import subprocess
     package_root = os.path.dirname(__file__)
     try:
-        p = subprocess.Popen(['bzr', 'revno', package_root],
+        p = subprocess.Popen(['git', 'describe', '--always'],
+                             cwd=package_root,
                              stdout=subprocess.PIPE)
     except OSError:
         return unknown
@@ -18,6 +20,6 @@ def get_bzr_revision(unknown='', format='+r%s'):
         return format % p.communicate()[0].strip()
 
 
-if version.endswith('dev'):
-    version += get_bzr_revision()
+if 'dev' in version:
+    version += get_git_revision()
 
