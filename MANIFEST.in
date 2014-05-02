@@ -5,6 +5,7 @@ include pyspacewar.pyw
 include *.txt
 include *.rst
 include tox.ini
+include .travis.yml
 include Makefile
 include src/pyspacewar/VERSION.txt
 include src/pyspacewar/images/*
