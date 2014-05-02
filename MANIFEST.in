@@ -3,6 +3,7 @@ include benchmark.py
 include test.py
 include pyspacewar.pyw
 include *.txt
+include *.rst
 include tox.ini
 include Makefile
 include src/pyspacewar/VERSION.txt

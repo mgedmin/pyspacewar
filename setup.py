@@ -19,7 +19,7 @@ specify the direction and velocity of their missiles.
 Latest changes
 --------------
 
-""" + '\n\n'.join(file('NEWS.txt').read().split('\n\n')[:2])
+""" + '\n\n'.join(file('NEWS.rst').read().split('\n\n')[:2])
 
 pkgdir = os.path.join('src', 'pyspacewar')
 
