@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 import os
 import sys
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 long_description = """\
 Two ships duel in a gravity field.   Gravity doesn't affect
