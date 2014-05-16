@@ -5,7 +5,10 @@ virtualenv:
     system_site_packages: true
 install:
     - sudo apt-get install python-pygame
+    - pip install coverage coveralls -e .
 script:
-    - python test.py
+    - coverage run --source=pyspacewar test.py
+after_success:
+    - coveralls
 notifications:
     email: false
