@@ -56,6 +56,6 @@ setup(
     ],
     scripts=['pyspacewar'],
     packages=['pyspacewar'],
-    package_dir={'pyspacewar': 'src/pyspacewar'},
+    package_dir={'': 'src'},
     package_data={'pyspacewar': ['images/*', 'sounds/*', 'music/*']},
 )
