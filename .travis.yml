@@ -1,14 +1,11 @@
 language: python
-sudo: false
+sudo: required
 python:
     - 2.7
-addons:
-  apt:
-    packages:
-      - python-pygame
 virtualenv:
     system_site_packages: true
 install:
+    - sudo apt-get install python-pygame
     - pip install coverage coveralls -e .
 script:
     - coverage run --source=src/pyspacewar test.py
