@@ -1,4 +1,4 @@
-Unreleased:
+February 10, 2016: Released version 0.9.8:
 
 - Switched version control system from Bazaar to Git, hosted on GitHub
   (https://github.com/mgedmin/pyspacewar).  The old svn -> bzr conversion

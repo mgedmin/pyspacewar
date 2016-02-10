@@ -10,8 +10,8 @@ VCS_COMMIT_AND_PUSH = git commit -av -m "Post-release version bump" && git push 
 all:
 	@echo "No build is necessary, just install PyGame and run ./pyspacewar"
 
-.PHONY: test
-test:
+.PHONY: test check
+test check:
 	./test.py
 
 .PHONY: coverage
