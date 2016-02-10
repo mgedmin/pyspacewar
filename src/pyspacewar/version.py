@@ -2,7 +2,7 @@
 PySpaceWar version number tracker.
 """
 
-version = "0.9.8"
+version = "0.9.9.dev0"
 
 
 def get_git_revision(unknown='', format=' (git %s)'):
