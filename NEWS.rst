@@ -1,3 +1,7 @@
+Unreleased:
+
+- No changes yet.
+
 September 17, 2016: Released version 1.0.0:
 
 - Fixed crash on startup with Numpy >= 1.10.
