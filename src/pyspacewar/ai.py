@@ -10,15 +10,6 @@ Written by Ignas Mikalajunas.
 from world import Ship
 
 
-def length(vector):
-    # temporary compatibility function
-    return vector.length()
-
-def length_sq(vector):
-    # temporary compatibility function
-    return vector.length() ** 2
-
-
 class AIController(object):
     """AI for a ship."""
 
@@ -33,16 +24,16 @@ class AIController(object):
         if enemy is not None and enemy.dead:
             enemy = None
         if enemy is not None:
-            dist_to_enemy = length_sq(enemy.position - self.ship.position)
+            dist_to_enemy = self.ship.distance_to(enemy)
         else:
             dist_to_enemy = 1e999
-        threshold = 50 ** 2
+        threshold = 50
         for ship in self.ship.world.objects:
             if not isinstance(ship, Ship):
                 continue
             if ship is self.ship or ship is self.enemy or ship.dead:
                 continue  # pragma: nocover because peephole optimizer :/
-            dist = length_sq(ship.position - self.ship.position)
+            dist = self.ship.distance_to(ship)
             if enemy is None or dist < dist_to_enemy - threshold:
                 enemy = ship
         return enemy
@@ -65,7 +56,7 @@ class AIController(object):
         l_r = (self.ship.direction_vector[0]*moving_target_vector[1] -
                self.ship.direction_vector[1]*moving_target_vector[0])
 
-        if length_sq(target_vector) < 2500:
+        if target_vector.length() < 50:
             turn_const = 10
             thrust_const = 0
         else:
@@ -74,19 +65,19 @@ class AIController(object):
 
         if l_r > 0:
             if self.last_l_r < 0:
-                self.maybe_fire(enemy, length(target_vector))
+                self.maybe_fire(enemy, target_vector.length())
             self.ship.left_thrust = self.rng.randrange(turn_const, turn_const + 5)
             self.ship.right_thrust = 0
         else:
             if self.last_l_r > 0:
-                self.maybe_fire(enemy, length(target_vector))
+                self.maybe_fire(enemy, target_vector.length())
             self.ship.left_thrust = 0
             self.ship.right_thrust = self.rng.randrange(turn_const, turn_const + 5)
 
-        rel_velocity = length(self.ship.velocity - enemy.velocity)
+        rel_velocity = (self.ship.velocity - enemy.velocity).length()
         if rel_velocity < 3:
             rel_velocity = 3
-        if length_sq(self.ship.velocity) < self.rng.randrange(int(rel_velocity * 0.8), int(rel_velocity * 1.5) + 1) + 1:
+        if self.ship.velocity.length() ** 2 < self.rng.randrange(int(rel_velocity * 0.8), int(rel_velocity * 1.5) + 1) + 1:
             self.ship.forward_thrust = 1 * thrust_const
             self.ship.rear_thrust = 0
         else:
@@ -109,7 +100,7 @@ class AIController(object):
         l_r = (self.ship.direction_vector[0]*moving_target_vector[1] -
                self.ship.direction_vector[1]*moving_target_vector[0])
 
-        evade_vector_length = length(evade_vector)
+        evade_vector_length = evade_vector.length()
         evade_factor = 1
 
         if evade_vector_length < 100:
@@ -126,7 +117,7 @@ class AIController(object):
                 self.ship.right_thrust += evade_factor
 
     def get_closest_obstacle(self, what, ignore=None):
-        distance = 90000 # cutoff, 300 ** 2
+        distance = 300  # cutoff
         closest = None
         for obj in self.ship.world.objects:
             if obj.radius == 0:
@@ -135,7 +126,7 @@ class AIController(object):
                 continue
             if obj is ignore:
                 continue
-            dst = length_sq(what.position - obj.position)
+            dst = what.distance_to(obj)
             if dst < distance:
                 closest = obj
                 distance = dst
