@@ -1,9 +1,6 @@
 """
 Ship artificial intelligence.
 
-TODO: write unit tests and refactor this module.
-      (I tried refactoring without tests, and broke the code horribly.)
-
 Written by Ignas Mikalajunas.
 """
 
@@ -53,8 +50,7 @@ class AIController(object):
         target_vector = enemy.position - self.ship.position
         moving_target_vector = target_vector + enemy.velocity - self.ship.velocity
 
-        l_r = (self.ship.direction_vector[0]*moving_target_vector[1] -
-               self.ship.direction_vector[1]*moving_target_vector[0])
+        l_r = self.ship.direction_vector.cross_product(moving_target_vector)
 
         if target_vector.length() < 50:
             turn_const = 10
@@ -97,8 +93,7 @@ class AIController(object):
         evade_vector = planet.position - self.ship.position
         moving_target_vector = evade_vector - self.ship.velocity
 
-        l_r = (self.ship.direction_vector[0]*moving_target_vector[1] -
-               self.ship.direction_vector[1]*moving_target_vector[0])
+        l_r = self.ship.direction_vector.cross_product(moving_target_vector)
 
         evade_vector_length = evade_vector.length()
         evade_factor = 1

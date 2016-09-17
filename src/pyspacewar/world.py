@@ -92,6 +92,15 @@ class Vector(tuple):
         """
         return self.x * other.x + self.y * other.y
 
+    def cross_product(self, other):
+        """Compute the cross product of two vectors.
+
+            >>> Vector(3, 5).cross_product(Vector(-1, 2))
+            11
+
+        """
+        return self.x * other.y - self.y * other.x
+
     def __div__(self, divisor):
         """Divide the vector by a scalar.
 
