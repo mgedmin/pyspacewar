@@ -14,3 +14,6 @@ include src/pyspacewar/icons/*
 include src/pyspacewar/sounds/*
 include src/pyspacewar/music/*
 include src/pyspacewar/tests/*.py
+
+# added by check_manifest.py
+include .coveragerc

@@ -1,3 +1,8 @@
+September 17, 2016: Released version 1.0.0:
+
+- Fixed crash on startup with Numpy >= 1.10.
+- Dropped support for Python 2.6.
+
 February 10, 2016: Released version 0.9.8:
 
 - Switched version control system from Bazaar to Git, hosted on GitHub
