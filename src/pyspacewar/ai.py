@@ -28,7 +28,7 @@ class AIController(object):
         self.last_l_r = 1
         self.enemy = None
 
-    def chooseEnemy(self):
+    def choose_enemy(self):
         enemy = self.enemy
         if enemy is not None and enemy.dead:
             enemy = None
@@ -50,7 +50,7 @@ class AIController(object):
     def control(self):
         if self.ship.dead:
             return
-        enemy = self.chooseEnemy()
+        enemy = self.choose_enemy()
         self.enemy = enemy
         if enemy is not None:
             self.target(enemy)
@@ -99,7 +99,7 @@ class AIController(object):
             do_not_evade = enemy
         else:
             do_not_evade = None
-        planet = self.getClosestToObject(self.ship, ignore=do_not_evade)
+        planet = self.get_closest_obstacle(self.ship, ignore=do_not_evade)
         if not planet:
             return
 
@@ -125,7 +125,7 @@ class AIController(object):
             else:
                 self.ship.right_thrust += evade_factor
 
-    def getClosestToObject(self, what, ignore=None):
+    def get_closest_obstacle(self, what, ignore=None):
         distance = 90000 # cutoff, 300 ** 2
         closest = None
         for obj in self.ship.world.objects:

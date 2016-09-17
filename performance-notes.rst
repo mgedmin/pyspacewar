@@ -65,7 +65,7 @@ The biggest hotspots (largest internal time) are::
   World.collide                            7% total time  =======
   pygame.Surface.set_at                    7% total time  =======
   math.hypot                               6% total time  ======
-  World.distanceTo                         6% total time  ======
+  World.distance_to                        6% total time  ======
   tuple.__new__                            4% total time  ====
 
 The most often called functions are::
@@ -76,7 +76,7 @@ The most often called functions are::
   Vector.__new__                            149736 calls  ===========
   tuple.__new__                             149736 calls  ===========
   World.collide                             141018 calls  ==========
-  Object.distanceTo                         141018 calls  ==========
+  Object.distance_to                        141018 calls  ==========
   Object.gravitate                          110874 calls  ========
   Vector.x property                          50504 calls  ===
   Vector.y property                          50504 calls  ===
@@ -113,7 +113,7 @@ Rewrite the Vector class in a C extension module (maybe use Pyrex).
 
 Implement Viewport.screen_pos in a C extension module.
 
-Implement World.collide/Object.distanceTo/Object.gravitate in C code.
+Implement World.collide/Object.distance_to/Object.gravitate in C code.
 
 Use a mutable Vector class instead of creating thousands of new objects.
 
@@ -145,7 +145,7 @@ Successful optimisations
   Somewhere during the last changes (missile recoil?  menus?  detailed
   timings?) I lost 2 fps, so the average now is 18, not 20.
 
-Manually inlining method calls in Object.distanceTo (18.4 -> 20.5 average fps).
+Manually inlining method calls in Object.distance_to (18.4 -> 20.5 average fps).
 
 Manually inlining method calls in Object.gravitate (14.7 -> 18.4 average fps).
 

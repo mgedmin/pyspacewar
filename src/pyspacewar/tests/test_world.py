@@ -16,7 +16,7 @@ class Object(object):
     def __repr__(self):
         return self.name
 
-    def distanceTo(self, other):
+    def distance_to(self, other):
         return 1e100
 
     def gravitate(self, massive_obj, dt):
@@ -223,15 +223,15 @@ def doctest_World_collision_detection():
         >>> o1 = Object('o1', radius=1)
         >>> o2 = Object('o2', radius=2)
 
-        >>> o1.distanceTo = lambda o2: 3.5
+        >>> o1.distance_to = lambda o2: 3.5
         >>> w.collide(o1, o2)
         False
 
-        >>> o1.distanceTo = lambda o2: 2.5
+        >>> o1.distance_to = lambda o2: 2.5
         >>> w.collide(o1, o2)
         True
 
-        >>> o1.distanceTo = lambda o2: 3.0
+        >>> o1.distance_to = lambda o2: 3.0
         >>> w.collide(o1, o2)
         False
 

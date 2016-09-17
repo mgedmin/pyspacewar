@@ -2590,7 +2590,7 @@ class GameUI(object):
         self.draw_line(self.screen, color, pt1, pt2)
         self.draw_line(self.screen, color, pt2, pt3)
         (front, back, left_front, left_back,
-         right_front, right_back) = self.calcShipThrusters(ship)
+         right_front, right_back) = self.calc_Ship_thrusters(ship)
         thrust_lines = []
         if back:
             thrust_lines.append(((-0.1, -0.9), (-0.1, -0.9-back)))
@@ -2611,7 +2611,7 @@ class GameUI(object):
             pt2 = sp(ship.position + direction_vector * d2 + side_vector * s2)
             self.draw_line(self.screen, (255, 120, 20), pt1, pt2)
 
-    def calcShipThrusters(self, ship):
+    def calc_Ship_thrusters(self, ship):
         """Calculate the output of the ship's thrusters.
 
         Returns (front, back, left_front, left_back, right_front, right_back)

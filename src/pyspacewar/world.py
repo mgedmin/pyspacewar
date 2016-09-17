@@ -236,7 +236,7 @@ class World(object):
                 move for a particular time
             collission(other_object)
                 handle a collision
-            distanceTo(other_object)
+            distance_to(other_object)
                 calculate the distance to another object
 
         and a ``radius`` attribute, used for collision detection.
@@ -313,7 +313,7 @@ class World(object):
     def collide(self, obj1, obj2):
         """Check whether two objects collide."""
         collision_distance = obj1.radius + obj2.radius
-        return obj1.distanceTo(obj2) < collision_distance
+        return obj1.distance_to(obj2) < collision_distance
 
 
 class Object(object):
@@ -347,14 +347,14 @@ class Object(object):
         self.world = None
         self.bounce_effect = None
 
-    def distanceTo(self, other):
+    def distance_to(self, other):
         """Calculate the distance to another object.
 
             >>> sun = Object(Vector(30, 40))
             >>> tincan = Object(Vector(0, 0))
-            >>> tincan.distanceTo(sun)
+            >>> tincan.distance_to(sun)
             50.0
-            >>> sun.distanceTo(tincan)
+            >>> sun.distance_to(tincan)
             50.0
 
         """
