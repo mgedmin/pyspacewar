@@ -35,13 +35,13 @@ class AIController(object):
         if enemy is not None:
             dist_to_enemy = length_sq(enemy.position - self.ship.position)
         else:
-            dist_to_enemy = 0
+            dist_to_enemy = 1e999
         threshold = 50 ** 2
         for ship in self.ship.world.objects:
             if not isinstance(ship, Ship):
                 continue
             if ship is self.ship or ship is self.enemy or ship.dead:
-                continue
+                continue  # pragma: nocover because peephole optimizer :/
             dist = length_sq(ship.position - self.ship.position)
             if enemy is None or dist < dist_to_enemy - threshold:
                 enemy = ship

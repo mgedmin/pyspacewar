@@ -16,7 +16,8 @@ test check:
 
 .PHONY: coverage
 coverage:
-	tox -e coverage
+	coverage run test.py
+	coverage report
 
 .PHONY: dist
 dist:
