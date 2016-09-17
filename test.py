@@ -17,7 +17,8 @@ def main():
         module = __import__('pyspacewar.tests.' + name, {}, {}, ('',))
         suite.addTest(module.test_suite())
     runner = unittest.TextTestRunner(verbosity=1)
-    runner.run(suite)
+    result = runner.run(suite)
+    sys.exit(not result.wasSuccessful())
 
 
 if __name__ == '__main__':

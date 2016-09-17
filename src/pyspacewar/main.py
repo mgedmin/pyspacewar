@@ -12,12 +12,12 @@ def use_psyco():
     """Use Psyco (if available) to speed things up."""
     try:
         import psyco
-        psyco.full()
+        psyco.full()  # pragma: nocover
     except ImportError:
         pass
 
 
-def main():
+def main(argv=None):
     """Run PySpaceWar."""
     use_psyco()
     ui = GameUI()
@@ -49,7 +49,7 @@ def main():
                            ' note that in windowed mode the window size be 20%'
                            ' smaller',
                       action='store', dest='mode')
-    opts, args = parser.parse_args()
+    opts, args = parser.parse_args(argv or sys.argv)
     if opts.fullscreen is not None:
         ui.fullscreen = opts.fullscreen
     if opts.debug is not None:
@@ -63,9 +63,7 @@ def main():
             w, h = opts.mode.split('x')
             ui.fullscreen_mode = int(w), int(h)
         except ValueError:
-            print >> sys.stderr, ('pyspacewar: error: invalid mode: %s'
-                                  % opts.mode)
-            sys.exit(1)
+            sys.exit('pyspacewar: error: invalid mode: %s' % opts.mode)
     ui.init()
     try:
         while True:
