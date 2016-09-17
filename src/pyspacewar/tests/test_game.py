@@ -34,6 +34,13 @@ class Ticker(object):
         print "Tick (%s)" % dt
 
 
+class Controller(object):
+    """Fake controller."""
+
+    def control(self):
+        print "Controlling the world"
+
+
 def doctest_PythonTimeSource():
     """Tests for PythonTimeSource
 
@@ -235,6 +242,7 @@ def doctest_Game_wait_for_tick():
         >>> g = Game()
         >>> ts = g.time_source = TimeSourceStub()
         >>> g.world.add(Ticker())
+        >>> g.controllers.append(Controller())
 
     Initial call to g.wait_for_tick remembers the current time.  All other
     calls wait the necessary amount.  Each call also causes an update in the
@@ -244,14 +252,17 @@ def doctest_Game_wait_for_tick():
         True
         >>> g.wait_for_tick()
         Tick (2.0)
+        Controlling the world
         Waiting for 11
         True
         >>> g.wait_for_tick()
         Tick (2.0)
+        Controlling the world
         Waiting for 21
         True
         >>> g.wait_for_tick()
         Tick (2.0)
+        Controlling the world
         Waiting for 31
         True
 
@@ -260,11 +271,13 @@ def doctest_Game_wait_for_tick():
         >>> ts.counter += 5
         >>> g.wait_for_tick()
         Tick (2.0)
+        Controlling the world
         Waiting for 41
         True
         >>> ts.counter += 105
         >>> g.wait_for_tick()
         Tick (2.0)
+        Controlling the world
         Waiting for 51
         False
 
@@ -278,6 +291,7 @@ def doctest_Game_wait_for_tick():
 
         >>> g.wait_for_tick()
         Tick (2.0)
+        Controlling the world
         Waiting for 61
         False
 

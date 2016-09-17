@@ -14,7 +14,7 @@ def get_git_revision(unknown='', format=' (git %s)'):
         p = subprocess.Popen(['git', 'describe', '--always'],
                              cwd=package_root,
                              stdout=subprocess.PIPE)
-    except OSError:
+    except OSError:  # pragma: nocover
         return unknown
     else:
         return format % p.communicate()[0].strip()

@@ -30,6 +30,12 @@ class Object(object):
         print "%s collides with %s" % (self.name, other.name)
 
 
+def effect(msg):
+    def callback(*args):
+        print(msg)
+    return callback
+
+
 def doctest_World():
     """Tests for basic World functions
 
@@ -78,7 +84,7 @@ def doctest_World():
     Some objects have mass and thus attract other objects (even those that have
     no mass)
 
-        >>> w.add(Object('planet', mass=100))
+        >>> w.add(Object('planet', mass=100, radius=10))
         >>> w.update(0.1)
         planet attracts brick1 for 0.1 time units
         planet attracts brick2 for 0.1 time units
@@ -86,7 +92,7 @@ def doctest_World():
         Moving brick2 for 0.1 time units
         Moving planet for 0.1 time units
 
-        >>> w.add(Object('sun', mass=1e20))
+        >>> w.add(Object('sun', mass=1e20, radius=20))
         >>> w.update(0.1)
         planet attracts brick1 for 0.1 time units
         planet attracts brick2 for 0.1 time units
@@ -120,6 +126,10 @@ def doctest_World_collision_detection_in_update():
         Moving o3 for 1.0 time units
         o1 collides with o3
         o3 collides with o1
+
+        >>> w.remove(o1)
+        >>> w.remove(o2)
+        >>> w.remove(o3)
 
     """
 
@@ -405,6 +415,7 @@ def doctest_Ship_collision():
         >>> from world import Ship, Vector, Planet, Debris, Missile, World
         >>> ship = Ship(position=Vector(3, 5), velocity=Vector(10, 10))
         >>> ship.world = World()
+        >>> ship.hit_effect = effect('Ouch!')
 
     Debris is easily deflected
 
@@ -415,6 +426,7 @@ def doctest_Ship_collision():
     Missiles cause more damage, but no bouncing
 
         >>> ship.collision(Missile())
+        Ouch!
         >>> print ship.health
         0.4
         >>> print ship.velocity
@@ -430,11 +442,10 @@ def doctest_Ship_collision():
 
     When health falls under 0, the ship dies
 
-        >>> def croak(who):
-        ...     print "Ship died"
-        >>> ship.die = croak
+        >>> ship.die = effect('Ship died')
 
         >>> ship.collision(Missile())
+        Ouch!
         Ship died
         >>> print ship.health
         -0.25
@@ -443,6 +454,7 @@ def doctest_Ship_collision():
 
         >>> ship.dead = True
         >>> ship.collision(Missile())
+        Ouch!
         >>> print ship.health
         -0.85
 
@@ -504,20 +516,31 @@ def doctest_Ship_death():
         >>> ship.left_thrust
         0
 
+    A dying ship emits a sound effect
+
+        >>> ship = Ship()
+        >>> ship.world = World()
+        >>> ship.explode_effect = effect('Boom')
+        >>> ship.die()
+        Boom
+
     """
 
 
 def doctest_Ship_rebirth():
     """Tests for Ship.respawn.
 
-        >>> from world import Ship, Vector
+        >>> from world import Ship, Vector, World
         >>> ship = Ship(Vector(10, 20), velocity=Vector(1, 2), direction=90)
         >>> ship.dead = True
         >>> ship.health = -0.3
+        >>> ship.world = World()
+        >>> ship.respawn_effect = effect('Woohoo!')
 
     A dead ship can come back to life (to make the game more interesting)
 
         >>> ship.respawn()
+        Woohoo!
         >>> ship.dead
         False
         >>> ship.health
@@ -532,7 +555,9 @@ def doctest_Ship_launch():
         >>> from world import Ship, Vector, World
         >>> ship = Ship(velocity=Vector(10, 20), direction=90)
         >>> ship.world = World()
+        >>> ship.launch_effect = effect('Fooom!')
         >>> ship.launch()
+        Fooom!
 
         >>> len(ship.world.objects)
         1
@@ -609,6 +634,63 @@ def doctest_Missile_explode():
     """
 
 
+def doctest_Missile_collision():
+    """Tests for Missile.collision.
+
+        >>> from world import Missile, World, Planet
+        >>> missile = Missile()
+        >>> world = World()
+        >>> world.add(missile)
+
+        >>> moon = Planet()
+        >>> missile.collision(moon)
+
+        >>> missile.dead
+        True
+        >>> missile in world.objects
+        False
+
+    """
+
+
+def doctest_Object_collision():
+    """Tests for Object.collision.
+
+        >>> from world import Object, World, Vector
+        >>> asteroid = Object(Vector(3, 4), velocity=Vector(0.1, 0.2),
+        ...                   mass=14, radius=2)
+        >>> tincan = Object(Vector(0.5, 4), velocity=Vector(1.5, -0.3),
+        ...                 mass=1, radius=1)
+        >>> tincan.world = World()
+        >>> tincan.bounce_effect = effect('Bump!')
+
+        >>> tincan.collision(asteroid)
+        Bump!
+
+    """
+
+
+def doctest_Object_bounce():
+    """Tests for Object.bounce.
+
+        >>> from world import Object, World, Vector
+        >>> asteroid = Object(Vector(3, 4), velocity=Vector(0.1, 0.2),
+        ...                   mass=14, radius=2)
+        >>> tincan = Object(Vector(0.5, 4), velocity=Vector(1.5, -0.3),
+        ...                 mass=1, radius=1)
+        >>> tincan.world = World()
+        >>> tincan.bounce_effect = effect('Bump!')
+
+        >>> tincan.bounce(asteroid)
+        Bump!
+        >>> print tincan.velocity
+        (-1.350, -0.270)
+        >>> print tincan.position
+        (0.000, 4.000)
+
+    """
+
+
 def doctest_Object_add_debris():
     """Tests for Object.add_debris.
 
@@ -658,6 +740,17 @@ def doctest_Debris():
 
     """
 
+
+def doctest_Planet():
+    """Tests for Planet.
+
+        >>> from world import Planet, Vector
+        >>> sun = Planet(position=Vector(10, 15), mass=200)
+        >>> moon = Planet(position=Vector(20, 35), mass=10)
+        >>> moon.gravitate(sun, 0.1)  # nothing happens
+        >>> moon.collision(sun)  # nothing happens
+
+    """
 
 def test_suite():
     path = os.path.join(os.path.dirname(__file__), os.path.pardir)
