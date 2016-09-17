@@ -887,7 +887,8 @@ class NumPyFadingImage(object):
         """
         import numpy
         numpy.multiply(self.mask, alpha / 255,
-                       pygame.surfarray.pixels_alpha(self.image))
+                       pygame.surfarray.pixels_alpha(self.image),
+                       casting='unsafe')
         surface.blit(self.image, (x, y))
 
 
