@@ -1944,7 +1944,8 @@ class GameUI(object):
         if not filename:
             filename = os.path.expanduser('~/.pyspacewarrc')
         config = self.get_config_parser()
-        config.write(file(filename, 'w'))
+        with open(filename, 'w') as f:
+            config.write(f)
 
     def get_config_parser(self):
         """Create a ConfigParser initialized with current settings."""
