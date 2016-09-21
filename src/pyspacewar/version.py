@@ -17,7 +17,10 @@ def get_git_revision(unknown='', format=' (git %s)'):
     except OSError:  # pragma: nocover
         return unknown
     else:
-        return format % p.communicate()[0].strip()
+        ver = p.communicate()[0].strip()
+        if not isinstance(ver, str):
+            ver = ver.decode('UTF-8', 'replace')
+        return format % ver
 
 
 if 'dev' in version:
