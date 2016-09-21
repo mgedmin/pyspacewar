@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 import os
 import sys
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+
+from setuptools import setup
+
+
+with open('NEWS.rst') as f:
+    news = f.read()
 
 long_description = """\
 Two ships duel in a gravity field.   Gravity doesn't affect
@@ -19,7 +21,7 @@ specify the direction and velocity of their missiles.
 Latest changes
 --------------
 
-""" + '\n\n'.join(file('NEWS.rst').read().split('\n\n')[:2])
+""" + '\n\n'.join(news.split('\n\n')[:2])
 
 pkgdir = os.path.join('src', 'pyspacewar')
 
@@ -51,10 +53,21 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Games/Entertainment :: Arcade',
     ],
     scripts=['pyspacewar'],
     packages=['pyspacewar'],
     package_dir={'': 'src'},
-    package_data={'pyspacewar': ['images/*', 'sounds/*', 'music/*']},
+    package_data={
+        'pyspacewar': [
+            'icons/*',
+            'images/*',
+            'music/*',
+            'sounds/*',
+        ],
+    },
+    install_package_data=True,
+    install_requires=['pygame'],
 )

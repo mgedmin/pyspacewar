@@ -34,7 +34,7 @@ class FakeGameUI(object):
 def doctest_main():
     """Test for main
 
-        >>> from main import main
+        >>> from pyspacewar.main import main
         >>> main(['-f', '-d', '--no-sound', '--no-music', '-m', '640x480'])
 
         >>> main(['-m', 'lalala'])
@@ -46,12 +46,13 @@ def doctest_main():
 
 
 def setUp(test=None):
-    import main
+    from pyspacewar import main
     main.GameUI = FakeGameUI
 
 
 def test_suite():
-    path = os.path.join(os.path.dirname(__file__), os.path.pardir)
+    path = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), '..', '..'))
     if path not in sys.path:
         sys.path.append(path)
     return doctest.DocTestSuite(setUp=setUp)

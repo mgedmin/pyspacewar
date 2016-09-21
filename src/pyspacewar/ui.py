@@ -9,15 +9,24 @@ import time
 import math
 import random
 import itertools
-import ConfigParser
+
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import RawConfigParser as ConfigParser
+
+try:
+    unicode
+except NameError:
+    unicode = str
 
 import pygame
 from pygame.locals import *
 
-from world import Vector, Ship, Missile
-from game import Game
-from ai import AIController
-from version import version
+from .world import Vector, Ship, Missile
+from .game import Game
+from .ai import AIController
+from .version import version
 
 
 MODIFIER_KEYS = set([K_NUMLOCK, K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK,
@@ -130,7 +139,7 @@ def fixup_keys_in_text(text, controls):
     return text
 
 
-def mode_looks_sane((w, h)):
+def mode_looks_sane(mode):
     """Check if video mode looks sane.
 
     This function assumes (w, h) already came from pygame.display.list_modes.
@@ -139,6 +148,7 @@ def mode_looks_sane((w, h)):
     the largest video mode returned by list_modes.  However it does not work
     at all as a full-screen mode, and looks weird when windowed.
     """
+    w, h = mode
     return bool(w / h < 2)
 
 
@@ -172,7 +182,7 @@ def linear(x, xmax, y1, y2):
     """Calculate a linear transition from y1 to y2 as x moves from 0 to xmax.
 
         >>> for x in range(10):
-        ...     print '*' * int(linear(x, 9, 1, 10))
+        ...     print('*' * int(linear(x, 9, 1, 10)))
         *
         **
         ***
@@ -192,7 +202,7 @@ def smooth(x, xmax, y1, y2):
     """Calculate a smooth transition from y1 to y2 as x moves from 0 to xmax.
 
         >>> for x in range(10):
-        ...     print '*' * int(smooth(x, 9, 1, 10))
+        ...     print('*' * int(smooth(x, 9, 1, 10)))
         *
         *
         *
@@ -299,8 +309,9 @@ class Viewport(object):
         xmin, ymin, xmax, ymax = self.world_bounds
         return xmin <= world_pos[0] <= xmax and ymin <= world_pos[1] <= ymax
 
-    def shift_by_pixels(self, (delta_x, delta_y)):
+    def shift_by_pixels(self, delta):
         """Shift the origin by a given number of screen pixels."""
+        delta_x, delta_y = delta
         self.origin += Vector(delta_x / self.scale, -delta_y / self.scale)
 
     def keep_visible(self, points, margin):
@@ -979,8 +990,9 @@ class HUDMenu(HUDElement):
             height = max(height, size[1])
         return width + 2 * xpadding, height + 2 * ypadding
 
-    def find(self, surface, (x, y)):
+    def find(self, surface, pos):
         """Find the item at given coordinates."""
+        x, y = pos
         ix, iy = self.position(surface)
         iy -= self.top
         for idx, item in enumerate(self.items):
@@ -1751,7 +1763,7 @@ class GravityWarsMode(UIMode):
         self.while_key(K_MINUS, self.ui.zoom_out)
         self.prompt = None
         self.state = self.logic()
-        self.state.next()
+        next(self.state)
 
     def wait_for_input(self, prompt, value):
         """Ask the user to enter a value."""
@@ -1807,7 +1819,7 @@ class GravityWarsMode(UIMode):
         """Handle a KEYDOWN event for unknown keys."""
         if self.prompt is not None:
             if event.key == K_RETURN:
-                self.state.next()
+                next(self.state)
             elif event.key == K_BACKSPACE:
                 self.prompt.text = self.prompt.text[:-1]
             elif event.unicode.isdigit() or event.unicode in ('-', '.'):
@@ -1937,11 +1949,12 @@ class GameUI(object):
         if not filename:
             filename = os.path.expanduser('~/.pyspacewarrc')
         config = self.get_config_parser()
-        config.write(file(filename, 'w'))
+        with open(filename, 'w') as f:
+            config.write(f)
 
     def get_config_parser(self):
         """Create a ConfigParser initialized with current settings."""
-        config = ConfigParser.RawConfigParser()
+        config = ConfigParser()
         config.add_section('video')
         config.set('video', 'fullscreen', str(self.fullscreen))
         if self.fullscreen_mode:
@@ -2016,8 +2029,8 @@ class GameUI(object):
             # Try again, at least we'll get an error message, maybe?
             try:
                 pygame.mixer.init()
-            except pygame.error, e:
-                print "pyspacewar: disabling sound: %s" % e
+            except pygame.error as e:
+                print("pyspacewar: disabling sound: %s" % e)
             else:
                 self.sound_available = True
 
@@ -2067,8 +2080,10 @@ class GameUI(object):
 
     def _load_planet_images(self):
         """Load bitmaps of planets."""
-        self.planet_images = map(pygame.image.load,
-                                 glob.glob(find('images', 'planet*.png')))
+        self.planet_images = [
+            pygame.image.load(img)
+            for img in glob.glob(find('images', 'planet*.png'))
+        ]
         if not self.planet_images:
             raise RuntimeError("Could not find planet bitmaps")
 
@@ -2097,7 +2112,7 @@ class GameUI(object):
         self.sound_looping = set()
         if not self.sound_available:
             return
-        config = ConfigParser.RawConfigParser()
+        config = ConfigParser()
         config.add_section('sounds')
         config.read([find('sounds', 'sounds.ini')])
         for name in ['thruster', 'fire', 'bounce', 'hit', 'explode', 'respawn',
@@ -2109,7 +2124,7 @@ class GameUI(object):
                         sound = pygame.mixer.Sound(find('sounds', filename))
                         self.sounds[name] = sound
                     except pygame.error:
-                        print "pyspacewar: could not load %s" % filename
+                        print("pyspacewar: could not load %s" % filename)
         if 'thruster' in self.sounds:
             self.sounds['thruster'].set_volume(0.5)
 
@@ -2118,7 +2133,7 @@ class GameUI(object):
         self.music_files = {}
         if not self.sound_available:
             return
-        config = ConfigParser.RawConfigParser()
+        config = ConfigParser()
         config.add_section('music')
         config.read([find('music', 'music.ini')])
         for what in ['demo', 'game', 'gravitywars']:
@@ -2144,7 +2159,7 @@ class GameUI(object):
                 pygame.mixer.music.load(filename)
                 pygame.mixer.music.play(-1)
             except pygame.error:
-                print "pyspacewar: could not load %s" % filename
+                print("pyspacewar: could not load %s" % filename)
                 pygame.mixer.music.stop()
 
     def play_sound(self, which):
@@ -2203,7 +2218,7 @@ class GameUI(object):
             ship.hit_effect = self.hit_effect_Ship
             ship.explode_effect = self.explode_effect_Ship
             ship.respawn_effect = self.respawn_effect_Ship
-        self.ai = map(AIController, self.ships)
+        self.ai = [AIController(ship) for ship in self.ships]
         self.ai_controlled = [False] * len(self.ships)
         self.missile_trails = {}
         self.angular_momentum = {}
@@ -2222,10 +2237,7 @@ class GameUI(object):
 
     def _count_trails(self):
         """Count the number of pixels in missile trails."""
-        total = 0
-        for trail in self.missile_trails.values():
-            total += len(trail)
-        return total
+        return sum(len(trail) for trail in self.missile_trails.values())
 
     def _init_hud(self):
         """Initialize the heads-up display."""
@@ -2676,7 +2688,7 @@ class GameUI(object):
 
     def update_missile_trails(self):
         """Update missile trails."""
-        for missile, trail in self.missile_trails.items():
+        for missile, trail in list(self.missile_trails.items()):
             if missile.world is None:
                 del trail[:2]
                 if not trail:

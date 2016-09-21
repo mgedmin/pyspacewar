@@ -41,10 +41,10 @@ class Vector(tuple):
         ``direction`` is the angle in degrees (0 points in the direction of the
         x axis, 90 points in the direction of the y axis).
 
-            >>> print Vector.from_polar(90, 3.5)
+            >>> print(Vector.from_polar(90, 3.5))
             (0.000, 3.500)
 
-            >>> print Vector.from_polar(135, 1)
+            >>> print(Vector.from_polar(135, 1))
             (-0.707, 0.707)
 
         """
@@ -55,7 +55,7 @@ class Vector(tuple):
     def __str__(self):
         """Return an (approximate) human-readable string representation.
 
-            >>> print Vector.from_polar(-90, 1)
+            >>> print(Vector.from_polar(-90, 1))
             (0.000, -1.000)
 
         """
@@ -101,17 +101,19 @@ class Vector(tuple):
         """
         return self.x * other.y - self.y * other.x
 
-    def __div__(self, divisor):
+    def __truediv__(self, divisor):
         """Divide the vector by a scalar.
 
             >>> Vector(1.5, 7.5) / 3
             Vector(0.5, 2.5)
 
-            >>> print Vector(1, 2) / 3
+            >>> print(Vector(1, 2) / 3)
             (0.333, 0.667)
 
         """
         return Vector(self.x / float(divisor), self.y / float(divisor))
+
+    __div__ = __truediv__
 
     def __add__(self, other):
         """Add two vectors.
@@ -175,7 +177,7 @@ class Vector(tuple):
         Returns the vector rotated clockwise by 90 degrees (assuming the usual
         mathematical direction of axes: x points right, y points up).
 
-            >>> print Vector(2, 1).perpendicular()
+            >>> print(Vector(2, 1).perpendicular())
             (-1.000, 2.000)
 
         """
@@ -185,14 +187,14 @@ class Vector(tuple):
         """Scale the vector to a given magnitude.
 
             >>> v = Vector(2, 1).scaled(5)
-            >>> print v.length()
+            >>> print(v.length())
             5.0
-            >>> print v
+            >>> print(v)
             (4.472, 2.236)
 
         If you omit the magnitude, you get a normalized vector
 
-            >>> print v.scaled().length()
+            >>> print(v.scaled().length())
             1.0
 
         """
@@ -378,15 +380,15 @@ class Object(object):
             >>> tincan = Object(Vector(0, 0))
             >>> tincan.world = World()
             >>> tincan.gravitate(sun, 1.0)
-            >>> print tincan.velocity
+            >>> print(tincan.velocity)
             (0.000, 0.020)
 
             >>> tincan.gravitate(sun, 1.0)
-            >>> print tincan.velocity
+            >>> print(tincan.velocity)
             (0.000, 0.040)
 
             >>> tincan.gravitate(sun, .5)
-            >>> print tincan.velocity
+            >>> print(tincan.velocity)
             (0.000, 0.050)
 
         """
@@ -456,9 +458,9 @@ class Object(object):
             >>> tincan.world = World()
 
             >>> tincan.bounce(asteroid)
-            >>> print tincan.velocity
+            >>> print(tincan.velocity)
             (-1.350, -0.270)
-            >>> print tincan.position
+            >>> print(tincan.position)
             (0.000, 4.000)
 
         The bounce is not physically realistic (e.g. total energy/momentum
@@ -528,7 +530,7 @@ class Ship(Object):
         >>> ship.move(1.0)
         >>> ship.direction
         50.0
-        >>> print ship.velocity.length()
+        >>> print(ship.velocity.length())
         0.1
 
     """

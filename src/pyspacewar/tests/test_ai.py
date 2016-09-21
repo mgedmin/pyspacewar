@@ -15,8 +15,8 @@ def effect(msg):
 def doctest_AIController_choose_enemy():
     """Tests for AIController.choose_enemy.
 
-        >>> from ai import AIController
-        >>> from world import Ship, World, Object, Vector
+        >>> from pyspacewar.ai import AIController
+        >>> from pyspacewar.world import Ship, World, Object, Vector
 
     In a world with only two ships
 
@@ -68,8 +68,8 @@ def doctest_AIController_choose_enemy():
 def doctest_AIController_control():
     """Tests for AIController.control.
 
-        >>> from ai import AIController
-        >>> from world import Ship, World, Object, Vector
+        >>> from pyspacewar.ai import AIController
+        >>> from pyspacewar.world import Ship, World, Object, Vector
         >>> ship = Ship(velocity=Vector(30, 0))
         >>> world = World()
         >>> world.add(ship)
@@ -98,8 +98,8 @@ def doctest_AIController_control():
 def doctest_AIController_target():
     """Tests for AIController.target.
 
-        >>> from ai import AIController
-        >>> from world import Ship, World, Vector
+        >>> from pyspacewar.ai import AIController
+        >>> from pyspacewar.world import Ship, World, Vector
         >>> ship = Ship(position=Vector(0, 0))
         >>> other = Ship(position=Vector(10, 20))
         >>> world = World()
@@ -132,8 +132,8 @@ def doctest_AIController_target():
 def doctest_AIController_evade():
     """Tests for AIController.evade.
 
-        >>> from ai import AIController
-        >>> from world import Ship, World, Missile, Planet, Vector
+        >>> from pyspacewar.ai import AIController
+        >>> from pyspacewar.world import Ship, World, Missile, Planet, Vector
         >>> ship = Ship(position=Vector(0, 0))
         >>> other = Ship(position=Vector(10, 20))
         >>> sun = Planet(position=Vector(35, 20), radius=5)
@@ -189,8 +189,8 @@ def doctest_AIController_evade():
 def doctest_AIController_get_closest_obstacle():
     """Tests for AIController.get_closest_obstacle.
 
-        >>> from ai import AIController
-        >>> from world import Ship, World, Missile, Planet, Vector
+        >>> from pyspacewar.ai import AIController
+        >>> from pyspacewar.world import Ship, World, Missile, Planet, Vector
         >>> ship = Ship(position=Vector(30, 0))
         >>> missile = Missile(position=Vector(31, 0))
         >>> sun = Planet(position=Vector(35, 20), radius=5)
@@ -213,8 +213,8 @@ def doctest_AIController_get_closest_obstacle():
 def doctest_AIController_maybe_fire():
     """Tests for AIController.maybe_fire.
 
-        >>> from ai import AIController
-        >>> from world import Ship, World, Object, Vector
+        >>> from pyspacewar.ai import AIController
+        >>> from pyspacewar.world import Ship, World, Object, Vector
         >>> ship = Ship()
         >>> ship.launch_effect = effect('Foom!')
         >>> world = World()
@@ -236,7 +236,8 @@ def doctest_AIController_maybe_fire():
 
 
 def test_suite():
-    path = os.path.join(os.path.dirname(__file__), os.path.pardir)
+    path = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), '..', '..'))
     if path not in sys.path:
         sys.path.append(path)
     return doctest.DocTestSuite()

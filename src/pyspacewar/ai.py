@@ -4,7 +4,7 @@ Ship artificial intelligence.
 Written by Ignas Mikalajunas.
 """
 
-from world import Ship
+from .world import Ship
 
 
 class AIController(object):

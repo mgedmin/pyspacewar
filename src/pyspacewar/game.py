@@ -6,7 +6,7 @@ with wall clock.
 import time
 import random
 
-from world import World, Vector, Ship, Planet
+from .world import World, Vector, Ship, Planet
 
 
 class PythonTimeSource(object):

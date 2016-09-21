@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 import unittest
 import doctest
@@ -20,14 +21,14 @@ class Object(object):
         return 1e100
 
     def gravitate(self, massive_obj, dt):
-        print "%s attracts %s for %s time units" % (massive_obj.name,
-                                                    self.name, dt)
+        print("%s attracts %s for %s time units" % (massive_obj.name,
+                                                    self.name, dt))
 
     def move(self, dt):
-        print "Moving %s for %s time units" % (self.name, dt)
+        print("Moving %s for %s time units" % (self.name, dt))
 
     def collision(self, other):
-        print "%s collides with %s" % (self.name, other.name)
+        print("%s collides with %s" % (self.name, other.name))
 
 
 def effect(msg):
@@ -39,7 +40,7 @@ def effect(msg):
 def doctest_World():
     """Tests for basic World functions
 
-        >>> from world import World
+        >>> from pyspacewar.world import World
         >>> w = World()
 
     At the beginning the universe was empty
@@ -69,7 +70,7 @@ def doctest_World():
     All the interesting things happen when time ticks
 
         >>> w.update(0.1)
-        >>> print w.time
+        >>> print(w.time)
         0.1
 
     well, the interesting things only happen if you have interesting objects
@@ -111,7 +112,7 @@ def doctest_World():
 def doctest_World_collision_detection_in_update():
     """Tests for collision detection
 
-        >>> from world import World, Vector
+        >>> from pyspacewar.world import World, Vector
         >>> w = World()
 
         >>> o1, o2, o3 = [Object(name, radius=1) for name in ['o1', 'o2', 'o3']]
@@ -137,7 +138,7 @@ def doctest_World_collision_detection_in_update():
 def doctest_World_death_and_birth_in_update():
     """Test for spawning and removing objects during update
 
-        >>> from world import World, Vector
+        >>> from pyspacewar.world import World, Vector
         >>> w = World()
 
         >>> o1, o2, o3, o4, o5 = map(Object, ['o1', 'o2', 'o3', 'o4', 'o5'])
@@ -214,7 +215,7 @@ def doctest_World_death_and_birth_in_update():
 def doctest_World_collision_detection():
     """Tests for collision detection
 
-        >>> from world import World, Vector
+        >>> from pyspacewar.world import World, Vector
         >>> w = World()
 
     You can check whether two objects collide.  Collision detection is pretty
@@ -241,7 +242,7 @@ def doctest_World_collision_detection():
 def doctest_Ship_direction():
     """Tests for Ship.direction property.
 
-        >>> from world import Ship, Vector
+        >>> from pyspacewar.world import Ship, Vector
         >>> ship = Ship(Vector(0, 0), size=10, direction=45)
         >>> ship.direction
         45
@@ -249,13 +250,13 @@ def doctest_Ship_direction():
         >>> ship.direction -= 90
         >>> ship.direction
         315
-        >>> print ship.direction_vector
+        >>> print(ship.direction_vector)
         (0.707, -0.707)
 
         >>> ship.direction += 45
         >>> ship.direction
         0
-        >>> print ship.direction_vector
+        >>> print(ship.direction_vector)
         (1.000, 0.000)
 
     """
@@ -264,7 +265,7 @@ def doctest_Ship_direction():
 def doctest_Ship_controls():
     """Tests for Ship.turn_left, turn_right, accelerate, backwards.
 
-        >>> from world import Ship
+        >>> from pyspacewar.world import Ship
         >>> ship = Ship()
         >>> ship.left_thrust, ship.right_thrust
         (0, 0)
@@ -276,27 +277,27 @@ def doctest_Ship_controls():
     You can tell the ship what to do
 
         >>> ship.turn_right()
-        >>> print ship.left_thrust, ship.right_thrust
+        >>> print(ship.left_thrust, ship.right_thrust)
         0 5
 
     You can do several things simultaneously
 
         >>> ship.accelerate()
-        >>> print ship.left_thrust, ship.right_thrust
+        >>> print(ship.left_thrust, ship.right_thrust)
         0 5
-        >>> print ship.forward_thrust, ship.rear_thrust
+        >>> print(ship.forward_thrust, ship.rear_thrust)
         0.1 0
 
         >>> ship.turn_left()
-        >>> print ship.left_thrust, ship.right_thrust
+        >>> print(ship.left_thrust, ship.right_thrust)
         5 5
-        >>> print ship.forward_thrust, ship.rear_thrust
+        >>> print(ship.forward_thrust, ship.rear_thrust)
         0.1 0
 
         >>> ship.backwards()
-        >>> print ship.left_thrust, ship.right_thrust
+        >>> print(ship.left_thrust, ship.right_thrust)
         5 5
-        >>> print ship.forward_thrust, ship.rear_thrust
+        >>> print(ship.forward_thrust, ship.rear_thrust)
         0.1 0.05
 
     These commands are remembered and executed when you call ``move``, not
@@ -314,7 +315,7 @@ def doctest_Ship_controls():
         >>> ship.engage_brakes
         False
 
-        >>> from world import Vector
+        >>> from pyspacewar.world import Vector
         >>> ship.velocity = Vector(0.5, 3.25)
         >>> ship.brake()
         >>> ship.engage_brakes
@@ -332,9 +333,9 @@ def doctest_Ship_controls():
         >>> ship.turn_left()
         >>> ship.turn_right()
         >>> ship.brake()
-        >>> print ship.left_thrust, ship.right_thrust
+        >>> print(ship.left_thrust, ship.right_thrust)
         0 0
-        >>> print ship.forward_thrust, ship.rear_thrust
+        >>> print(ship.forward_thrust, ship.rear_thrust)
         0 0
         >>> ship.engage_brakes
         False
@@ -345,7 +346,7 @@ def doctest_Ship_controls():
 def doctest_Ship_movement():
     """Tests for Ship.move.
 
-        >>> from world import Ship, Vector
+        >>> from pyspacewar.world import Ship, Vector
         >>> ship = Ship(Vector(0, 0), size=10, direction=45)
         >>> ship.left_thrust = 10
         >>> ship.right_thrust = 5
@@ -353,13 +354,13 @@ def doctest_Ship_movement():
         >>> ship.rear_thrust = 2
 
         >>> ship.move(1.0)
-        >>> print ship.direction
+        >>> print(ship.direction)
         50.0
-        >>> print ship.velocity.length()
+        >>> print(round(ship.velocity.length(), 3))
         6.0
-        >>> print ship.velocity.direction()
+        >>> print(ship.velocity.direction())
         50.0
-        >>> print ship.position
+        >>> print(ship.position)
         (3.857, 4.596)
 
         >>> ship.left_thrust, ship.right_thrust
@@ -371,7 +372,7 @@ def doctest_Ship_movement():
 
         >>> ship.brake()
         >>> ship.move(1.0)
-        >>> print ship.velocity.length()
+        >>> print(ship.velocity.length())
         5.7
         >>> ship.engage_brakes
         False
@@ -379,7 +380,7 @@ def doctest_Ship_movement():
         >>> ship.velocity = ship.velocity.scaled(0.5)
         >>> ship.brake()
         >>> ship.move(1.0)
-        >>> print ship.velocity.length()
+        >>> print(ship.velocity.length())
         0.0
 
     """
@@ -388,7 +389,7 @@ def doctest_Ship_movement():
 def doctest_Ship_gravity():
     """Tests for Ship.gravitate.
 
-        >>> from world import Ship, Planet, World, Vector
+        >>> from pyspacewar.world import Ship, Planet, World, Vector
         >>> ship = Ship()
         >>> ship.world = World()
         >>> sun = Planet(position=Vector(10, 15), mass=200)
@@ -403,7 +404,7 @@ def doctest_Ship_gravity():
 
         >>> ship.dead = True
         >>> ship.gravitate(sun, 1.0)
-        >>> print ship.velocity
+        >>> print(ship.velocity)
         (0.003, 0.005)
 
     """
@@ -412,7 +413,7 @@ def doctest_Ship_gravity():
 def doctest_Ship_collision():
     """Tests for Ship.collision.
 
-        >>> from world import Ship, Vector, Planet, Debris, Missile, World
+        >>> from pyspacewar.world import Ship, Vector, Planet, Debris, Missile, World
         >>> ship = Ship(position=Vector(3, 5), velocity=Vector(10, 10))
         >>> ship.world = World()
         >>> ship.hit_effect = effect('Ouch!')
@@ -420,24 +421,24 @@ def doctest_Ship_collision():
     Debris is easily deflected
 
         >>> ship.collision(Debris())
-        >>> print ship.health
+        >>> print(ship.health)
         1.0
 
     Missiles cause more damage, but no bouncing
 
         >>> ship.collision(Missile())
         Ouch!
-        >>> print ship.health
+        >>> print(ship.health)
         0.4
-        >>> print ship.velocity
+        >>> print(ship.velocity)
         (10.000, 10.000)
 
     Other objects cause slight damage and bouncing
 
         >>> ship.collision(Planet())
-        >>> print ship.health
+        >>> print(round(ship.health, 3))
         0.35
-        >>> print ship.velocity
+        >>> print(ship.velocity)
         (-3.706, -12.176)
 
     When health falls under 0, the ship dies
@@ -447,7 +448,7 @@ def doctest_Ship_collision():
         >>> ship.collision(Missile())
         Ouch!
         Ship died
-        >>> print ship.health
+        >>> print(round(ship.health, 3))
         -0.25
 
     A ship can die only once
@@ -455,7 +456,7 @@ def doctest_Ship_collision():
         >>> ship.dead = True
         >>> ship.collision(Missile())
         Ouch!
-        >>> print ship.health
+        >>> print(round(ship.health, 3))
         -0.85
 
     """
@@ -464,7 +465,7 @@ def doctest_Ship_collision():
 def doctest_Ship_death():
     """Tests for Ship.die.
 
-        >>> from world import Ship, World
+        >>> from pyspacewar.world import Ship, World
 
     A ship can die from natural causes
 
@@ -530,7 +531,7 @@ def doctest_Ship_death():
 def doctest_Ship_rebirth():
     """Tests for Ship.respawn.
 
-        >>> from world import Ship, Vector, World
+        >>> from pyspacewar.world import Ship, Vector, World
         >>> ship = Ship(Vector(10, 20), velocity=Vector(1, 2), direction=90)
         >>> ship.dead = True
         >>> ship.health = -0.3
@@ -552,7 +553,7 @@ def doctest_Ship_rebirth():
 def doctest_Ship_launch():
     """Tests for Ship.launch.
 
-        >>> from world import Ship, Vector, World
+        >>> from pyspacewar.world import Ship, Vector, World
         >>> ship = Ship(velocity=Vector(10, 20), direction=90)
         >>> ship.world = World()
         >>> ship.launch_effect = effect('Fooom!')
@@ -578,7 +579,7 @@ def doctest_Ship_launch():
 def doctest_Missile_movement():
     """Tests for Missile.move.
 
-        >>> from world import Missile, Vector, World
+        >>> from pyspacewar.world import Missile, Vector, World
         >>> missile = Missile(velocity=Vector(1, 0), time_limit=3)
         >>> world = World()
         >>> world.add(missile)
@@ -609,7 +610,7 @@ def doctest_Missile_movement():
 def doctest_Missile_explode():
     """Tests for Missile.explode.
 
-        >>> from world import Missile, World
+        >>> from pyspacewar.world import Missile, World
         >>> missile = Missile()
         >>> world = World()
         >>> world.add(missile)
@@ -637,7 +638,7 @@ def doctest_Missile_explode():
 def doctest_Missile_collision():
     """Tests for Missile.collision.
 
-        >>> from world import Missile, World, Planet
+        >>> from pyspacewar.world import Missile, World, Planet
         >>> missile = Missile()
         >>> world = World()
         >>> world.add(missile)
@@ -656,7 +657,7 @@ def doctest_Missile_collision():
 def doctest_Object_collision():
     """Tests for Object.collision.
 
-        >>> from world import Object, World, Vector
+        >>> from pyspacewar.world import Object, World, Vector
         >>> asteroid = Object(Vector(3, 4), velocity=Vector(0.1, 0.2),
         ...                   mass=14, radius=2)
         >>> tincan = Object(Vector(0.5, 4), velocity=Vector(1.5, -0.3),
@@ -673,7 +674,7 @@ def doctest_Object_collision():
 def doctest_Object_bounce():
     """Tests for Object.bounce.
 
-        >>> from world import Object, World, Vector
+        >>> from pyspacewar.world import Object, World, Vector
         >>> asteroid = Object(Vector(3, 4), velocity=Vector(0.1, 0.2),
         ...                   mass=14, radius=2)
         >>> tincan = Object(Vector(0.5, 4), velocity=Vector(1.5, -0.3),
@@ -683,9 +684,9 @@ def doctest_Object_bounce():
 
         >>> tincan.bounce(asteroid)
         Bump!
-        >>> print tincan.velocity
+        >>> print(tincan.velocity)
         (-1.350, -0.270)
-        >>> print tincan.position
+        >>> print(tincan.position)
         (0.000, 4.000)
 
     """
@@ -694,7 +695,7 @@ def doctest_Object_bounce():
 def doctest_Object_add_debris():
     """Tests for Object.add_debris.
 
-        >>> from world import Object, World, Debris, Vector
+        >>> from pyspacewar.world import Object, World, Debris, Vector
         >>> missile = Object(Vector(100, 200), velocity=Vector(50, -20))
         >>> missile.world = World()
         >>> missile.add_debris(time=5.0, maxdistance=3.0)
@@ -713,7 +714,7 @@ def doctest_Object_add_debris():
 def doctest_Debris():
     """Tests for Debris.
 
-        >>> from world import Debris, Vector, World
+        >>> from pyspacewar.world import Debris, Vector, World
         >>> junk = Debris(velocity=Vector(1, 0), time_limit=3)
         >>> world = World()
         >>> world.add(junk)
@@ -744,7 +745,7 @@ def doctest_Debris():
 def doctest_Planet():
     """Tests for Planet.
 
-        >>> from world import Planet, Vector
+        >>> from pyspacewar.world import Planet, Vector
         >>> sun = Planet(position=Vector(10, 15), mass=200)
         >>> moon = Planet(position=Vector(20, 35), mass=10)
         >>> moon.gravitate(sun, 0.1)  # nothing happens
@@ -752,13 +753,16 @@ def doctest_Planet():
 
     """
 
+
 def test_suite():
-    path = os.path.join(os.path.dirname(__file__), os.path.pardir)
+    path = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), '..', '..'))
     if path not in sys.path:
         sys.path.append(path)
     return unittest.TestSuite([
-                        doctest.DocTestSuite('world'),
-                        doctest.DocTestSuite()])
+        doctest.DocTestSuite('pyspacewar.world'),
+        doctest.DocTestSuite(),
+    ])
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 Unreleased:
 
-- No changes yet.
+- Support Python 3.4 and 3.5 in addition to 2.7.
 
 September 17, 2016: Released version 1.0.0:
 
