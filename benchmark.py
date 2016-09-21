@@ -2,6 +2,7 @@
 """
 PySpaceWar benchmarks for optimisation work
 """
+from __future__ import print_function
 
 import os
 import sys
@@ -16,7 +17,7 @@ from pygame.locals import *
 def setup_path():
     """Set up python path if running from a source tree."""
     pkgdir = os.path.join(os.path.dirname(__file__), 'src')
-    print pkgdir
+    print(pkgdir)
     if os.path.isdir(pkgdir):
         sys.path.insert(0, pkgdir)
 
@@ -31,8 +32,8 @@ from pyspacewar.ui import GameUI
 
 def get_cpu_speed():
     try:
-        rows = [row for row in file('/proc/cpuinfo')
-                if row.startswith('cpu MHz')]
+        with open('/proc/cpuinfo') as f:
+            rows = [row for row in f if row.startswith('cpu MHz')]
     except IOError:
         return 0
     try:
@@ -54,6 +55,7 @@ class DummyAIController(object):
         if len(self.ship.world.objects) < 90:
             self.ship.launch()
 
+
 class DummyTimeSource(object):
 
     delta = 0
@@ -69,9 +71,9 @@ class Stats(object):
     time = 0
     ticks = 0
     max_objects = 0
-    min_objects = sys.maxint
+    min_objects = 1e999
     total_objects = 0
-    best_time = sys.maxint
+    best_time = 1e999
     worst_time = 0
 
     @property
@@ -214,64 +216,64 @@ def main():
                       help='use Psyco [default: %default]',
                       action='store_true', dest='psyco')
     opts, args = parser.parse_args()
-    print "=== Parameters ==="
-    print
+    print("=== Parameters ===")
+    print()
     if opts.psyco:
         try:
             import psyco
             psyco.full()
         except:
-            print 'psyco not available'
+            print('psyco not available')
         else:
-            print 'using psyco'
-    print 'random seed: %r' % opts.seed
-    print 'warmup: %d' % opts.warmup
-    print 'ticks: %d' % opts.ticks
-    print 'ai: %s' % opts.ai_controller.__name__
-    print 'benchmark: %s' % opts.benchmark.__name__
-    print 'debug: %s' % opts.debug
+            print('using psyco')
+    print('random seed: %r' % opts.seed)
+    print('warmup: %d' % opts.warmup)
+    print('ticks: %d' % opts.ticks)
+    print('ai: %s' % opts.ai_controller.__name__)
+    print('benchmark: %s' % opts.benchmark.__name__)
+    print('debug: %s' % opts.debug)
     benchmark = opts.benchmark(opts.seed, opts.ticks, opts.ai_controller,
                                opts.warmup, opts.profile, opts.debug)
     start_time = time.time()
     stats = benchmark.run()
     total_time = time.time() - start_time
-    print
-    print "=== CPU ==="
-    print
-    print 'CPU speed before warmup: %.0f MHz' % stats.cpu_speed_before_warmup
-    print 'CPU speed after warmup: %.0f MHz' % stats.cpu_speed_after_warmup
-    print 'CPU speed after benchmark: %.0f MHz' % stats.cpu_speed_after_benchmark
-    print
-    print "=== Results ==="
-    print
-    print 'total time: %.3f seconds' % total_time
-    print 'ticks: %d' % stats.ticks
-    print 'objects: min=%d avg=%.1f max=%d' % (
+    print()
+    print("=== CPU ===")
+    print()
+    print('CPU speed before warmup: %.0f MHz' % stats.cpu_speed_before_warmup)
+    print('CPU speed after warmup: %.0f MHz' % stats.cpu_speed_after_warmup)
+    print('CPU speed after benchmark: %.0f MHz' % stats.cpu_speed_after_benchmark)
+    print()
+    print("=== Results ===")
+    print()
+    print('total time: %.3f seconds' % total_time)
+    print('ticks: %d' % stats.ticks)
+    print('objects: min=%d avg=%.1f max=%d' % (
                 stats.min_objects,
                 stats.avg_objects,
-                stats.max_objects)
-    print 'ticks per second: avg=%.3f' % stats.ticks_per_second
-    print 'ms per tick: min=%.3f avg=%.3f max=%.3f' % (
+                stats.max_objects))
+    print('ticks per second: avg=%.3f' % stats.ticks_per_second)
+    print('ms per tick: min=%.3f avg=%.3f max=%.3f' % (
                 stats.best_time * 1000.0,
                 stats.ms_per_tick,
-                stats.worst_time * 1000.0)
+                stats.worst_time * 1000.0))
 
     if opts.profile:
         stats = stats.profile_stats
         stats.strip_dirs()
-        print
-        print "== Stats by internal time ==="
-        print
+        print()
+        print("== Stats by internal time ===")
+        print()
         stats.sort_stats('time', 'calls')
-        stats.print_stats(40)
-        print
-        print "== Stats by number of calls, with callers ==="
-        print
+        stats.print(_stats(40))
+        print()
+        print("== Stats by number of calls, with callers ===")
+        print()
         stats.sort_stats('calls', 'time')
         stats.print_callers(20)
-        print
-        print "== Stats by cumulative time, with calees ==="
-        print
+        print()
+        print("== Stats by cumulative time, with calees ===")
+        print()
         stats.sort_stats('cumulative', 'calls')
         stats.print_callees(20)
 
