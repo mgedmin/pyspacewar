@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 import unittest
 import doctest
@@ -96,7 +97,7 @@ def doctest_Viewport_keep_visible():
         >>> viewport.keep_visible([Vector(0, 0)], 10)
         >>> viewport.keep_visible([Vector(100, 100)], 10)
         >>> viewport.keep_visible([Vector(-200, -100)], 10)
-        >>> print viewport.origin, viewport.scale
+        >>> print(viewport.origin, viewport.scale)
         (0.000, 0.000) 1.0
 
     We can see the range of points that are inside the view margin, for
@@ -110,15 +111,15 @@ def doctest_Viewport_keep_visible():
     Points that are off-screen cause scrolling
 
         >>> viewport.keep_visible([Vector(600, 200)], 10)
-        >>> print viewport.origin, viewport.scale
+        >>> print(viewport.origin, viewport.scale)
         (210.000, 0.000) 1.0
 
         >>> viewport.keep_visible([Vector(300, 700)], 10)
-        >>> print viewport.origin, viewport.scale
+        >>> print(viewport.origin, viewport.scale)
         (210.000, 410.000) 1.0
 
         >>> viewport.keep_visible([Vector(-300, -100)], 10)
-        >>> print viewport.origin, viewport.scale
+        >>> print(viewport.origin, viewport.scale)
         (90.000, 190.000) 1.0
 
         >>> viewport.world_inner_bounds(10)
@@ -130,7 +131,7 @@ def doctest_Viewport_keep_visible():
         >>> viewport.keep_visible([Vector(-300, -100),
         ...                        Vector(500, 400)], 10)
 
-        >>> print viewport.origin, round(viewport.scale, 3)
+        >>> print(viewport.origin, round(viewport.scale, 3))
         (99.732, 190.000) 0.974
 
         >>> xmin, ymin, xmax, ymax = viewport.world_inner_bounds(10)
@@ -155,7 +156,7 @@ def doctest_FrameRateCounter_frame():
         >>> len(frc.frames)
         2
 
-        >>> frc.frames = range(frc.avg_last_n_frames - 1)
+        >>> frc.frames = list(range(frc.avg_last_n_frames - 1))
         >>> frc.frame()
         >>> len(frc.frames) == frc.avg_last_n_frames
         True
@@ -218,7 +219,7 @@ def doctest_FrameRateCounter_fps():
 
 def setUp(test=None):
     import pygame
-    pygame.init() # so that pygame.key.name() works
+    pygame.init()  # so that pygame.key.name() works
     # unfortunately, on linux, if $DISPLAY is unset, pygame.init doesn't
     # complain, but pygame.key.name() returns 'unknown key' for all keys
 

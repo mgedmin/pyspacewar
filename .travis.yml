@@ -2,12 +2,8 @@ language: python
 sudo: false
 python:
     - 2.7
-addons:
-  apt:
-    packages:
-      - python-pygame
-virtualenv:
-    system_site_packages: true
+    - 3.4
+    - 3.5
 install:
     - pip install coverage coveralls -e .
 script:

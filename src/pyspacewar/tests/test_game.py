@@ -18,7 +18,7 @@ class TimeSourceStub(object):
         return self.counter
 
     def wait(self, time_point):
-        print "Waiting for %s" % time_point
+        print("Waiting for %s" % time_point)
         on_schedule = time_point >= self.counter
         self.counter = max(self.counter, time_point)
         return on_schedule
@@ -31,14 +31,14 @@ class Ticker(object):
     radius = 0
 
     def move(self, dt):
-        print "Tick (%s)" % dt
+        print("Tick (%s)" % dt)
 
 
 class Controller(object):
     """Fake controller."""
 
     def control(self):
-        print "Controlling the world"
+        print("Controlling the world")
 
 
 def doctest_PythonTimeSource():
@@ -91,7 +91,7 @@ def doctest_Game_randomly_place_and_position():
         >>> from world import Object
         >>> class Brick(Object):
         ...     def collision(self, other):
-        ...         print "Aaaaargh!"
+        ...         print("Aaaaargh!")
 
     The game is able to position objects randomly so that they never overlap
 
@@ -157,7 +157,7 @@ def doctest_Game_auto_respawn():
     The game keeps track of dead ships.
 
         >>> g.auto_respawn()
-        >>> g.timers.keys() == [ship2]
+        >>> list(g.timers) == [ship2]
         True
         >>> g.timers[ship2] == g.respawn_time
         True
@@ -172,7 +172,7 @@ def doctest_Game_auto_respawn():
 
         >>> g.timers[ship2] = g.DELTA_TIME
         >>> g.auto_respawn()
-        >>> g.timers.keys()
+        >>> list(g.timers)
         []
         >>> ship2.dead
         False
@@ -295,7 +295,7 @@ def doctest_Game_wait_for_tick():
         Waiting for 61
         False
 
-        >>> g.timers.keys() == [ship]
+        >>> list(g.timers) == [ship]
         True
 
     """

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 import unittest
 import doctest
@@ -20,14 +21,14 @@ class Object(object):
         return 1e100
 
     def gravitate(self, massive_obj, dt):
-        print "%s attracts %s for %s time units" % (massive_obj.name,
-                                                    self.name, dt)
+        print("%s attracts %s for %s time units" % (massive_obj.name,
+                                                    self.name, dt))
 
     def move(self, dt):
-        print "Moving %s for %s time units" % (self.name, dt)
+        print("Moving %s for %s time units" % (self.name, dt))
 
     def collision(self, other):
-        print "%s collides with %s" % (self.name, other.name)
+        print("%s collides with %s" % (self.name, other.name))
 
 
 def effect(msg):
@@ -69,7 +70,7 @@ def doctest_World():
     All the interesting things happen when time ticks
 
         >>> w.update(0.1)
-        >>> print w.time
+        >>> print(w.time)
         0.1
 
     well, the interesting things only happen if you have interesting objects
@@ -249,13 +250,13 @@ def doctest_Ship_direction():
         >>> ship.direction -= 90
         >>> ship.direction
         315
-        >>> print ship.direction_vector
+        >>> print(ship.direction_vector)
         (0.707, -0.707)
 
         >>> ship.direction += 45
         >>> ship.direction
         0
-        >>> print ship.direction_vector
+        >>> print(ship.direction_vector)
         (1.000, 0.000)
 
     """
@@ -276,27 +277,27 @@ def doctest_Ship_controls():
     You can tell the ship what to do
 
         >>> ship.turn_right()
-        >>> print ship.left_thrust, ship.right_thrust
+        >>> print(ship.left_thrust, ship.right_thrust)
         0 5
 
     You can do several things simultaneously
 
         >>> ship.accelerate()
-        >>> print ship.left_thrust, ship.right_thrust
+        >>> print(ship.left_thrust, ship.right_thrust)
         0 5
-        >>> print ship.forward_thrust, ship.rear_thrust
+        >>> print(ship.forward_thrust, ship.rear_thrust)
         0.1 0
 
         >>> ship.turn_left()
-        >>> print ship.left_thrust, ship.right_thrust
+        >>> print(ship.left_thrust, ship.right_thrust)
         5 5
-        >>> print ship.forward_thrust, ship.rear_thrust
+        >>> print(ship.forward_thrust, ship.rear_thrust)
         0.1 0
 
         >>> ship.backwards()
-        >>> print ship.left_thrust, ship.right_thrust
+        >>> print(ship.left_thrust, ship.right_thrust)
         5 5
-        >>> print ship.forward_thrust, ship.rear_thrust
+        >>> print(ship.forward_thrust, ship.rear_thrust)
         0.1 0.05
 
     These commands are remembered and executed when you call ``move``, not
@@ -332,9 +333,9 @@ def doctest_Ship_controls():
         >>> ship.turn_left()
         >>> ship.turn_right()
         >>> ship.brake()
-        >>> print ship.left_thrust, ship.right_thrust
+        >>> print(ship.left_thrust, ship.right_thrust)
         0 0
-        >>> print ship.forward_thrust, ship.rear_thrust
+        >>> print(ship.forward_thrust, ship.rear_thrust)
         0 0
         >>> ship.engage_brakes
         False
@@ -353,13 +354,13 @@ def doctest_Ship_movement():
         >>> ship.rear_thrust = 2
 
         >>> ship.move(1.0)
-        >>> print ship.direction
+        >>> print(ship.direction)
         50.0
-        >>> print ship.velocity.length()
+        >>> print(round(ship.velocity.length(), 3))
         6.0
-        >>> print ship.velocity.direction()
+        >>> print(ship.velocity.direction())
         50.0
-        >>> print ship.position
+        >>> print(ship.position)
         (3.857, 4.596)
 
         >>> ship.left_thrust, ship.right_thrust
@@ -371,7 +372,7 @@ def doctest_Ship_movement():
 
         >>> ship.brake()
         >>> ship.move(1.0)
-        >>> print ship.velocity.length()
+        >>> print(ship.velocity.length())
         5.7
         >>> ship.engage_brakes
         False
@@ -379,7 +380,7 @@ def doctest_Ship_movement():
         >>> ship.velocity = ship.velocity.scaled(0.5)
         >>> ship.brake()
         >>> ship.move(1.0)
-        >>> print ship.velocity.length()
+        >>> print(ship.velocity.length())
         0.0
 
     """
@@ -403,7 +404,7 @@ def doctest_Ship_gravity():
 
         >>> ship.dead = True
         >>> ship.gravitate(sun, 1.0)
-        >>> print ship.velocity
+        >>> print(ship.velocity)
         (0.003, 0.005)
 
     """
@@ -420,24 +421,24 @@ def doctest_Ship_collision():
     Debris is easily deflected
 
         >>> ship.collision(Debris())
-        >>> print ship.health
+        >>> print(ship.health)
         1.0
 
     Missiles cause more damage, but no bouncing
 
         >>> ship.collision(Missile())
         Ouch!
-        >>> print ship.health
+        >>> print(ship.health)
         0.4
-        >>> print ship.velocity
+        >>> print(ship.velocity)
         (10.000, 10.000)
 
     Other objects cause slight damage and bouncing
 
         >>> ship.collision(Planet())
-        >>> print ship.health
+        >>> print(round(ship.health, 3))
         0.35
-        >>> print ship.velocity
+        >>> print(ship.velocity)
         (-3.706, -12.176)
 
     When health falls under 0, the ship dies
@@ -447,7 +448,7 @@ def doctest_Ship_collision():
         >>> ship.collision(Missile())
         Ouch!
         Ship died
-        >>> print ship.health
+        >>> print(round(ship.health, 3))
         -0.25
 
     A ship can die only once
@@ -455,7 +456,7 @@ def doctest_Ship_collision():
         >>> ship.dead = True
         >>> ship.collision(Missile())
         Ouch!
-        >>> print ship.health
+        >>> print(round(ship.health, 3))
         -0.85
 
     """
@@ -683,9 +684,9 @@ def doctest_Object_bounce():
 
         >>> tincan.bounce(asteroid)
         Bump!
-        >>> print tincan.velocity
+        >>> print(tincan.velocity)
         (-1.350, -0.270)
-        >>> print tincan.position
+        >>> print(tincan.position)
         (0.000, 4.000)
 
     """
@@ -751,6 +752,7 @@ def doctest_Planet():
         >>> moon.collision(sun)  # nothing happens
 
     """
+
 
 def test_suite():
     path = os.path.join(os.path.dirname(__file__), os.path.pardir)
