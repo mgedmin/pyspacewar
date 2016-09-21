@@ -187,14 +187,14 @@ class Vector(tuple):
         """Scale the vector to a given magnitude.
 
             >>> v = Vector(2, 1).scaled(5)
-            >>> print(v.length())
+            >>> print(round(v.length(), 3))
             5.0
             >>> print(v)
             (4.472, 2.236)
 
         If you omit the magnitude, you get a normalized vector
 
-            >>> print(v.scaled().length())
+            >>> print(round(v.scaled().length(), 3))
             1.0
 
         """
