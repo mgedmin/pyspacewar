@@ -18,10 +18,10 @@ except ImportError:
 import pygame
 from pygame.locals import *
 
-from world import Vector, Ship, Missile
-from game import Game
-from ai import AIController
-from version import version
+from .world import Vector, Ship, Missile
+from .game import Game
+from .ai import AIController
+from .version import version
 
 
 MODIFIER_KEYS = set([K_NUMLOCK, K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK,

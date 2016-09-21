@@ -44,7 +44,7 @@ class Controller(object):
 def doctest_PythonTimeSource():
     """Tests for PythonTimeSource
 
-        >>> from game import PythonTimeSource
+        >>> from pyspacewar.game import PythonTimeSource
         >>> ts = PythonTimeSource(40)
         >>> ts.ticks_per_second
         40
@@ -73,7 +73,7 @@ def doctest_PythonTimeSource():
 def doctest_Game():
     """Tests for Game
 
-        >>> from game import Game
+        >>> from pyspacewar.game import Game
         >>> g = Game()
         >>> g.world.objects
         []
@@ -88,14 +88,14 @@ def doctest_Game_randomly_place_and_position():
 
     Let us create a screaming brick for this test
 
-        >>> from world import Object
+        >>> from pyspacewar.world import Object
         >>> class Brick(Object):
         ...     def collision(self, other):
         ...         print("Aaaaargh!")
 
     The game is able to position objects randomly so that they never overlap
 
-        >>> from game import Game
+        >>> from pyspacewar.game import Game
         >>> g = Game()
         >>> for n in range(100):
         ...     g.randomly_place(Brick(radius=10), 200)
@@ -120,8 +120,8 @@ def doctest_Game_randomly_place_and_position():
 def doctest_Game_respawn():
     """Tests for Game.respawn
 
-        >>> from game import Game
-        >>> from world import Ship, Vector
+        >>> from pyspacewar.game import Game
+        >>> from pyspacewar.world import Ship, Vector
         >>> g = Game()
         >>> ship = Ship(velocity=Vector(3, 5))
         >>> ship.dead = True
@@ -146,8 +146,8 @@ def doctest_Game_respawn():
 def doctest_Game_auto_respawn():
     """Tests for Game.auto_respawn
 
-        >>> from game import Game
-        >>> from world import Ship
+        >>> from pyspacewar.game import Game
+        >>> from pyspacewar.world import Ship
         >>> g = Game()
         >>> ship1 = Ship()
         >>> ship2 = Ship()
@@ -183,8 +183,8 @@ def doctest_Game_auto_respawn():
 def doctest_Game_time_to_respawn():
     """Tests for Game.time_torespawn
 
-        >>> from game import Game
-        >>> from world import Ship
+        >>> from pyspacewar.game import Game
+        >>> from pyspacewar.world import Ship
         >>> g = Game()
         >>> ship = Ship()
 
@@ -211,7 +211,7 @@ def doctest_Game_time_to_respawn():
 def doctest_Game_skip_a_tick():
     """Tests for Game.skip_a_tick
 
-        >>> from game import Game
+        >>> from pyspacewar.game import Game
         >>> g = Game()
         >>> ts = g.time_source = TimeSourceStub()
         >>> g.world.add(Ticker())
@@ -238,7 +238,7 @@ def doctest_Game_skip_a_tick():
 def doctest_Game_wait_for_tick():
     """Tests for Game.wait_for_tick
 
-        >>> from game import Game
+        >>> from pyspacewar.game import Game
         >>> g = Game()
         >>> ts = g.time_source = TimeSourceStub()
         >>> g.world.add(Ticker())
@@ -284,7 +284,7 @@ def doctest_Game_wait_for_tick():
     After the game world is updated, wait_for_tick also takes care to
     look for dead ships.
 
-        >>> from world import Ship
+        >>> from pyspacewar.world import Ship
         >>> ship = Ship()
         >>> ship.dead = True
         >>> g.ships.append(ship)
@@ -304,7 +304,7 @@ def doctest_Game_wait_for_tick():
 def doctest_Game_new():
     """Tests for Game.new
 
-        >>> from game import Game
+        >>> from pyspacewar.game import Game
         >>> g = Game.new(ships=2)
         >>> len(g.ships)
         2
@@ -313,11 +313,11 @@ def doctest_Game_new():
 
 
 def test_suite():
-    path = os.path.join(os.path.dirname(__file__), os.path.pardir)
+    path = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), '..', '..'))
     if path not in sys.path:
         sys.path.append(path)
-    return unittest.TestSuite([
-                        doctest.DocTestSuite()])
+    return doctest.DocTestSuite()
 
 
 if __name__ == '__main__':

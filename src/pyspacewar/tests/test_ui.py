@@ -19,8 +19,8 @@ class SurfaceStub(object):
 def doctest_Viewport():
     """Tests for Viewport
 
-        >>> from world import Vector
-        >>> from ui import Viewport
+        >>> from pyspacewar.world import Vector
+        >>> from pyspacewar.ui import Viewport
         >>> viewport = Viewport(SurfaceStub())
         >>> viewport.origin
         Vector(0, 0)
@@ -64,8 +64,8 @@ def doctest_Viewport():
 def doctest_Viewport_screen_size_change():
     """Tests for Viewport
 
-        >>> from world import Vector
-        >>> from ui import Viewport
+        >>> from pyspacewar.world import Vector
+        >>> from pyspacewar.ui import Viewport
         >>> viewport = Viewport(SurfaceStub())
 
     ``screen_pos`` converts world coordinates to screen coordinates
@@ -88,8 +88,8 @@ def doctest_Viewport_screen_size_change():
 def doctest_Viewport_keep_visible():
     """Tests for Viewport.keep_visible.
 
-        >>> from world import Vector
-        >>> from ui import Viewport
+        >>> from pyspacewar.world import Vector
+        >>> from pyspacewar.ui import Viewport
         >>> viewport = Viewport(SurfaceStub())
 
     Points that are already visible change nothing
@@ -146,7 +146,7 @@ def doctest_Viewport_keep_visible():
 def doctest_FrameRateCounter_frame():
     """Tests for FrameRateCounter.frame
 
-        >>> from ui import FrameRateCounter
+        >>> from pyspacewar.ui import FrameRateCounter
         >>> frc = FrameRateCounter()
 
         >>> frc.frame()
@@ -176,7 +176,7 @@ def doctest_FrameRateCounter_frame():
 def doctest_FrameRateCounter_reset():
     """Tests for FrameRateCounter.reset
 
-        >>> from ui import FrameRateCounter
+        >>> from pyspacewar.ui import FrameRateCounter
         >>> frc = FrameRateCounter()
         >>> frc.frames = range(15)
         >>> frc.reset()
@@ -189,7 +189,7 @@ def doctest_FrameRateCounter_reset():
 def doctest_FrameRateCounter_fps():
     """Tests for FrameRateCounter.fps
 
-        >>> from ui import FrameRateCounter
+        >>> from pyspacewar.ui import FrameRateCounter
         >>> frc = FrameRateCounter()
         >>> frc.frames = []
         >>> frc.fps()
@@ -225,12 +225,14 @@ def setUp(test=None):
 
 
 def test_suite():
-    path = os.path.join(os.path.dirname(__file__), os.path.pardir)
+    path = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), '..', '..'))
     if path not in sys.path:
         sys.path.append(path)
     return unittest.TestSuite([
-                        doctest.DocTestSuite('ui', setUp=setUp),
-                        doctest.DocTestSuite()])
+        doctest.DocTestSuite('pyspacewar.ui', setUp=setUp),
+        doctest.DocTestSuite(),
+    ])
 
 
 if __name__ == '__main__':
