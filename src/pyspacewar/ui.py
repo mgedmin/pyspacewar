@@ -2685,7 +2685,7 @@ class GameUI(object):
 
     def update_missile_trails(self):
         """Update missile trails."""
-        for missile, trail in self.missile_trails.items():
+        for missile, trail in list(self.missile_trails.items()):
             if missile.world is None:
                 del trail[:2]
                 if not trail:
