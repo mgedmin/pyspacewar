@@ -1,6 +1,7 @@
-Unreleased:
+September 21, 2016: Released version 1.1.0:
 
 - Support Python 3.4 and 3.5 in addition to 2.7.
+- Made 'pip install pyspacewar' work.
 
 September 17, 2016: Released version 1.0.0:
 
