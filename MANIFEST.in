@@ -8,7 +8,6 @@ include tox.ini
 include *.yml
 include Makefile
 include .gitignore
-include src/pyspacewar/VERSION.txt
 include src/pyspacewar/images/*
 include src/pyspacewar/icons/*
 include src/pyspacewar/sounds/*
