@@ -16,3 +16,6 @@ include src/pyspacewar/tests/*.py
 
 # added by check_manifest.py
 include .coveragerc
+
+# added by check_manifest.py
+include *.desktop
