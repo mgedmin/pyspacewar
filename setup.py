@@ -68,6 +68,5 @@ setup(
             'sounds/*',
         ],
     },
-    install_package_data=True,
     install_requires=['pygame'],
 )
