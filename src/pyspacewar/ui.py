@@ -1758,7 +1758,7 @@ class GravityWarsMode(UIMode):
         self.while_key(K_MINUS, self.ui.zoom_out)
         self.prompt = None
         self.state = self.logic()
-        self.state.next()
+        next(self.state)
 
     def wait_for_input(self, prompt, value):
         """Ask the user to enter a value."""
@@ -1814,7 +1814,7 @@ class GravityWarsMode(UIMode):
         """Handle a KEYDOWN event for unknown keys."""
         if self.prompt is not None:
             if event.key == K_RETURN:
-                self.state.next()
+                next(self.state)
             elif event.key == K_BACKSPACE:
                 self.prompt.text = self.prompt.text[:-1]
             elif event.unicode.isdigit() or event.unicode in ('-', '.'):
