@@ -2074,8 +2074,10 @@ class GameUI(object):
 
     def _load_planet_images(self):
         """Load bitmaps of planets."""
-        self.planet_images = map(pygame.image.load,
-                                 glob.glob(find('images', 'planet*.png')))
+        self.planet_images = [
+            pygame.image.load(img)
+            for img in glob.glob(find('images', 'planet*.png'))
+        ]
         if not self.planet_images:
             raise RuntimeError("Could not find planet bitmaps")
 
@@ -2210,7 +2212,7 @@ class GameUI(object):
             ship.hit_effect = self.hit_effect_Ship
             ship.explode_effect = self.explode_effect_Ship
             ship.respawn_effect = self.respawn_effect_Ship
-        self.ai = map(AIController, self.ships)
+        self.ai = [AIController(ship) for ship in self.ships]
         self.ai_controlled = [False] * len(self.ships)
         self.missile_trails = {}
         self.angular_momentum = {}
