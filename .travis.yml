@@ -8,7 +8,7 @@ install:
     - pip install -U pip
     - pip install coverage coveralls -e .
 script:
-    - coverage run --source=src/pyspacewar test.py
+    - xvfb-run coverage run --source=src/pyspacewar test.py
 after_success:
     - coveralls
 notifications:
