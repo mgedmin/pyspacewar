@@ -60,6 +60,14 @@ setup(
     scripts=['pyspacewar'],
     packages=['pyspacewar'],
     package_dir={'': 'src'},
-    package_data={'pyspacewar': ['images/*', 'sounds/*', 'music/*']},
+    package_data={
+        'pyspacewar': [
+            'icons/*',
+            'images/*',
+            'music/*',
+            'sounds/*',
+        ],
+    },
+    install_package_data=True,
     install_requires=['pygame'],
 )
