@@ -2231,10 +2231,7 @@ class GameUI(object):
 
     def _count_trails(self):
         """Count the number of pixels in missile trails."""
-        total = 0
-        for trail in self.missile_trails.values():
-            total += len(trail)
-        return total
+        return sum(len(trail) for trail in self.missile_trails.values())
 
     def _init_hud(self):
         """Initialize the heads-up display."""
