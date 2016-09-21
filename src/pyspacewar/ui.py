@@ -15,6 +15,11 @@ try:
 except ImportError:
     from ConfigParser import RawConfigParser as ConfigParser
 
+try:
+    unicode
+except NameError:
+    unicode = str
+
 import pygame
 from pygame.locals import *
 
