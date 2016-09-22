@@ -219,9 +219,8 @@ def doctest_FrameRateCounter_fps():
 
 def setUp(test=None):
     import pygame
+    os.environ['SDL_VIDEODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
-    # unfortunately, on linux, if $DISPLAY is unset, pygame.init doesn't
-    # complain, but pygame.key.name() returns 'unknown key' for all keys
 
 
 def test_suite():
