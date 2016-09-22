@@ -19,3 +19,6 @@ include .coveragerc
 
 # added by check_manifest.py
 include *.desktop
+
+# added by check_manifest.py
+include LICENCE

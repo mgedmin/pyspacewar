@@ -75,7 +75,7 @@ Credits
 -------
 
 PySpaceWar was written by Marius Gedminas <marius@pov.lt>.  It is released
-under the GNU General Public Licence (see GPL.txt).
+under the GNU General Public Licence (see the file named LICENCE).
 
 Ignas Mikalajūnas <ignas@pov.lt> contributed the computer AI code.
 
