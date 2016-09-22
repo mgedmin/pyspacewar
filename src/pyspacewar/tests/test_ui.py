@@ -220,6 +220,7 @@ def doctest_FrameRateCounter_fps():
 def setUp(test=None):
     import pygame
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
+    os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
 
 
