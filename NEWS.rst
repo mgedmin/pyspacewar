@@ -1,6 +1,6 @@
 Unreleased:
 
-- No changes yet.
+- Support Python 3.6 (no actual code changes required).
 
 September 21, 2016: Released version 1.1.0:
 

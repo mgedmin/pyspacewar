@@ -31,6 +31,8 @@ def determine_version():
     from pyspacewar.version import version
     del sys.path[0]
     return version
+
+
 version = determine_version()
 
 setup(
@@ -55,6 +57,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Games/Entertainment :: Arcade',
     ],
     scripts=['pyspacewar'],
