@@ -42,7 +42,7 @@ setup(
     author_email='marius@gedmin.as',
     license='GPL',
     platforms=['any'],
-    url='http://mg.pov.lt/pyspacewar/',
+    url='https://mg.pov.lt/pyspacewar/',
     description='A game loosely inspired by the original Spacewar',
     long_description=long_description,
     classifiers=[

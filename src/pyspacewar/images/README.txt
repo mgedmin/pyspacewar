@@ -1,5 +1,5 @@
 The planet images were borrowed from IGE - Outer Space, an open-source on-line
-strategy game (http://www.ospace.net/).
+strategy game (https://www.ospace.net/).
 
 The background image is a darkened version of a public domain Hubble Space
 Telescope picture of the NGC 3949 galaxy, downloaded from

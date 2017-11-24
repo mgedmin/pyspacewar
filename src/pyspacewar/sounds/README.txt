@@ -1,5 +1,5 @@
 These are public domain sounds, downloaded from
-http://www.partnersinrhyme.com/pir/PIRsfx.shtml
+https://www.partnersinrhyme.com/pir/PIRsfx.shtml
 
 Grenade2.wav and Pink_Noise1.wav were produced from the corresponding .au files
 with

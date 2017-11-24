@@ -9,13 +9,14 @@ You can play against the computer, or two players can play with one keyboard.
 There is also a Gravity Wars mode, where the two ships do not move, and the
 players repeatedly specify the direction and velocity of their missiles.
 
-Web page: http://mg.pov.lt/pyspacewar
+Web page: https://mg.pov.lt/pyspacewar
 
 Bug tracker: https://bugs.launchpad.net/pyspacewar
 
 Requirements:
- * Python (http://www.python.org/), at least version 2.4
- * PyGame (http://www.pygame.org/)
+
+* Python (https://www.python.org/), at least version 2.7
+* PyGame (https://www.pygame.org/)
 
 
 Quick start
@@ -80,7 +81,7 @@ under the GNU General Public Licence (see the file named LICENSE).
 Ignas Mikalajūnas <ignas@pov.lt> contributed the computer AI code.
 
 The planet images were borrowed from IGE - Outer Space, an open-source on-line
-strategy game (http://www.ospace.net/).
+strategy game (https://www.ospace.net/).
 
 The background image is a darkened version of a public domain Hubble Space
 Telescope picture of the NGC 3949 galaxy, downloaded from
@@ -88,5 +89,5 @@ http://hubblesite.org/newscenter/newsdesk/archive/releases/2004/25/
 
 Icons were contributed by Jakub Szypulka and licenced under the Creative
 Commons Share-Alike 3.0 licence.  See
-http://cubestuff.wordpress.com/2007/12/23/pyspacewar-goes-tango
+https://cubestuff.wordpress.com/2007/12/23/pyspacewar-goes-tango
 

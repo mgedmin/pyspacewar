@@ -34,7 +34,7 @@ September 30, 2009: Released version 0.9.6:
 February 27, 2009: Released version 0.9.5:
 
 - Fixed crash on 64-bit Linux machines.
-- Now using http://launchpad.net/ for bug tracking.
+- Now using https://launchpad.net/ for bug tracking.
 
 June 30, 2008: Released version 0.9.4:
 
