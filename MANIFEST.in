@@ -22,3 +22,6 @@ include *.desktop
 
 # added by check_manifest.py
 include LICENSE
+
+# added by check_manifest.py
+include *.mk
