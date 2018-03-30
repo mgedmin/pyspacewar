@@ -21,17 +21,72 @@ except NameError:
     unicode = str
 
 import pygame
-from pygame.locals import *
+from pygame.locals import (
+    FULLSCREEN,
+    KEYDOWN,
+    KMOD_ALT,
+    K_1,
+    K_2,
+    K_BACKSPACE,
+    K_CAPSLOCK,
+    K_DELETE,
+    K_DOWN,
+    K_EQUALS,
+    K_ESCAPE,
+    K_F1,
+    K_F12,
+    K_KP_ENTER,
+    K_KP_PERIOD,
+    K_LALT,
+    K_LCTRL,
+    K_LEFT,
+    K_LMETA,
+    K_LSHIFT,
+    K_LSUPER,
+    K_MINUS,
+    K_MODE,
+    K_NUMLOCK,
+    K_PAGEDOWN,
+    K_PAGEUP,
+    K_PAUSE,
+    K_RALT,
+    K_RCTRL,
+    K_RETURN,
+    K_RIGHT,
+    K_RMETA,
+    K_RSHIFT,
+    K_RSUPER,
+    K_SCROLLOCK,
+    K_SPACE,
+    K_UP,
+    K_a,
+    K_d,
+    K_f,
+    K_h,
+    K_o,
+    K_q,
+    K_s,
+    K_w,
+    MOUSEBUTTONDOWN,
+    MOUSEBUTTONUP,
+    MOUSEMOTION,
+    QUIT,
+    RESIZABLE,
+    Rect,
+    VIDEORESIZE,
+)
 
-from .world import Vector, Ship, Missile
+from .world import Vector, Missile
 from .game import Game
 from .ai import AIController
 from .version import version
 
 
-MODIFIER_KEYS = set([K_NUMLOCK, K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK,
-                     K_RSHIFT, K_LSHIFT, K_RCTRL, K_LCTRL, K_RALT, K_LALT,
-                     K_RMETA, K_LMETA, K_LSUPER, K_RSUPER, K_MODE])
+MODIFIER_KEYS = {
+    K_NUMLOCK, K_CAPSLOCK, K_SCROLLOCK,
+    K_RSHIFT, K_LSHIFT, K_RCTRL, K_LCTRL, K_RALT, K_LALT,
+    K_RMETA, K_LMETA, K_LSUPER, K_RSUPER, K_MODE,
+}
 
 
 DEFAULT_CONTROLS = {
@@ -175,7 +230,11 @@ def colorblend(col1, col2, alpha=0.5):
     r1, g1, b1 = col1
     r2, g2, b2 = col2
     beta = 1-alpha
-    return (int(alpha*r1+beta*r2), int(alpha*g1+beta*g2), int(alpha*b1+beta*b2))
+    return (
+        int(alpha*r1+beta*r2),
+        int(alpha*g1+beta*g2),
+        int(alpha*b1+beta*b2),
+    )
 
 
 def linear(x, xmax, y1, y2):
@@ -506,7 +565,7 @@ class HUDFormattedText(HUDElement):
 
     def draw(self, surface):
         """Draw the element."""
-        x, y = self.position(surface) # calculates self.width/height as well
+        x, y = self.position(surface)  # calculates self.width/height as well
         rect = Rect(x, y, self.width, self.height)
         buffer = pygame.Surface(rect.size)
         buffer.set_alpha(self.alpha)
@@ -577,8 +636,8 @@ class HUDFormattedText(HUDElement):
         for line in paragraph.splitlines():
             if tabstop and u'\u2014' in line:
                 prefix, line = line.split(u'\u2014', 1)
-                img = font.render(prefix.strip(), True, self.color)
-                bits.append((img, (leftindent, y)))
+                prefix_img = font.render(prefix.strip(), True, self.color)
+                bits.append((prefix_img, (leftindent, y)))
                 wrapwidth = width - tabstop
                 cur_tabstop = tabstop
             else:
@@ -618,8 +677,9 @@ class HUDFormattedText(HUDElement):
         last_item_bits = []
         items = []
         for paragraph in self.split_to_paragraphs(self.text):
-            size, bits, keep_with_next = self.layout_paragraph(paragraph, width)
-            if last_item_bits: # join with previous
+            size, bits, keep_with_next = self.layout_paragraph(paragraph,
+                                                               width)
+            if last_item_bits:  # join with previous
                 dy = last_item_size + paragraph_spacing
                 bits = last_item_bits + [(img, (x, y+dy))
                                          for (img, (x, y)) in bits]
@@ -631,7 +691,7 @@ class HUDFormattedText(HUDElement):
                 items.append((size, bits))
                 last_item_size = 0
                 last_item_bits = []
-        if last_item_bits: # last paragraph had "keep with next" set
+        if last_item_bits:  # last paragraph had "keep with next" set
             items.append((last_item_size, last_item_bits))
         pages = self.split_items_into_groups(items, height, paragraph_spacing)
         return pages
@@ -724,11 +784,13 @@ class HUDShipInfo(HUDInfoPanel):
         self.ship = ship
 
     def draw(self, surface):
-        self.draw_rows(surface,
-                ('direction', '%d' % self.ship.direction),
-                ('heading', '%d' % self.ship.velocity.direction()),
-                ('speed', '%.1f' % self.ship.velocity.length()),
-                ('frags', '%d' % self.ship.frags),)
+        self.draw_rows(
+            surface,
+            ('direction', '%d' % self.ship.direction),
+            ('heading', '%d' % self.ship.velocity.direction()),
+            ('speed', '%.1f' % self.ship.velocity.length()),
+            ('frags', '%d' % self.ship.frags),
+        )
         x, y = self.position(surface)
         x += 1
         y += self.height - 5
@@ -836,7 +898,7 @@ class FadingImage(object):
     """
 
     def __init__(self, image):
-        self.image = image.convert() # drop the alpha channel
+        self.image = image.convert()  # drop the alpha channel
         self.image.set_colorkey((0, 0, 0))
 
     def draw(self, surface, x, y, alpha):
@@ -873,7 +935,7 @@ class NumericFadingImage(object):
         # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2915311
         # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2814793
         array[...] = (self.mask * alpha / 255).astype(Numeric.UnsignedInt8)
-        del array # unlock the surface before blitting
+        del array  # unlock the surface before blitting
         surface.blit(self.image, (x, y))
 
 
@@ -884,7 +946,7 @@ class NumPyFadingImage(object):
     """
 
     def __init__(self, image):
-        import numpy
+        import numpy  # noqa
         self.image = image
         self.mask = pygame.surfarray.array_alpha(image)
         if hasattr(pygame.surfarray, 'use_arraytype'):
@@ -996,8 +1058,7 @@ class HUDMenu(HUDElement):
         ix, iy = self.position(surface)
         iy -= self.top
         for idx, item in enumerate(self.items):
-            if (ix <= x < ix + self.width and
-                iy <= y < iy + self.item_height):
+            if ix <= x < ix + self.width and iy <= y < iy + self.item_height:
                 return idx
             iy += self.item_height + self.yspacing
         return -1
@@ -1023,10 +1084,10 @@ class HUDMenu(HUDElement):
                 margin = (self.item_height - img.get_height())/2
                 self.surface.blit(img, (x + self.xpadding, y + margin))
                 img = self.font.render(parts[1], True, fg_color)
-                self.surface.blit(img,
-                                  (x + self.width - img.get_width()
-                                     - self.xpadding,
-                                   y + margin))
+                self.surface.blit(
+                    img,
+                    (x + self.width - img.get_width() - self.xpadding,
+                     y + margin))
             else:
                 # center
                 img = self.font.render(item, True, fg_color)
@@ -1256,8 +1317,8 @@ class PauseMode(UIMode):
 
     paused = True
 
-    show_message_after = 1 # seconds
-    fade_in_time = 5 # seconds
+    show_message_after = 1  # seconds
+    fade_in_time = 5  # seconds
 
     def enter(self, prev_mode):
         """Enter the mode."""
@@ -1286,7 +1347,7 @@ class PauseMode(UIMode):
             self.message.alpha = int(255 * 0.9)
             self.animate = None
         else:
-            self.message.alpha = int(smooth(t, self.fade_in_time, 0, 255 * 0.9))
+            self.message.alpha = int(smooth(t, self.fade_in_time, 0, 255*0.9))
 
     def handle_any_other_key(self, event):
         """Handle a KEYDOWN event for unknown keys."""
@@ -1369,8 +1430,7 @@ class MenuMode(UIMode):
         self.while_key(K_MINUS, self.ui.zoom_out)
         self.on_key(K_o, self.ui.toggle_missile_orbits)
         self.on_key(K_f, self.ui.toggle_fullscreen)
-        self.version = HUDLabel(self.ui.hud_font, self.ui.version_text,
-                                0.5, 1)
+        self.version = HUDLabel(self.ui.hud_font, self.ui.version_text, 0.5, 1)
 
     def init_menu(self):
         """Initialize the menu."""
@@ -1381,7 +1441,7 @@ class MenuMode(UIMode):
     def create_menu(self):
         """Create the menu control for display."""
         return HUDMenu(self.ui.menu_font,
-                            [item[0] for item in self.menu_items])
+                       [item[0] for item in self.menu_items])
 
     def has_no_action(self, item_idx):
         """Is this menu item just an unselectable label?"""
@@ -1472,9 +1532,9 @@ class MainMenuMode(MenuMode):
             ('Quit',            self.ui.quit),
         ]
         self.on_key(K_PAUSE, self.ui.pause)
-        self.on_key(K_q, self.ui.quit) # hidden shortcut
-        self.on_key(K_h, self.ui.help) # hidden shortcut
-        self.on_key(K_F1, self.ui.help) # hidden shortcut
+        self.on_key(K_q, self.ui.quit)  # hidden shortcut
+        self.on_key(K_h, self.ui.help)  # hidden shortcut
+        self.on_key(K_F1, self.ui.help)  # hidden shortcut
 
 
 class NewGameMenuMode(MenuMode):
@@ -1549,7 +1609,7 @@ class ScreenResolutionMenuMode(MenuMode):
             ('%dx%d' % mode, lambda mode=mode: self.switch_to_mode(mode))
             for mode in pygame.display.list_modes()
             if mode_looks_sane(mode)
-        ] +  [
+        ] + [
             ('Return to options menu', self.close_menu),
         ]
 
@@ -1890,20 +1950,20 @@ class GameUI(object):
         (127, 255, 0),              # Player 2 has a green ship
     ]
 
-    visibility_margin = 120 # Keep ships at least 120px from screen edges
+    visibility_margin = 120         # Keep ships >=120px from screen edges
 
-    respawn_animation = 100 # Time (game ticks) to show respawn animation
+    respawn_animation = 100         # Duration (ticks) of respawn animation
 
-    _ui_mode = None         # Previous user interface mode
+    _ui_mode = None                 # Previous user interface mode
 
-    now_playing = None      # Filename of the current music track
+    now_playing = None              # Filename of the current music track
 
     # Some debug information
-    time_to_draw = 0            # Time to draw everything
-    time_to_draw_trails = 0     # Time to draw missile trails
-    flip_time = 0               # Time to draw debug info & flip
-    total_time = 0              # Time to process a frame
-    last_time = None            # Timestamp of last frame
+    time_to_draw = 0                # Time to draw everything
+    time_to_draw_trails = 0         # Time to draw missile trails
+    flip_time = 0                   # Time to draw debug info & flip
+    total_time = 0                  # Time to process a frame
+    last_time = None                # Timestamp of last frame
 
     def __init__(self):
         self.rng = random.Random()
@@ -2004,7 +2064,7 @@ class GameUI(object):
         """Precalculate missile trail gradients."""
         self.trail_colors = {}
         for appearance, color in enumerate(self.ship_colors):
-            self.trail_colors[appearance] = [[],]
+            self.trail_colors[appearance] = [[], ]
             r, g, b = color
             r1, g1, b1 = r*.1, g*.1, b*.1
             r2, g2, b2 = r*.5, g*.5, b*.5
@@ -2227,12 +2287,12 @@ class GameUI(object):
         self.viewport.scale = 1
         self.desired_zoom_level = 1
         self._init_hud()
-        if players == 0: # demo mode
+        if players == 0:  # demo mode
             self.toggle_ai(0)
             self.toggle_ai(1)
-        elif players == 1: # player vs computer
+        elif players == 1:  # player vs computer
             self.toggle_ai(1)
-        else: # player vs player
+        else:  # player vs player
             pass
 
     def _count_trails(self):
@@ -2242,47 +2302,54 @@ class GameUI(object):
     def _init_hud(self):
         """Initialize the heads-up display."""
         time_format = '%.f ms'
-        self.fps_hud1 = HUDInfoPanel(self.hud_font, 16, xalign=0.5, yalign=0,
-                content=[('objects', lambda: len(self.game.world.objects)),
-                         ('missile trails', self._count_trails),
-                         ('fps', lambda: '%.0f' % self.frame_counter.fps()),
-                        ])
-        self.fps_hud2 = HUDCollection([
-            HUDInfoPanel(self.hud_font, 16, xalign=0.25, yalign=0.95,
-                content=[('update', lambda: time_format %
-                                (self.game.time_to_update * 1000)),
-                         ('  gravity', lambda: time_format %
-                                (self.game.world.time_for_gravitation * 1000)),
-                         ('  collisions', lambda: time_format %
-                                (self.game.world.time_for_collisions * 1000)),
-                         ('  other', lambda: time_format %
-                                ((self.game.time_to_update
-                                  - self.game.world.time_for_gravitation
-                                  - self.game.world.time_for_collisions)
-                                 * 1000)),
-                        ]),
-            HUDInfoPanel(self.hud_font, 16, xalign=0.5, yalign=0.95,
-                content=[('draw', lambda: time_format %
-                                (self.time_to_draw * 1000)),
-                         ('  trails', lambda: time_format %
-                                (self.time_to_draw_trails * 1000)),
-                         ('  other', lambda: time_format %
-                                ((self.time_to_draw
-                                  - self.time_to_draw_trails) * 1000)),
-                         ('    flip', lambda: time_format %
-                                (self.flip_time * 1000)),
-                        ]),
-            HUDInfoPanel(self.hud_font, 16, xalign=0.75, yalign=0.95,
-                content=[('other', lambda: time_format %
-                                ((self.total_time - self.game.time_to_update
-                                  - self.time_to_draw - self.game.time_waiting)
-                                 * 1000)),
-                         ('idle', lambda: time_format %
-                                (self.game.time_waiting * 1000)),
-                         ('total', lambda: time_format %
-                                (self.total_time * 1000)),
-                        ]),
+        self.fps_hud1 = HUDInfoPanel(
+            self.hud_font, 16, xalign=0.5, yalign=0,
+            content=[
+                ('objects', lambda: len(self.game.world.objects)),
+                ('missile trails', self._count_trails),
+                ('fps', lambda: '%.0f' % self.frame_counter.fps()),
             ])
+        self.fps_hud2 = HUDCollection([
+            HUDInfoPanel(
+                self.hud_font, 16, xalign=0.25, yalign=0.95,
+                content=[
+                    ('update', lambda: time_format %
+                     (self.game.time_to_update * 1000)),
+                    ('  gravity', lambda: time_format %
+                     (self.game.world.time_for_gravitation * 1000)),
+                    ('  collisions', lambda: time_format %
+                     (self.game.world.time_for_collisions * 1000)),
+                    ('  other', lambda: time_format %
+                     ((self.game.time_to_update
+                       - self.game.world.time_for_gravitation
+                       - self.game.world.time_for_collisions)
+                      * 1000)),
+                ]),
+            HUDInfoPanel(
+                self.hud_font, 16, xalign=0.5, yalign=0.95,
+                content=[
+                    ('draw', lambda: time_format %
+                     (self.time_to_draw * 1000)),
+                    ('  trails', lambda: time_format %
+                     (self.time_to_draw_trails * 1000)),
+                    ('  other', lambda: time_format %
+                     ((self.time_to_draw - self.time_to_draw_trails) * 1000)),
+                    ('    flip', lambda: time_format %
+                     (self.flip_time * 1000)),
+                ]),
+            HUDInfoPanel(
+                self.hud_font, 16, xalign=0.75, yalign=0.95,
+                content=[
+                    ('other', lambda: time_format %
+                     ((self.total_time - self.game.time_to_update
+                       - self.time_to_draw - self.game.time_waiting)
+                      * 1000)),
+                    ('idle', lambda: time_format %
+                     (self.game.time_waiting * 1000)),
+                    ('total', lambda: time_format %
+                     (self.total_time * 1000)),
+                ]),
+        ])
         self.hud = HUDCollection([
             HUDShipInfo(self.ships[0], self.hud_font, 1, 0),
             HUDShipInfo(self.ships[1], self.hud_font, 0, 0,
@@ -2531,7 +2598,6 @@ class GameUI(object):
 
     def respawn_effect_Ship(self, ship):
         """Play a sound effect when the player's ship respawns."""
-        player_id = self.ships.index(ship)
         self.play_sound('respawn')
 
     def update_continuous_sounds(self):
