@@ -14,7 +14,8 @@ test check:
 
 .PHONY: coverage
 coverage:
-	coverage run test.py
+	tox -e coverage,coverage3 -- -p
+	coverage combine
 	coverage report -m
 
 
