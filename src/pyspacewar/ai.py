@@ -48,7 +48,8 @@ class AIController(object):
 
     def target(self, enemy):
         target_vector = enemy.position - self.ship.position
-        moving_target_vector = target_vector + enemy.velocity - self.ship.velocity
+        moving_target_vector = (
+            target_vector + enemy.velocity - self.ship.velocity)
 
         l_r = self.ship.direction_vector.cross_product(moving_target_vector)
 
@@ -62,18 +63,22 @@ class AIController(object):
         if l_r > 0:
             if self.last_l_r < 0:
                 self.maybe_fire(enemy, target_vector.length())
-            self.ship.left_thrust = self.rng.randrange(turn_const, turn_const + 5)
+            self.ship.left_thrust = self.rng.randrange(turn_const,
+                                                       turn_const + 5)
             self.ship.right_thrust = 0
         else:
             if self.last_l_r > 0:
                 self.maybe_fire(enemy, target_vector.length())
             self.ship.left_thrust = 0
-            self.ship.right_thrust = self.rng.randrange(turn_const, turn_const + 5)
+            self.ship.right_thrust = self.rng.randrange(turn_const,
+                                                        turn_const + 5)
 
         rel_velocity = (self.ship.velocity - enemy.velocity).length()
         if rel_velocity < 3:
             rel_velocity = 3
-        if self.ship.velocity.length() ** 2 < self.rng.randrange(int(rel_velocity * 0.8), int(rel_velocity * 1.5) + 1) + 1:
+        limit_squared = self.rng.randrange(int(rel_velocity * 0.8),
+                                           int(rel_velocity * 1.5) + 1)
+        if self.ship.velocity.length() ** 2 < limit_squared + 1:
             self.ship.forward_thrust = 1 * thrust_const
             self.ship.rear_thrust = 0
         else:

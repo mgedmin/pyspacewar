@@ -217,8 +217,8 @@ class World(object):
 
     """
 
-    GRAVITY = 0.01          # constant of gravitation
-    BOUNCE_SPEED_LOSS = 0.1 # lose 10% speed when bouncing off something
+    GRAVITY = 0.01              # constant of gravitation
+    BOUNCE_SPEED_LOSS = 0.1     # lose 10% speed when bouncing off something
 
     # Some debug information
     time_for_gravitation = 0    # Time to calculate gravitation
@@ -411,7 +411,7 @@ class Object(object):
         # Nice code:
         #   vector = massive_object.position - self.position
         #   distance = vector.length()
-        #   magnitude = self.world.GRAVITY * massive_object.mass / distance ** 2
+        #   magnitude = self.world.GRAVITY * massive_object.mass / distance**2
         #   acceleration = vector * (magnitude * dt / distance)
         #   self.velocity += acceleration
         # The equivalent fast code:
@@ -535,20 +535,20 @@ class Ship(Object):
 
     """
 
-    SIZE_TO_RADIUS = 0.6    # Ships aren't circular.  To simulate more or
-                            # less convincing collisions we need to have a
-                            # collision radius smaller than ship size.
+    SIZE_TO_RADIUS = 0.6        # Ships aren't circular.  To simulate more or
+                                # less convincing collisions we need to have a
+                                # collision radius smaller than ship size.
 
-    forward_power = 0.1     # Default engine power for forward thrust
-    backward_power = 0.05   # Default engine power for backward thrust
-    brake_factor = 0.95     # Default brake effectiveness (lose 5% speed)
-    brake_threshold = 0.5   # Speed below which brakes are 100% efficient
-    rotation_speed = 5      # Lateral thruster power (angles per time unit)
-    launch_speed = 3.0      # Missile launch speed
-    missile_recoil = 0.01   # Missile recoil factor
-    missile_damage = 0.6    # Damage done by the missile
-    collision_damage = 0.05 # Damage done by a collision
-    missile_time_limit = (1200, 1300) # Range for missile self-destruct timer
+    forward_power = 0.1         # Default engine power for forward thrust
+    backward_power = 0.05       # Default engine power for backward thrust
+    brake_factor = 0.95         # Default brake effectiveness (lose 5% speed)
+    brake_threshold = 0.5       # Speed below which brakes are 100% efficient
+    rotation_speed = 5          # Lateral thruster power (angles per time unit)
+    launch_speed = 3.0          # Missile launch speed
+    missile_recoil = 0.01       # Missile recoil factor
+    missile_damage = 0.6        # Damage done by the missile
+    collision_damage = 0.05     # Damage done by a collision
+    missile_time_limit = (1200, 1300)  # Range for missile self-destruct timer
 
     def __init__(self, position=Vector(0, 0), velocity=Vector(0, 0), size=10,
                  direction=0, appearance=0):
@@ -565,7 +565,7 @@ class Ship(Object):
         self.health = 1.0
         self.frags = 0
         self.dead = False
-        self.spawn_time = 0 # the value of world.time when last respawned
+        self.spawn_time = 0  # the value of world.time when last respawned
         self.launch_effect = None
         self.hit_effect = None
         self.explode_effect = None
@@ -580,7 +580,8 @@ class Ship(Object):
         The direction_vector attribute is also set.
         """
         direction = direction % 360
-        if direction < 0: direction += 360
+        if direction < 0:
+            direction += 360
         self._direction = direction
         self.direction_vector = Vector.from_polar(direction)
 
@@ -753,4 +754,3 @@ class Debris(Object):
         self.time_limit -= dt
         if self.time_limit < 0:
             self.world.remove(self)
-

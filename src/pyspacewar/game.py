@@ -122,7 +122,7 @@ class Game(object):
 
     def skip_a_tick(self):
         """Skip a wall clock tick (the game is paused)."""
-        if self._next_tick is None: # first time!
+        if self._next_tick is None:  # first time!
             self._next_tick = self.time_source.now() + self.time_source.delta
             self.time_waiting = 0
         else:
@@ -133,7 +133,7 @@ class Game(object):
 
     def wait_for_tick(self):
         """Wait for the next game time tick."""
-        if self._next_tick is None: # first time!
+        if self._next_tick is None:  # first time!
             self._next_tick = self.time_source.now() + self.time_source.delta
             self.time_waiting = 0
             on_schedule = True

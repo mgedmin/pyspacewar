@@ -69,7 +69,7 @@ def doctest_AIController_control():
     """Tests for AIController.control.
 
         >>> from pyspacewar.ai import AIController
-        >>> from pyspacewar.world import Ship, World, Object, Vector
+        >>> from pyspacewar.world import Ship, World, Vector
         >>> ship = Ship(velocity=Vector(30, 0))
         >>> world = World()
         >>> world.add(ship)
@@ -133,7 +133,7 @@ def doctest_AIController_evade():
     """Tests for AIController.evade.
 
         >>> from pyspacewar.ai import AIController
-        >>> from pyspacewar.world import Ship, World, Missile, Planet, Vector
+        >>> from pyspacewar.world import Ship, World, Planet, Vector
         >>> ship = Ship(position=Vector(0, 0))
         >>> other = Ship(position=Vector(10, 20))
         >>> sun = Planet(position=Vector(35, 20), radius=5)
@@ -214,7 +214,7 @@ def doctest_AIController_maybe_fire():
     """Tests for AIController.maybe_fire.
 
         >>> from pyspacewar.ai import AIController
-        >>> from pyspacewar.world import Ship, World, Object, Vector
+        >>> from pyspacewar.world import Ship, World
         >>> ship = Ship()
         >>> ship.launch_effect = effect('Foom!')
         >>> world = World()

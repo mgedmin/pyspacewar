@@ -112,7 +112,7 @@ def doctest_World():
 def doctest_World_collision_detection_in_update():
     """Tests for collision detection
 
-        >>> from pyspacewar.world import World, Vector
+        >>> from pyspacewar.world import World
         >>> w = World()
 
         >>> o1, o2, o3 = [Object(name, radius=1) for name in ['o1', 'o2', 'o3']]
@@ -138,7 +138,7 @@ def doctest_World_collision_detection_in_update():
 def doctest_World_death_and_birth_in_update():
     """Test for spawning and removing objects during update
 
-        >>> from pyspacewar.world import World, Vector
+        >>> from pyspacewar.world import World
         >>> w = World()
 
         >>> o1, o2, o3, o4, o5 = map(Object, ['o1', 'o2', 'o3', 'o4', 'o5'])
@@ -215,7 +215,7 @@ def doctest_World_death_and_birth_in_update():
 def doctest_World_collision_detection():
     """Tests for collision detection
 
-        >>> from pyspacewar.world import World, Vector
+        >>> from pyspacewar.world import World
         >>> w = World()
 
     You can check whether two objects collide.  Collision detection is pretty
@@ -413,7 +413,8 @@ def doctest_Ship_gravity():
 def doctest_Ship_collision():
     """Tests for Ship.collision.
 
-        >>> from pyspacewar.world import Ship, Vector, Planet, Debris, Missile, World
+        >>> from pyspacewar.world import (
+        ...     Ship, Vector, Planet, Debris, Missile, World)
         >>> ship = Ship(position=Vector(3, 5), velocity=Vector(10, 10))
         >>> ship.world = World()
         >>> ship.hit_effect = effect('Ouch!')

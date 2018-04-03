@@ -72,4 +72,3 @@ def main(argv=None):
             ui.draw()
     except (KeyboardInterrupt, SystemExit):
         ui.save_settings()
-
