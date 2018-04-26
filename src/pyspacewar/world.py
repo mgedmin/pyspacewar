@@ -580,8 +580,6 @@ class Ship(Object):
         The direction_vector attribute is also set.
         """
         direction = direction % 360
-        if direction < 0:
-            direction += 360
         self._direction = direction
         self.direction_vector = Vector.from_polar(direction)
 
