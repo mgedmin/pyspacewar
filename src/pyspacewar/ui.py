@@ -194,19 +194,6 @@ def fixup_keys_in_text(text, controls):
     return text
 
 
-def mode_looks_sane(mode):
-    """Check if video mode looks sane.
-
-    This function assumes (w, h) already came from pygame.display.list_modes.
-    However, not all such modes actually work.  On my Linux laptop that has
-    a dual-monitor setup, the dual-head virtual mode (2048x768) appears as
-    the largest video mode returned by list_modes.  However it does not work
-    at all as a full-screen mode, and looks weird when windowed.
-    """
-    w, h = mode
-    return bool(w / h < 2)
-
-
 def is_modifier_key(key):
     """Is this key a modifier?"""
     return key in MODIFIER_KEYS
@@ -1608,7 +1595,6 @@ class ScreenResolutionMenuMode(MenuMode):
         self.menu_items = [
             ('%dx%d' % mode, lambda mode=mode: self.switch_to_mode(mode))
             for mode in pygame.display.list_modes()
-            if mode_looks_sane(mode)
         ] + [
             ('Return to options menu', self.close_menu),
         ]
