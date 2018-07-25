@@ -5,6 +5,10 @@ environment:
     # https://www.appveyor.com/docs/installed-software#python lists available
     # versions
     - PYTHON: "C:\\Python27"
+    - PYTHON: "C:\\Python34"
+    - PYTHON: "C:\\Python35"
+    - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python37"
 
 init:
   - "echo %PYTHON%"
@@ -12,16 +16,7 @@ init:
 install:
   - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - python --version
-  - pip install tox
-  # pygame installation cargo-culted from https://github.com/a-tal/fallingsky/blob/cae0df8eedff8be3e9e333258ff565c1f1441886/appveyor.yml
-  # only I replaced the http:// url with https://
-  # and changed version from 1.9.2a0 to 1.9.1
-  - ps: Start-FileDownload 'https://pygame.org/ftp/pygame-1.9.1.win32-py2.7.msi'
-  - ps: Start-Process -FilePath msiexec -ArgumentList /i, "pygame-1.9.1.win32-py2.7.msi", /qb, ADDLOCAL=ALL, ALLUSERS=1 -Wait
-  # For some reason pygame is installed into c:\lib\site-packages\pygame
-  # I also see c:\Miniconda-x64\Lib\site-packages\pygame, which fills me with WAT?
-  # I also see c:\PythonX\Lib\site-packages\pygame
-  - "set PYTHONPATH=c:\\Lib\\site-packages;%PYTHONPATH%"
+  - pip install -e .
   - 'python -c "import pygame; print(pygame.__version__)"'
 
 build: off
