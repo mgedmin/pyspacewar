@@ -1,6 +1,6 @@
 Unreleased:
 
-- Support Python 3.6 (no actual code changes required).
+- Support Python 3.6 and 3.7 (no actual code changes required).
 - Drop video mode filtering by aspect ratio (21:9 monitors exist).
 
 September 21, 2016: Released version 1.1.0:
