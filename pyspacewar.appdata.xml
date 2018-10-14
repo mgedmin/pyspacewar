@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+	<id>pyspacewar.desktop</id>
+	<metadata_license>CC-BY-SA-4.0</metadata_license>
+	<project_license>GPL-2.0+</project_license>
+	<name>PySpace War</name>
+	<summary>A game loosely based on the original Spacewar</summary>
+	
+	<description>
+		<p>
+			PySpaceWar is an open-source game, loosely inspired by Spacewar, Gravity Wars, and a bit by Star Control (I and II).
+		</p><p>
+			Two ships duel in a gravity field. Gravity doesn't affect the ships themselves (which have spanking new anti-gravity devices), but it affects missiles launced by the ships.
+		</p><p>
+			You can play against the computer, or two players can play with one keyboard. There is also a Gravity Wars mode, where the two ships do not move, and the players repeatedly specify the direction and velocity of their missiles.
+		</p>
+	</description>
+	
+	<launchable type="desktop-id">pyspacewar.desktop</launchable>
+	
+	<screenshots>
+		<screenshot type="default">
+			<image>https://mg.pov.lt/pyspacewar/pyspacewar-0.9.1-title.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://mg.pov.lt/pyspacewar/pyspacewar-0.9.1-menu.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://mg.pov.lt/pyspacewar/pyspacewar-0.9.1-game.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://mg.pov.lt/pyspacewar/pyspacewar-0.9.1-gravitywars.png</image>
+		</screenshot>
+	</screenshots>
+	
+	<url type="homepage">https://mg.pov.lt/pyspacewar/</url>
+	<url type="bugtracker">https://github.com/mgedmin/pyspacewar/issues</url>
+</component>
