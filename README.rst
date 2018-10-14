@@ -11,7 +11,7 @@ players repeatedly specify the direction and velocity of their missiles.
 
 Web page: https://mg.pov.lt/pyspacewar
 
-Bug tracker: https://bugs.launchpad.net/pyspacewar
+Bug tracker: https://github.com/mgedmin/pyspacewar/issues
 
 Requirements:
 
