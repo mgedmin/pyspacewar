@@ -20,19 +20,19 @@
 	
 	<screenshots>
 		<screenshot type="default">
-			<image>https://mg.pov.lt/pyspacewar/thumb-pyspacewar-0.9.1-title.png</image>
+			<image>https://mg.pov.lt/pyspacewar/pyspacewar-0.9.1-title.png</image>
 		</screenshot>
 		<screenshot>
-			<image>https://mg.pov.lt/pyspacewar/thumb-pyspacewar-0.9.1-menu.png</image>
+			<image>https://mg.pov.lt/pyspacewar/pyspacewar-0.9.1-menu.png</image>
 		</screenshot>
 		<screenshot>
-			<image>https://mg.pov.lt/pyspacewar/thumb-pyspacewar-0.9.1-game.png</image>
+			<image>https://mg.pov.lt/pyspacewar/pyspacewar-0.9.1-game.png</image>
 		</screenshot>
 		<screenshot>
-			<image>https://mg.pov.lt/pyspacewar/thumb-pyspacewar-0.9.1-gravitywars.png</image>
+			<image>https://mg.pov.lt/pyspacewar/pyspacewar-0.9.1-gravitywars.png</image>
 		</screenshot>
 	</screenshots>
 	
 	<url type="homepage">https://mg.pov.lt/pyspacewar/</url>
-	<url type="bugtracker">https://bugs.launchpad.net/pyspacewar</url>
+	<url type="bugtracker">https://github.com/mgedmin/pyspacewar/issues</url>
 </component>
