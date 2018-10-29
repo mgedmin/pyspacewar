@@ -1,5 +1,5 @@
 language: python
-sudo: false
+sudo: required
 python:
     - 2.7
     - 3.4
@@ -9,9 +9,11 @@ matrix:
     include:
         - python: 3.7
           dist: xenial
-          sudo: true
-install:
+before_install:
+    - sudo apt-get update -q
+    - sudo apt-get build-dep -y python-pygame
     - pip install -U pip
+install:
     - pip install coverage coveralls -e .
 script:
     - coverage run --source=src/pyspacewar test.py
