@@ -1,5 +1,5 @@
 [run]
-source = src/pyspacewar
+source = pyspacewar
 omit = */tests/*
 
 [report]

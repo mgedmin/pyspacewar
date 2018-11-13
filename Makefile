@@ -14,7 +14,7 @@ test check:
 
 .PHONY: coverage
 coverage:
-	tox -e coverage,coverage3 -- -p
+	detox -e coverage,coverage3 -- -p
 	coverage combine
 	coverage report -m
 
