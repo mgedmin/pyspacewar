@@ -33,6 +33,19 @@ def doctest_is_modifier_key():
     """
 
 
+def doctest_find():
+    """Test for find
+
+        >>> from pyspacewar.ui import find
+
+    This is a helper that can compute pathnames to data files
+
+        >>> os.path.exists(find('images', 'background.jpg'))
+        True
+
+    """
+
+
 def doctest_Viewport():
     """Tests for Viewport
 
