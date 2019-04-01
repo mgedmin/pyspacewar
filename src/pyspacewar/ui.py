@@ -325,14 +325,6 @@ class Viewport(object):
         return (int(self._screen_x + world_pos[0] * self._scale),
                 int(self._screen_y - world_pos[1] * self._scale))
 
-    def list_of_screen_pos(self, list_of_world_pos):
-        """Convert world coordinates to screen coordinates."""
-        sx = self._screen_x
-        sy = self._screen_y
-        scale = self._scale
-        return [(int(sx + x * scale), int(sy - y * scale))
-                for x, y in list_of_world_pos]
-
     def draw_trail(self, list_of_world_pos, gradient, set_at):
         """Draw a trail.
 
