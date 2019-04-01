@@ -16,6 +16,23 @@ class SurfaceStub(object):
         return (self.w, self.h)
 
 
+def doctest_is_modifier_key():
+    """Test for is_modifier_key
+
+        >>> from pyspacewar.ui import is_modifier_key
+        >>> from pygame.locals import K_LSHIFT, K_a
+
+    Sometimes we want to distinguish modifier keys like Shift from
+    real keys like A.
+
+        >>> is_modifier_key(K_LSHIFT)
+        True
+        >>> is_modifier_key(K_a)
+        False
+
+    """
+
+
 def doctest_Viewport():
     """Tests for Viewport
 
