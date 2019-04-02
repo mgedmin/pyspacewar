@@ -414,12 +414,14 @@ class FrameRateCounter(object):
 
     avg_last_n_frames = 10  # calculate average FPS for 10 frames
 
+    get_ticks = staticmethod(pygame.time.get_ticks)
+
     def __init__(self):
         self.frames = []
 
     def frame(self):
         """Tell the counter that a new frame has just been drawn."""
-        self.frames.append(pygame.time.get_ticks())
+        self.frames.append(self.get_ticks())
         if len(self.frames) > self.avg_last_n_frames:
             del self.frames[0]
 
@@ -448,7 +450,7 @@ class FrameRateCounter(object):
         """
         if len(self.frames) < 1:
             return 0.0
-        ms = pygame.time.get_ticks() - self.frames[0]
+        ms = self.get_ticks() - self.frames[0]
         frames = len(self.frames)
         return frames * 1000.0 / ms
 

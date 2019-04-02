@@ -251,7 +251,7 @@ def doctest_FrameRateCounter_reset():
 
         >>> from pyspacewar.ui import FrameRateCounter
         >>> frc = FrameRateCounter()
-        >>> frc.frames = range(15)
+        >>> frc.frames = list(range(15))
         >>> frc.reset()
         >>> frc.frames
         []
@@ -286,6 +286,25 @@ def doctest_FrameRateCounter_fps():
 
         >>> frc.fps()
         100.0
+
+    """
+
+
+def doctest_FrameRateCounter_notional_fps():
+    """Tests for FrameRateCounter.notional_fps
+
+        >>> from pyspacewar.ui import FrameRateCounter
+        >>> frc = FrameRateCounter()
+        >>> frc.frames = []
+        >>> frc.notional_fps()
+        0.0
+
+    20 ms per frame corresponds to 50 fps
+
+        >>> frc.get_ticks = lambda: 1020
+        >>> frc.frames = [1000]
+        >>> frc.notional_fps()
+        50.0
 
     """
 
