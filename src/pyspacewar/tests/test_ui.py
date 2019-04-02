@@ -6,21 +6,48 @@ import doctest
 import sys
 import os
 
+from pygame.locals import Rect
+
 
 class SurfaceStub(object):
 
     w = 800
     h = 600
 
+    def get_width(self):
+        return self.w
+
+    def get_height(self):
+        return self.h
+
     def get_size(self):
         return (self.w, self.h)
+
+    def get_rect(self):
+        return Rect(0, 0, self.w, self.h)
 
 
 class PrintingSurfaceStub(SurfaceStub):
 
+    def set_at(self, pos, color):
+        x, y = pos
+        r, g, b = color
+        print("(%s, %s) <- #%02x%02x%02x" % (x, y, r, g, b))
+
     def blit(self, what, pos):
         x, y = pos
         print("(%s, %s) <- %r" % (x, y, what))
+
+
+class TextSurfaceStub(SurfaceStub):
+
+    def __init__(self, w, h, text="<text>"):
+        self.w = w
+        self.h = h
+        self.text = text
+
+    def __repr__(self):
+        return repr(self.text)
 
 
 class FontStub(object):
@@ -30,8 +57,12 @@ class FontStub(object):
         h = 16
         return (w, h)
 
+    def get_linesize(self):
+        return 16
+
     def render(self, text, antialias, color, background=None):
-        return text
+        w, h = self.size(text)
+        return TextSurfaceStub(w, h, text)
 
 
 def doctest_is_modifier_key():
@@ -213,11 +244,6 @@ def doctest_Viewport_draw_trail():
         >>> viewport = Viewport(SurfaceStub())
         >>> viewport.scale = 2.0
 
-        >>> def set_at(pos, color):
-        ...     x, y = pos
-        ...     r, g, b = color
-        ...     print("(%s, %s) <- #%02x%02x%02x" % (x, y, r, g, b))
-
         >>> viewport.draw_trail([
         ...     Vector(120, 50),
         ...     Vector(130, 55),
@@ -226,7 +252,7 @@ def doctest_Viewport_draw_trail():
         ...     (250, 250, 250),
         ...     (200, 200, 200),
         ...     (150, 150, 150),
-        ... ], set_at)
+        ... ], PrintingSurfaceStub().set_at)
         (640, 200) <- #fafafa
         (660, 190) <- #c8c8c8
         (680, 180) <- #969696
@@ -378,6 +404,39 @@ def doctest_HUDLabel():
         >>> label = HUDLabel(font, "Hello", xalign=1.0)
         >>> label.draw(PrintingSurfaceStub())
         (740, 10) <- 'Hello'
+
+    """
+
+
+def doctest_HUDFormattedText():
+    """Tests for HUDFormattedText
+
+        >>> from pyspacewar.ui import HUDFormattedText
+        >>> font = FontStub()
+        >>> bold_font = FontStub()
+        >>> text = '''
+        ... = Hello =
+        ...
+        ... This is nice?
+        ...
+        ...   really nice?
+        ... '''.lstrip()
+        >>> help_text = HUDFormattedText(font, bold_font, text)
+
+        >>> help_text.position(SurfaceStub())
+        (30, 30)
+        >>> (help_text.width, help_text.height)
+        (740, 540)
+
+        >>> help_text.draw(PrintingSurfaceStub())
+        (30, 30) <- <Surface(740x540x8 SW)>
+        (70, 70) <- 'Hello'
+        (70, 102) <- 'This'
+        (120, 102) <- 'is'
+        (150, 102) <- 'nice?'
+        (90, 134) <- 'really'
+        (160, 134) <- 'nice?'
+        (620, 514) <- 'Page 1 of 1'
 
     """
 
