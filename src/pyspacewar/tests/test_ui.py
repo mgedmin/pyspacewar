@@ -309,6 +309,23 @@ def doctest_FrameRateCounter_notional_fps():
     """
 
 
+def doctest_HUDCollection():
+    """Tests for HUDCollection
+
+        >>> from pyspacewar.ui import HUDCollection
+        >>> from pyspacewar.ui import HUDElement
+
+    This is a very boring class that holds a bunch of elements
+    and can ask all of them to draw.
+
+        >>> hc = HUDCollection([
+        ...     HUDElement(180, 60, 1.0, 0.0),
+        ... ])
+        >>> hc.draw(SurfaceStub())
+
+    """
+
+
 def doctest_HUDElement():
     """Tests for HUDElement
 

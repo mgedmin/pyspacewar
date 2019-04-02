@@ -461,12 +461,8 @@ class HUDCollection(object):
     def __init__(self, widgets=()):
         self.widgets = list(widgets)
 
-    def add(self, widget):
-        """Add a widget to the collection."""
-        self.widgets.append(widget)
-
     def draw(self, surface):
-        """Draw the element."""
+        """Draw all the elements."""
         for w in self.widgets:
             w.draw(surface)
 
