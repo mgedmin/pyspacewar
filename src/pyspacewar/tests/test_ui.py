@@ -309,6 +309,32 @@ def doctest_FrameRateCounter_notional_fps():
     """
 
 
+def doctest_HUDElement():
+    """Tests for HUDElement
+
+        >>> from pyspacewar.ui import HUDElement
+        >>> e = HUDElement(180, 60, 0, 0)
+
+    A HUD element can compute its on-screen position
+
+        >>> e.position(SurfaceStub(), margin=10)
+        (10, 10)
+
+    Alignment goes from 0.0 (left/top) to 1.0 (right/bottom)
+
+        >>> e.xalign = 0.5
+        >>> e.yalign = 1.0
+        >>> e.position(SurfaceStub(), margin=10)
+        (310, 530)
+
+    The default draw method is a no-op; you're supposed to override
+    it in subclasses
+
+        >>> e.draw(SurfaceStub())
+
+    """
+
+
 def setUp(test=None):
     import pygame
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
