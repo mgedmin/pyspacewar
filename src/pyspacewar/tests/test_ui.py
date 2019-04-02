@@ -88,6 +88,20 @@ def doctest_Viewport():
         >>> viewport.world_pos((401, 300))
         (105.0, 200.0)
 
+    ``in_screen`` tests if world coordinates are visible on screen
+
+        >>> viewport.in_screen(Vector(100, 200))
+        True
+        >>> viewport.in_screen(Vector(2101, 200))
+        False
+
+    ```shift_by_pixels`` adjusts the viewport position by a given
+    number of screen pixels
+
+        >>> viewport.shift_by_pixels((20, -10))
+        >>> viewport.screen_pos(Vector(100, 200))
+        (380, 310)
+
     """
 
 
@@ -169,6 +183,35 @@ def doctest_Viewport_keep_visible():
         True
         >>> ymin <= -100 and 400 <= ymax
         True
+
+    """
+
+
+def doctest_Viewport_draw_trail():
+    """Tests for Viewport.draw_trail
+
+        >>> from pyspacewar.world import Vector
+        >>> from pyspacewar.ui import Viewport
+        >>> viewport = Viewport(SurfaceStub())
+        >>> viewport.scale = 2.0
+
+        >>> def set_at(pos, color):
+        ...     x, y = pos
+        ...     r, g, b = color
+        ...     print("(%s, %s) <- #%02x%02x%02x" % (x, y, r, g, b))
+
+        >>> viewport.draw_trail([
+        ...     Vector(120, 50),
+        ...     Vector(130, 55),
+        ...     Vector(140, 60),
+        ... ], [
+        ...     (250, 250, 250),
+        ...     (200, 200, 200),
+        ...     (150, 150, 150),
+        ... ], set_at)
+        (640, 200) <- #fafafa
+        (660, 190) <- #c8c8c8
+        (680, 180) <- #969696
 
     """
 
