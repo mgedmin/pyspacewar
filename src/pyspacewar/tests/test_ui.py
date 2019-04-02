@@ -16,6 +16,24 @@ class SurfaceStub(object):
         return (self.w, self.h)
 
 
+class PrintingSurfaceStub(SurfaceStub):
+
+    def blit(self, what, pos):
+        x, y = pos
+        print("(%s, %s) <- %r" % (x, y, what))
+
+
+class FontStub(object):
+
+    def size(self, text):
+        w = len(text) * 10
+        h = 16
+        return (w, h)
+
+    def render(self, text, antialias, color, background=None):
+        return text
+
+
 def doctest_is_modifier_key():
     """Test for is_modifier_key
 
@@ -348,6 +366,18 @@ def doctest_HUDElement():
     it in subclasses
 
         >>> e.draw(SurfaceStub())
+
+    """
+
+
+def doctest_HUDLabel():
+    """Test for HUDLabel
+
+        >>> from pyspacewar.ui import HUDLabel
+        >>> font = FontStub()
+        >>> label = HUDLabel(font, "Hello", xalign=1.0)
+        >>> label.draw(PrintingSurfaceStub())
+        (740, 10) <- 'Hello'
 
     """
 
