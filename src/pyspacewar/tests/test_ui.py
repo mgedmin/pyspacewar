@@ -47,7 +47,7 @@ class TextSurfaceStub(SurfaceStub):
         self.text = text
 
     def __repr__(self):
-        return repr(self.text)
+        return repr(str(self.text))
 
 
 class FontStub(object):
@@ -409,17 +409,21 @@ def doctest_HUDLabel():
 
 
 def doctest_HUDFormattedText():
-    """Tests for HUDFormattedText
+    r"""Tests for HUDFormattedText
 
         >>> from pyspacewar.ui import HUDFormattedText
         >>> font = FontStub()
         >>> bold_font = FontStub()
-        >>> text = '''
+        >>> text = u'''
         ... = Hello =
         ...
         ... This is nice?
         ...
-        ...   really nice?
+        ...   it is \u2014 really nice???
+        ...
+        ... It even supports justified text if the text is long
+        ... enough not to fit on a single line blah blah blah
+        ... is this thing on?
         ... '''.lstrip()
         >>> help_text = HUDFormattedText(font, bold_font, text)
 
@@ -434,8 +438,34 @@ def doctest_HUDFormattedText():
         (70, 102) <- 'This'
         (120, 102) <- 'is'
         (150, 102) <- 'nice?'
-        (90, 134) <- 'really'
-        (160, 134) <- 'nice?'
+        (90, 134) <- 'it is'
+        (230, 134) <- 'really'
+        (300, 134) <- 'nice???'
+        (70, 166) <- 'It'
+        (100, 166) <- 'even'
+        (151, 166) <- 'supports'
+        (242, 166) <- 'justified'
+        (343, 166) <- 'text'
+        (394, 166) <- 'if'
+        (424, 166) <- 'the'
+        (465, 166) <- 'text'
+        (516, 166) <- 'is'
+        (547, 166) <- 'long'
+        (598, 166) <- 'enough'
+        (669, 166) <- 'not'
+        (710, 166) <- 'to'
+        (70, 182) <- 'fit'
+        (110, 182) <- 'on'
+        (140, 182) <- 'a'
+        (160, 182) <- 'single'
+        (230, 182) <- 'line'
+        (280, 182) <- 'blah'
+        (330, 182) <- 'blah'
+        (380, 182) <- 'blah'
+        (430, 182) <- 'is'
+        (460, 182) <- 'this'
+        (510, 182) <- 'thing'
+        (570, 182) <- 'on?'
         (620, 514) <- 'Page 1 of 1'
 
     """
@@ -453,9 +483,14 @@ def test_suite():
         os.path.join(os.path.dirname(__file__), '..', '..'))
     if path not in sys.path:
         sys.path.append(path)
+    optionflags = (
+        doctest.REPORT_ONLY_FIRST_FAILURE
+        | doctest.REPORT_NDIFF
+    )
     return unittest.TestSuite([
-        doctest.DocTestSuite('pyspacewar.ui', setUp=setUp),
-        doctest.DocTestSuite(),
+        doctest.DocTestSuite('pyspacewar.ui', optionflags=optionflags,
+                             setUp=setUp),
+        doctest.DocTestSuite(optionflags=optionflags),
     ])
 
 
