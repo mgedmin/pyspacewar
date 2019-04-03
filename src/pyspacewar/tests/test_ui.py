@@ -12,8 +12,10 @@ from pygame.locals import Rect
 
 class SurfaceStub(object):
 
-    w = 800
-    h = 600
+    def __init__(self, size=(800, 600)):
+        self.w, self.h = size
+        self.alpha = 255
+        self.colorkey = None
 
     def get_width(self):
         return self.w
@@ -30,6 +32,25 @@ class SurfaceStub(object):
     def get_bitsize(self):
         return 32
 
+    def set_alpha(self, alpha):
+        self.alpha = alpha
+
+    def set_colorkey(self, color):
+        r, g, b = color
+        self.colorkey = (r, g, b)
+
+    def set_at(self, pos, color):
+        pass
+
+    def fill(self, color, rect=None):
+        pass
+
+    def blit(self, what, pos, area=None):
+        pass
+
+    def __repr__(self):
+        return '<Surface(%dx%dx8 SW)>' % (self.w, self.h)
+
 
 class PrintingSurfaceStub(SurfaceStub):
 
@@ -38,12 +59,17 @@ class PrintingSurfaceStub(SurfaceStub):
         r, g, b = color
         print("(%s, %s) <- #%02x%02x%02x" % (x, y, r, g, b))
 
-    def blit(self, what, pos):
+    def blit(self, what, pos, area=None):
         x, y = pos
-        print("(%s, %s) <- %r" % (x, y, what))
+        if area:
+            ax, ay, aw, ah = area
+            subset = "[(%s, %s)..(%s, %s)]" % (ax, ay, ax + aw - 1, ay + ah - 1)
+        else:
+            subset = ""
+        print("(%s, %s) <- %r%s" % (x, y, what, subset))
 
-    def fill(self, color, rect):
-        x, y, w, h = rect
+    def fill(self, color, rect=None):
+        x, y, w, h = rect or (0, 0, self.w, self.h)
         r, g, b = color
         print("(%s, %s)..(%s, %s) <- fill(#%02x%02x%02x)" % (
             x, y, x + w - 1, y + h - 1, r, g, b))
@@ -647,11 +673,28 @@ def doctest_HUDTitle():
     """
 
 
+def doctest_HUDMenu():
+    r"""Test for HUDMenu
+
+        >>> from pyspacewar.ui import HUDMenu
+        >>> font = FontStub()
+        >>> menu = HUDMenu(font, [
+        ...     'Say',
+        ...     'Hello',
+        ...     'etc.\t!',
+        ... ])
+        >>> menu.draw(PrintingSurfaceStub())
+        (306, 236) <- <Surface(188x128x8 SW)>[(0, 0)..(187, 127)]
+
+    """
+
+
 def setUp(test=None):
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
     pygame.draw = DrawStub()
+    pygame.Surface = SurfaceStub
 
 
 def test_suite():
