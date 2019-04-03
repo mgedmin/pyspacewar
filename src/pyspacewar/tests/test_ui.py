@@ -471,6 +471,26 @@ def doctest_HUDFormattedText():
     """
 
 
+def doctest_HUDInfoPanel():
+    """Tests for HUDInfoPanel
+
+        >>> from pyspacewar.ui import HUDInfoPanel
+        >>> font = FontStub()
+        >>> panel = HUDInfoPanel(font, ncols=10, content=[
+        ...     ['Lat', 42],
+        ...     ['Lon', lambda: -55],
+        ... ])
+
+        >>> panel.draw(PrintingSurfaceStub())
+        (10, 10) <- <Surface(100x32x8 SW)>
+        (11, 11) <- 'Lat'
+        (89, 11) <- '42'
+        (11, 27) <- 'Lon'
+        (79, 27) <- '-55'
+
+    """
+
+
 def setUp(test=None):
     import pygame
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
