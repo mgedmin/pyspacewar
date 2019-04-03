@@ -38,6 +38,18 @@ class PrintingSurfaceStub(SurfaceStub):
         x, y = pos
         print("(%s, %s) <- %r" % (x, y, what))
 
+    def fill(self, color, rect):
+        x, y, w, h = rect
+        r, g, b = color
+        print("(%s, %s)..(%s, %s) <- fill(#%02x%02x%02x)" % (
+            x, y, x + w - 1, y + h - 1, r, g, b))
+
+    def _rect(self, color, rect, line_width):
+        x, y, w, h = rect
+        r, g, b = color
+        print("(%s, %s)..(%s, %s) <- rect(#%02x%02x%02x, %s)" % (
+            x, y, x + w - 1, y + h - 1, r, g, b, line_width))
+
 
 class TextSurfaceStub(SurfaceStub):
 
@@ -63,6 +75,13 @@ class FontStub(object):
     def render(self, text, antialias, color, background=None):
         w, h = self.size(text)
         return TextSurfaceStub(w, h, text)
+
+
+class DrawStub(object):
+
+    def rect(self, surface, color, rect, line_width):
+        if isinstance(surface, PrintingSurfaceStub):
+            surface._rect(color, rect, line_width)
 
 
 def doctest_is_modifier_key():
@@ -491,11 +510,37 @@ def doctest_HUDInfoPanel():
     """
 
 
+def doctest_HUDShipInfo():
+    """Test for HUDShipInfo
+
+        >>> from pyspacewar.ui import HUDShipInfo
+        >>> from pyspacewar.world import Ship
+        >>> ship = Ship()
+        >>> font = FontStub()
+        >>> panel = HUDShipInfo(ship, font)
+
+        >>> panel.draw(PrintingSurfaceStub())
+        (10, 10) <- <Surface(120x76x8 SW)>
+        (11, 11) <- 'direction'
+        (119, 11) <- '0'
+        (11, 27) <- 'heading'
+        (119, 27) <- '0'
+        (11, 43) <- 'speed'
+        (99, 43) <- '0.0'
+        (11, 59) <- 'frags'
+        (119, 59) <- '0'
+        (11, 81)..(128, 84) <- rect(#ccffff, 1)
+        (12, 82)..(127, 83) <- fill(#ffffff)
+
+    """
+
+
 def setUp(test=None):
     import pygame
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
+    pygame.draw = DrawStub()
 
 
 def test_suite():
