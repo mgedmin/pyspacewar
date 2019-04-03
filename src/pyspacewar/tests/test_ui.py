@@ -26,6 +26,9 @@ class SurfaceStub(object):
     def get_rect(self):
         return Rect(0, 0, self.w, self.h)
 
+    def get_bitsize(self):
+        return 32
+
 
 class PrintingSurfaceStub(SurfaceStub):
 
@@ -49,6 +52,26 @@ class PrintingSurfaceStub(SurfaceStub):
         r, g, b = color
         print("(%s, %s)..(%s, %s) <- rect(#%02x%02x%02x, %s)" % (
             x, y, x + w - 1, y + h - 1, r, g, b, line_width))
+
+    def _line(self, color, pt1, pt2):
+        x1, y1 = pt1
+        x2, y2 = pt2
+        r, g, b = color
+        print("(%s, %s)..(%s, %s) <- line(#%02x%02x%02x)" % (
+            x1, y1, x2, y2, r, g, b))
+
+    def _aaline(self, color, pt1, pt2):
+        x1, y1 = pt1
+        x2, y2 = pt2
+        r, g, b = color
+        print("(%s, %s)..(%s, %s) <- aaline(#%02x%02x%02x)" % (
+            x1, y1, x2, y2, r, g, b))
+
+    def _circle(self, color, center, radius):
+        x, y = center
+        r, g, b = color
+        print("(%s, %s) <- circle(#%02x%02x%02x, %s)" % (
+            x, y, r, g, b, radius))
 
 
 class TextSurfaceStub(SurfaceStub):
@@ -82,6 +105,18 @@ class DrawStub(object):
     def rect(self, surface, color, rect, line_width):
         if isinstance(surface, PrintingSurfaceStub):
             surface._rect(color, rect, line_width)
+
+    def line(self, surface, color, pt1, pt2):
+        if isinstance(surface, PrintingSurfaceStub):
+            surface._line(color, pt1, pt2)
+
+    def aaline(self, surface, color, pt1, pt2):
+        if isinstance(surface, PrintingSurfaceStub):
+            surface._aaline(color, pt1, pt2)
+
+    def circle(self, surface, color, center, radius):
+        if isinstance(surface, PrintingSurfaceStub):
+            surface._circle(color, center, radius)
 
 
 def doctest_is_modifier_key():
@@ -531,6 +566,27 @@ def doctest_HUDShipInfo():
         (119, 59) <- '0'
         (11, 81)..(128, 84) <- rect(#ccffff, 1)
         (12, 82)..(127, 83) <- fill(#ffffff)
+
+    """
+
+
+def doctest_HUDCompass():
+    """Test for HUDCompass
+
+        >>> from pyspacewar.ui import HUDCompass, Viewport
+        >>> from pyspacewar.world import World, Ship, Planet, Missile, Vector
+        >>> world = World()
+        >>> world.add(Planet(Vector(20, -30), mass=20, radius=1))
+        >>> world.add(Planet(Vector(20, 30), mass=20, radius=30))
+        >>> world.add(Planet(Vector(-20, 30), mass=20, radius=50))
+        >>> world.add(Planet(Vector(2000, -300), mass=10))
+        >>> world.add(Missile(Vector(15, 0)))
+        >>> ship = Ship()
+        >>> viewport = Viewport(SurfaceStub())
+        >>> compass = HUDCompass(world, ship, viewport)
+
+        >>> compass.draw(PrintingSurfaceStub())
+        (10, 490) <- <Surface(100x100x8 SW)>
 
     """
 
