@@ -6,6 +6,7 @@ import doctest
 import sys
 import os
 
+import pygame
 from pygame.locals import Rect
 
 
@@ -98,6 +99,36 @@ class FontStub(object):
     def render(self, text, antialias, color, background=None):
         w, h = self.size(text)
         return TextSurfaceStub(w, h, text)
+
+
+class ImageStub(object):
+
+    w = 100
+    h = 80
+    colorkey = None
+    alpha = 255
+
+    def get_width(self):
+        return self.w
+
+    def get_height(self):
+        return self.h
+
+    def set_colorkey(self, color):
+        r, g, b = color
+        self.colorkey = (r, g, b)
+
+    def set_alpha(self, alpha):
+        self.alpha = alpha
+
+    def convert(self):
+        return ImageStub()
+
+    def __repr__(self):
+        args = []
+        if self.alpha != 255:
+            args.append('alpha=%s' % self.alpha)
+        return 'image(%s)' % ', '.join(args)
 
 
 class DrawStub(object):
@@ -591,8 +622,32 @@ def doctest_HUDCompass():
     """
 
 
+def doctest_HUDTitle():
+    """Test for HUDTitle
+
+        >>> from pyspacewar.ui import HUDTitle
+        >>> title = HUDTitle(ImageStub())
+        >>> title.draw(PrintingSurfaceStub())
+        (350, 135) <- image()
+
+    Each frame also drops the alpha level
+
+        >>> title.alpha
+        242.25
+        >>> title.draw(PrintingSurfaceStub())
+        (350, 135) <- image(alpha=242.25)
+        >>> title.alpha
+        230.1375
+
+    Eventually the image becomes invisible
+
+        >>> title.alpha = 0.95
+        >>> title.draw(PrintingSurfaceStub())
+
+    """
+
+
 def setUp(test=None):
-    import pygame
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
