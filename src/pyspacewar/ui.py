@@ -1079,9 +1079,11 @@ class HUDMenu(HUDElement):
 
     def draw(self, surface):
         """Draw the element."""
+        # NB: self.position() might call self.resize() so we must
+        # call it before _draw()
+        x, y = self.position(surface)
         if self.selected_item != self._drawn_with:
             self._draw()
-        x, y = self.position(surface)
         surface.blit(self.surface, (x, y),
                      (0, self.top, self.width, self.height))
 

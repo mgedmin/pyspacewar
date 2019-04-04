@@ -96,7 +96,7 @@ class SurfaceStub(object):
         self._ops.append(op)
 
     def __repr__(self):
-        return '<Surface(%dx%dx8 SW)>' % (self.w, self.h)
+        return '<Surface(%dx%d)>' % (self.w, self.h)
 
 
 class PrintingSurfaceStub(SurfaceStub):
@@ -547,7 +547,7 @@ def doctest_HUDFormattedText():
         (740, 540)
 
         >>> help_text.draw(PrintingSurfaceStub())
-        (30, 30) <- <Surface(740x540x8 SW)>
+        (30, 30) <- <Surface(740x540)>
           (0, 0)..(739, 539) <- fill(#010208)
           (0, 0) <- <colorkey>
           (0, 539) <- <colorkey>
@@ -601,7 +601,7 @@ def doctest_HUDInfoPanel():
         ... ])
 
         >>> panel.draw(PrintingSurfaceStub())
-        (10, 10) <- <Surface(100x32x8 SW)>
+        (10, 10) <- <Surface(100x32)>
           (0, 0)..(99, 31) <- fill(#080808)
           (0, 0) <- <colorkey>
           (0, 31) <- <colorkey>
@@ -625,7 +625,7 @@ def doctest_HUDShipInfo():
         >>> panel = HUDShipInfo(ship, font)
 
         >>> panel.draw(PrintingSurfaceStub())
-        (10, 10) <- <Surface(120x76x8 SW)>
+        (10, 10) <- <Surface(120x76)>
           (0, 0)..(119, 75) <- fill(#080808)
           (0, 0) <- <colorkey>
           (0, 75) <- <colorkey>
@@ -661,7 +661,7 @@ def doctest_HUDCompass():
         >>> compass = HUDCompass(world, ship, viewport)
 
         >>> compass.draw(PrintingSurfaceStub())
-        (10, 490) <- <Surface(100x100x8 SW)>
+        (10, 490) <- <Surface(100x100)>
           (0, 0)..(99, 99) <- fill(<colorkey>)
           (50, 50) <- circle(#001122, 50)
           (50, 50) <- #99aaff
@@ -711,7 +711,7 @@ def doctest_HUDMenu():
         ... ])
         >>> surface = PrintingSurfaceStub()
         >>> menu.draw(surface)
-        (306, 236) <- <Surface(188x128x8 SW)>[(0, 0)..(187, 127)]
+        (306, 236) <- <Surface(188x128)>[(0, 0)..(187, 127)]
           (0, 0)..(187, 127) <- fill(<colorkey>)
           (0, 0)..(187, 31) <- fill(#d23030)
           (79, 8) <- 'Say'
@@ -739,6 +739,37 @@ def doctest_HUDMenu():
         2
         >>> menu.find(surface, (310, 100))
         -1
+
+    """
+
+
+def doctest_HUDControlsMenu():
+    r"""Test for HUDControlsMenu
+
+        >>> from pyspacewar.ui import HUDControlsMenu
+        >>> font = FontStub()
+        >>> menu = HUDControlsMenu(font, [
+        ...     'Help\tF1',
+        ...     'Quit\tX',
+        ... ])
+        >>> surface = PrintingSurfaceStub()
+        >>> menu.draw(surface)
+        (28, 275) <- <Surface(744x50)>[(0, 0)..(743, 49)]
+          (0, 0)..(743, 49) <- fill(<colorkey>)
+          (0, 0)..(743, 23) <- fill(#d23030)
+          (8, 4) <- 'Help'
+          (716, 4) <- 'F1'
+          (0, 0) <- <colorkey>
+          (0, 23) <- <colorkey>
+          (743, 0) <- <colorkey>
+          (743, 23) <- <colorkey>
+          (0, 26)..(743, 49) <- fill(#781818)
+          (8, 30) <- 'Quit'
+          (726, 30) <- 'X'
+          (0, 26) <- <colorkey>
+          (0, 49) <- <colorkey>
+          (743, 26) <- <colorkey>
+          (743, 49) <- <colorkey>
 
     """
 
