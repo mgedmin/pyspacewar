@@ -820,8 +820,8 @@ class HUDCompass(HUDElement):
         else:
             draw_line = pygame.draw.line
         x = y = self.radius
-        self.surface.fill((1, 1, 1))
         self.surface.set_colorkey((1, 1, 1))
+        self.surface.fill((1, 1, 1))
         self.surface.set_alpha(self.alpha)
 
         pygame.draw.circle(self.surface, self.bgcolor, (x, y), self.radius)

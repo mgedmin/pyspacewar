@@ -16,6 +16,7 @@ class SurfaceStub(object):
         self.w, self.h = size
         self.alpha = 255
         self.colorkey = None
+        self._ops = []
 
     def get_width(self):
         return self.w
@@ -39,25 +40,15 @@ class SurfaceStub(object):
         r, g, b = color
         self.colorkey = (r, g, b)
 
-    def set_at(self, pos, color):
-        pass
-
-    def fill(self, color, rect=None):
-        pass
-
-    def blit(self, what, pos, area=None):
-        pass
-
-    def __repr__(self):
-        return '<Surface(%dx%dx8 SW)>' % (self.w, self.h)
-
-
-class PrintingSurfaceStub(SurfaceStub):
+    def _fmt_color(self, color):
+        if color == self.colorkey:
+            return '<colorkey>'
+        r, g, b = color
+        return "#%02x%02x%02x" % (r, g, b)
 
     def set_at(self, pos, color):
         x, y = pos
-        r, g, b = color
-        print("(%s, %s) <- #%02x%02x%02x" % (x, y, r, g, b))
+        self._record("(%s, %s) <- %s" % (x, y, self._fmt_color(color)))
 
     def blit(self, what, pos, area=None):
         x, y = pos
@@ -66,46 +57,58 @@ class PrintingSurfaceStub(SurfaceStub):
             subset = "[(%s, %s)..(%s, %s)]" % (ax, ay, ax + aw - 1, ay + ah - 1)
         else:
             subset = ""
-        print("(%s, %s) <- %r%s" % (x, y, what, subset))
+        self._record("(%s, %s) <- %r%s" % (x, y, what, subset))
+        if isinstance(what, SurfaceStub):
+            for op in what._ops:
+                self._record("  %s" % op)
 
     def fill(self, color, rect=None):
         x, y, w, h = rect or (0, 0, self.w, self.h)
-        r, g, b = color
-        print("(%s, %s)..(%s, %s) <- fill(#%02x%02x%02x)" % (
-            x, y, x + w - 1, y + h - 1, r, g, b))
+        self._record("(%s, %s)..(%s, %s) <- fill(%s)" % (
+            x, y, x + w - 1, y + h - 1, self._fmt_color(color)))
 
     def _rect(self, color, rect, line_width):
         x, y, w, h = rect
-        r, g, b = color
-        print("(%s, %s)..(%s, %s) <- rect(#%02x%02x%02x, %s)" % (
-            x, y, x + w - 1, y + h - 1, r, g, b, line_width))
+        self._record("(%s, %s)..(%s, %s) <- rect(%s, %s)" % (
+            x, y, x + w - 1, y + h - 1, self._fmt_color(color), line_width))
 
     def _line(self, color, pt1, pt2):
         x1, y1 = pt1
         x2, y2 = pt2
-        r, g, b = color
-        print("(%s, %s)..(%s, %s) <- line(#%02x%02x%02x)" % (
-            x1, y1, x2, y2, r, g, b))
+        self._record("(%s, %s)..(%s, %s) <- line(%s)" % (
+            x1, y1, x2, y2, self._fmt_color(color)))
 
     def _aaline(self, color, pt1, pt2):
         x1, y1 = pt1
         x2, y2 = pt2
-        r, g, b = color
-        print("(%s, %s)..(%s, %s) <- aaline(#%02x%02x%02x)" % (
-            x1, y1, x2, y2, r, g, b))
+        self._record("(%s, %s)..(%s, %s) <- aaline(%s)" % (
+            x1, y1, x2, y2, self._fmt_color(color)))
 
-    def _circle(self, color, center, radius):
+    def _circle(self, color, center, radius, width=0):
         x, y = center
-        r, g, b = color
-        print("(%s, %s) <- circle(#%02x%02x%02x, %s)" % (
-            x, y, r, g, b, radius))
+        extra = []
+        if width:
+            extra.append("width=%s" % width)
+        self._record("(%s, %s) <- circle(%s, %s%s)" % (
+            x, y, self._fmt_color(color), radius, ", ".join(extra)))
+
+    def _record(self, op):
+        self._ops.append(op)
+
+    def __repr__(self):
+        return '<Surface(%dx%dx8 SW)>' % (self.w, self.h)
+
+
+class PrintingSurfaceStub(SurfaceStub):
+
+    def _record(self, op):
+        print(op)
 
 
 class TextSurfaceStub(SurfaceStub):
 
-    def __init__(self, w, h, text="<text>"):
-        self.w = w
-        self.h = h
+    def __init__(self, size, text="<text>"):
+        super(TextSurfaceStub, self).__init__(size)
         self.text = text
 
     def __repr__(self):
@@ -124,7 +127,7 @@ class FontStub(object):
 
     def render(self, text, antialias, color, background=None):
         w, h = self.size(text)
-        return TextSurfaceStub(w, h, text)
+        return TextSurfaceStub((w, h), text)
 
 
 class ImageStub(object):
@@ -160,20 +163,20 @@ class ImageStub(object):
 class DrawStub(object):
 
     def rect(self, surface, color, rect, line_width):
-        if isinstance(surface, PrintingSurfaceStub):
+        if isinstance(surface, SurfaceStub):
             surface._rect(color, rect, line_width)
 
     def line(self, surface, color, pt1, pt2):
-        if isinstance(surface, PrintingSurfaceStub):
+        if isinstance(surface, SurfaceStub):
             surface._line(color, pt1, pt2)
 
     def aaline(self, surface, color, pt1, pt2):
-        if isinstance(surface, PrintingSurfaceStub):
+        if isinstance(surface, SurfaceStub):
             surface._aaline(color, pt1, pt2)
 
-    def circle(self, surface, color, center, radius):
-        if isinstance(surface, PrintingSurfaceStub):
-            surface._circle(color, center, radius)
+    def circle(self, surface, color, center, radius, width=0):
+        if isinstance(surface, SurfaceStub):
+            surface._circle(color, center, radius, width)
 
 
 def doctest_is_modifier_key():
@@ -545,6 +548,11 @@ def doctest_HUDFormattedText():
 
         >>> help_text.draw(PrintingSurfaceStub())
         (30, 30) <- <Surface(740x540x8 SW)>
+          (0, 0)..(739, 539) <- fill(#010208)
+          (0, 0) <- <colorkey>
+          (0, 539) <- <colorkey>
+          (739, 0) <- <colorkey>
+          (739, 539) <- <colorkey>
         (70, 70) <- 'Hello'
         (70, 102) <- 'This'
         (120, 102) <- 'is'
@@ -594,6 +602,11 @@ def doctest_HUDInfoPanel():
 
         >>> panel.draw(PrintingSurfaceStub())
         (10, 10) <- <Surface(100x32x8 SW)>
+          (0, 0)..(99, 31) <- fill(#080808)
+          (0, 0) <- <colorkey>
+          (0, 31) <- <colorkey>
+          (99, 0) <- <colorkey>
+          (99, 31) <- <colorkey>
         (11, 11) <- 'Lat'
         (89, 11) <- '42'
         (11, 27) <- 'Lon'
@@ -613,6 +626,11 @@ def doctest_HUDShipInfo():
 
         >>> panel.draw(PrintingSurfaceStub())
         (10, 10) <- <Surface(120x76x8 SW)>
+          (0, 0)..(119, 75) <- fill(#080808)
+          (0, 0) <- <colorkey>
+          (0, 75) <- <colorkey>
+          (119, 0) <- <colorkey>
+          (119, 75) <- <colorkey>
         (11, 11) <- 'direction'
         (119, 11) <- '0'
         (11, 27) <- 'heading'
@@ -644,6 +662,14 @@ def doctest_HUDCompass():
 
         >>> compass.draw(PrintingSurfaceStub())
         (10, 490) <- <Surface(100x100x8 SW)>
+          (0, 0)..(99, 99) <- fill(<colorkey>)
+          (50, 50) <- circle(#001122, 50)
+          (50, 50) <- #99aaff
+          (51, 51) <- #aa7766
+          (51, 49)..(52, 50) <- fill(#aa7766)
+          (49, 49) <- circle(#aa7766, 2)
+          (50, 50)..(95, 50) <- aaline(#445566)
+          (50, 50)..(50, 50) <- aaline(#99aaff)
 
     """
 
@@ -686,6 +712,26 @@ def doctest_HUDMenu():
         >>> surface = PrintingSurfaceStub()
         >>> menu.draw(surface)
         (306, 236) <- <Surface(188x128x8 SW)>[(0, 0)..(187, 127)]
+          (0, 0)..(187, 127) <- fill(<colorkey>)
+          (0, 0)..(187, 31) <- fill(#d23030)
+          (79, 8) <- 'Say'
+          (0, 0) <- <colorkey>
+          (0, 31) <- <colorkey>
+          (187, 0) <- <colorkey>
+          (187, 31) <- <colorkey>
+          (0, 48)..(187, 79) <- fill(#781818)
+          (69, 56) <- 'Hello'
+          (0, 48) <- <colorkey>
+          (0, 79) <- <colorkey>
+          (187, 48) <- <colorkey>
+          (187, 79) <- <colorkey>
+          (0, 96)..(187, 127) <- fill(#781818)
+          (32, 104) <- 'etc.'
+          (146, 104) <- '!'
+          (0, 96) <- <colorkey>
+          (0, 127) <- <colorkey>
+          (187, 96) <- <colorkey>
+          (187, 127) <- <colorkey>
 
         >>> menu.find(surface, (310, 244))
         0
