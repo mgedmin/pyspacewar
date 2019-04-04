@@ -140,6 +140,10 @@ class ImageStub(SurfaceStub):
     def __init__(self, size=(100, 80)):
         super(ImageStub, self).__init__(size)
 
+    @classmethod
+    def load(cls, filename):
+        return ImageStub()
+
     def convert(self):
         return ImageStub()
 
@@ -856,8 +860,11 @@ def doctest_HUDMessage():
 
 
 class UIStub(object):
+
     menu_font = FontStub()
+    hud_font = FontStub()
     ui_mode = None
+    version_text = 'version 0.42.frog-knows'
 
     def __init__(self):
         from pyspacewar.ui import Viewport
@@ -867,6 +874,9 @@ class UIStub(object):
 
     def pause(self):
         print('Paused!')
+
+    def watch_demo(self):
+        print('Switch to demo mode!')
 
     def toggle_fullscreen(self):
         print('Toggle fullscreen!')
@@ -939,7 +949,6 @@ def doctest_UIMode():
 
     This is an abstract base class that doesn't do much
 
-        >>> mode.init()
         >>> mode.enter(prev_mode=None)
         >>> mode.draw(PrintingSurfaceStub())
 
@@ -1079,7 +1088,6 @@ def doctest_DemoMode():
         >>> from pyspacewar.ui import DemoMode
         >>> ui = UIStub()
         >>> mode = DemoMode(ui)
-        >>> mode.init()
 
         >>> mode.enter(prev_mode=GameModeStub())
         Play demo music!
@@ -1123,12 +1131,43 @@ def doctest_DemoMode():
     """
 
 
+def doctest_TitleMode():
+    """Test for TitleMode
+
+        >>> from pyspacewar.ui import TitleMode, HUDTitle, FadingImage
+        >>> ui = UIStub()
+        >>> mode = TitleMode(ui)
+        >>> mode.title = HUDTitle(ImageStub())
+        >>> mode.title.image = FadingImage(ImageStub())
+
+    Title mode is like demo mode, except it also shows a title image
+
+        >>> ui.ui_mode = mode
+        >>> mode.enter(prev_mode=None)
+        Play demo music!
+
+        >>> mode.draw(PrintingSurfaceStub())
+        (285, 574) <- 'version 0.42.frog-knows'
+        (350, 135) <- <Image(100x80)>
+
+    When enough time passes that the title disappears, we switch to the regular
+    demo mode
+
+        >>> mode.title.alpha = 0.95
+        >>> mode.draw(PrintingSurfaceStub())
+        (285, 574) <- 'version 0.42.frog-knows'
+        Switch to demo mode!
+
+    """
+
+
 @pytest.fixture(scope='module', autouse=True)
 def setUp(test=None):
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
     pygame.draw = DrawStub()
+    pygame.image.load = ImageStub.load
     pygame.Surface = SurfaceStub
     pygame.surfarray.array_alpha = array_alpha_stub
     pygame.surfarray.pixels_alpha = pixels_alpha_stub
