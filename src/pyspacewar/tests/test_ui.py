@@ -9,7 +9,7 @@ import os
 import pytest
 import pygame
 from pygame.locals import (
-    Rect, KEYDOWN, MOUSEBUTTONDOWN, MOUSEBUTTONUP,
+    Rect, KEYDOWN, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION,
 )
 
 
@@ -860,7 +860,15 @@ class UIStub(object):
     ui_mode = None
 
     def __init__(self):
+        from pyspacewar.ui import Viewport
         self.rev_controls = {}
+        self.viewport = Viewport(SurfaceStub())
+
+    def zoom_in(self):
+        self.viewport.scale *= 1.25
+
+    def zoom_out(self):
+        self.viewport.scale /= 1.25
 
 
 class GameModeStub(object):
@@ -877,22 +885,24 @@ class KeyEventStub(object):
     def __init__(self, key, unicode=u"", mod=0, type=KEYDOWN):
         self.type = type
         self.key = key
-        self.unicode = unicode
         self.mod = mod
+        if type == KEYDOWN:
+            self.unicode = unicode
 
 
 class MouseEventStub(object):
 
     def __init__(self, button=0, pos=(400, 300), rel=(0, 0),
-                 held_buttons=(), type=MOUSEBUTTONDOWN):
+                 buttons=(), type=MOUSEBUTTONDOWN):
         self.type = type
-        self.button = button
-        self.buttons = dict.fromkeys(range(6), False)
-        self.buttons[button] = True
-        for btn in held_buttons:
-            self.buttons[btn] = True
         self.pos = pos
-        self.rel = rel
+        if type == MOUSEMOTION:
+            self.buttons = dict.fromkeys(range(6), False)
+            for btn in buttons:
+                self.buttons[btn] = True
+            self.rel = rel
+        else:
+            self.button = button
 
 
 def doctest_UIMode():
@@ -907,6 +917,29 @@ def doctest_UIMode():
         >>> mode.init()
         >>> mode.enter(prev_mode=None)
         >>> mode.draw(PrintingSurfaceStub())
+
+    There's some default event handling, e.g. you can drag the screen
+    while holding down the right or middle mouse button to pan around
+
+        >>> event = MouseEventStub(buttons=[1], rel=(7, 2), type=MOUSEMOTION)
+        >>> mode.handle_mouse_motion(event)
+        >>> ui.viewport.origin
+        Vector(7.0, -2.0)
+
+    and you can zoom with the mouse wheel
+
+        >>> event = MouseEventStub(button=4)
+        >>> mode.handle_mouse_press(event)
+        >>> ui.viewport.scale
+        1.25
+
+        >>> event = MouseEventStub(button=5)
+        >>> mode.handle_mouse_press(event)
+        >>> ui.viewport.scale
+        1.0
+
+    And that's pretty much it.
+
         >>> mode.leave()
 
     """
