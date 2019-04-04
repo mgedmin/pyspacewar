@@ -1058,7 +1058,7 @@ class HUDMenu(HUDElement):
                 # align left and right
                 parts = item.split('\t', 1)
                 img = self.font.render(parts[0], True, fg_color)
-                margin = (self.item_height - img.get_height())/2
+                margin = (self.item_height - img.get_height()) // 2
                 self.surface.blit(img, (x + self.xpadding, y + margin))
                 img = self.font.render(parts[1], True, fg_color)
                 self.surface.blit(
@@ -1068,9 +1068,9 @@ class HUDMenu(HUDElement):
             else:
                 # center
                 img = self.font.render(item, True, fg_color)
-                margin = (self.item_height - img.get_height())/2
+                margin = (self.item_height - img.get_height()) // 2
                 self.surface.blit(img,
-                                  (x + (self.width - img.get_width())/2,
+                                  (x + (self.width - img.get_width()) // 2,
                                    y + margin))
             for ax in (0, self.width-1):
                 for ay in (0, self.item_height-1):
