@@ -14,7 +14,7 @@ before_install:
 install:
     - pip install coverage coveralls -e .
 script:
-    - coverage run test.py
+    - coverage run -m pytest src
 after_success:
     - coveralls
 notifications:

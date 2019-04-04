@@ -16,10 +16,11 @@ init:
 install:
   - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - python --version
+  - pip install pytest
   - pip install -e .
   - 'python -c "import pygame; print(pygame.__version__)"'
 
 build: off
 
 test_script:
-  - python test.py
+  - pytest src
