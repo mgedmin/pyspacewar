@@ -861,8 +861,24 @@ class UIStub(object):
 
     def __init__(self):
         from pyspacewar.ui import Viewport
+        self.controls = {}
         self.rev_controls = {}
         self.viewport = Viewport(SurfaceStub())
+
+    def pause(self):
+        print('Paused!')
+
+    def toggle_fullscreen(self):
+        print('Toggle fullscreen!')
+
+    def toggle_missile_orbits(self):
+        print('Toggle missile orbits!')
+
+    def play_music(self, music):
+        print('Play %s music!' % music)
+
+    def main_menu(self):
+        print('Enter main menu!')
 
     def zoom_in(self):
         self.viewport.scale *= 1.25
@@ -890,14 +906,23 @@ class KeyEventStub(object):
             self.unicode = unicode
 
 
+class PressedKeysStub(dict):
+
+    def __init__(self, *pressed):
+        self.pressed = pressed
+
+    def __missing__(self, key):
+        return key in self.pressed
+
+
 class MouseEventStub(object):
 
-    def __init__(self, button=0, pos=(400, 300), rel=(0, 0),
+    def __init__(self, button=1, pos=(400, 300), rel=(0, 0),
                  buttons=(), type=MOUSEBUTTONDOWN):
         self.type = type
         self.pos = pos
         if type == MOUSEMOTION:
-            self.buttons = dict.fromkeys(range(6), False)
+            self.buttons = [False] * 3
             for btn in buttons:
                 self.buttons[btn] = True
             self.rel = rel
@@ -1044,6 +1069,56 @@ def doctest_PauseMode():
         >>> ui.ui_mode = None
         >>> mode.handle_key_press(KeyEventStub(K_LSHIFT))
         >>> ui.ui_mode
+
+    """
+
+
+def doctest_DemoMode():
+    """Test for DemoMode
+
+        >>> from pyspacewar.ui import DemoMode
+        >>> ui = UIStub()
+        >>> mode = DemoMode(ui)
+        >>> mode.init()
+
+        >>> mode.enter(prev_mode=GameModeStub())
+        Play demo music!
+
+    You leave demo mode by pressing any non-modifier key or the left mouse
+    button
+
+        >>> from pygame.locals import K_LSHIFT, K_SPACE
+
+        >>> mode.handle_key_press(KeyEventStub(K_LSHIFT))
+
+        >>> mode.handle_key_press(KeyEventStub(K_SPACE))
+        Enter main menu!
+
+        >>> mode.handle_mouse_release(MouseEventStub(button=1))
+        Enter main menu!
+
+        >>> mode.handle_mouse_release(MouseEventStub(button=2))
+
+    You can also pause, toggle fullscreen, toggle missile orbits, or zoom
+
+        >>> from pygame.locals import K_PAUSE, K_o, K_f, K_EQUALS, K_MINUS
+
+        >>> mode.handle_key_press(KeyEventStub(K_PAUSE))
+        Paused!
+
+        >>> mode.handle_key_press(KeyEventStub(K_o))
+        Toggle missile orbits!
+
+        >>> mode.handle_key_press(KeyEventStub(K_f))
+        Toggle fullscreen!
+
+        >>> mode.handle_held_keys(PressedKeysStub(K_EQUALS))
+        >>> ui.viewport.scale
+        1.25
+
+        >>> mode.handle_held_keys(PressedKeysStub(K_MINUS))
+        >>> ui.viewport.scale
+        1.0
 
     """
 
