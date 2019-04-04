@@ -8,7 +8,9 @@ import os
 
 import pytest
 import pygame
-from pygame.locals import Rect
+from pygame.locals import (
+    Rect, KEYDOWN, MOUSEBUTTONDOWN, MOUSEBUTTONUP,
+)
 
 
 class SurfaceStub(object):
@@ -849,6 +851,166 @@ def doctest_HUDMessage():
           (261, 1) <- <colorkey>
           (0, 46) <- <colorkey>
           (261, 46) <- <colorkey>
+
+    """
+
+
+class UIStub(object):
+    menu_font = FontStub()
+    ui_mode = None
+
+    def __init__(self):
+        self.rev_controls = {}
+
+
+class GameModeStub(object):
+
+    def draw(self, surface):
+        surface._record('<draw the game>')
+
+    def __repr__(self):
+        return '<GameModeStub>'
+
+
+class KeyEventStub(object):
+
+    def __init__(self, key, unicode=u"", mod=0, type=KEYDOWN):
+        self.type = type
+        self.key = key
+        self.unicode = unicode
+        self.mod = mod
+
+
+class MouseEventStub(object):
+
+    def __init__(self, button=0, pos=(400, 300), rel=(0, 0),
+                 held_buttons=(), type=MOUSEBUTTONDOWN):
+        self.type = type
+        self.button = button
+        self.buttons = dict.fromkeys(range(6), False)
+        self.buttons[button] = True
+        for btn in held_buttons:
+            self.buttons[btn] = True
+        self.pos = pos
+        self.rel = rel
+
+
+def doctest_UIMode():
+    """Test for UIMode
+
+        >>> from pyspacewar.ui import UIMode
+        >>> ui = UIStub()
+        >>> mode = UIMode(ui)
+
+    This is an abstract base class that doesn't do much
+
+        >>> mode.init()
+        >>> mode.enter(prev_mode=None)
+        >>> mode.draw(PrintingSurfaceStub())
+        >>> mode.leave()
+
+    """
+
+
+def doctest_PauseMode():
+    """Test for PauseMode
+
+        >>> from pyspacewar.ui import PauseMode
+        >>> ui = UIStub()
+        >>> mode = PauseMode(ui)
+
+    The world is frozen during pause mode
+
+        >>> mode.paused
+        True
+
+    There's some fancy animation that starts one second after you
+    enter the mode
+
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub())
+        <draw the game>
+
+    Instead of advancing the system clock by 1 second let's push
+    the mode enter time backwards by 1 second
+
+        >>> mode.pause_entered -= 1.0
+        >>> mode.draw(PrintingSurfaceStub())
+        <draw the game>
+        (354, 276) <- <Surface(92x48)>[alpha=0]
+          (0, 0)..(91, 47) <- fill(#18780e)
+          (16, 16) <- 'Paused'
+          (0, 0) <- <colorkey>
+          (91, 0) <- <colorkey>
+          (0, 47) <- <colorkey>
+          (91, 47) <- <colorkey>
+          (1, 0) <- <colorkey>
+          (90, 0) <- <colorkey>
+          (1, 47) <- <colorkey>
+          (90, 47) <- <colorkey>
+          (0, 1) <- <colorkey>
+          (91, 1) <- <colorkey>
+          (0, 46) <- <colorkey>
+          (91, 46) <- <colorkey>
+
+    The message fades in slowly over 5 seconds
+
+        >>> mode.pause_entered -= 2.5
+        >>> mode.draw(PrintingSurfaceStub())
+        <draw the game>
+        (354, 276) <- <Surface(92x48)>[alpha=114]
+          (0, 0)..(91, 47) <- fill(#18780e)
+          (16, 16) <- 'Paused'
+          (0, 0) <- <colorkey>
+          (91, 0) <- <colorkey>
+          (0, 47) <- <colorkey>
+          (91, 47) <- <colorkey>
+          (1, 0) <- <colorkey>
+          (90, 0) <- <colorkey>
+          (1, 47) <- <colorkey>
+          (90, 47) <- <colorkey>
+          (0, 1) <- <colorkey>
+          (91, 1) <- <colorkey>
+          (0, 46) <- <colorkey>
+          (91, 46) <- <colorkey>
+
+        >>> mode.pause_entered -= 3.0
+        >>> mode.draw(PrintingSurfaceStub())
+        <draw the game>
+        (354, 276) <- <Surface(92x48)>[alpha=229]
+          (0, 0)..(91, 47) <- fill(#18780e)
+          (16, 16) <- 'Paused'
+          (0, 0) <- <colorkey>
+          (91, 0) <- <colorkey>
+          (0, 47) <- <colorkey>
+          (91, 47) <- <colorkey>
+          (1, 0) <- <colorkey>
+          (90, 0) <- <colorkey>
+          (1, 47) <- <colorkey>
+          (90, 47) <- <colorkey>
+          (0, 1) <- <colorkey>
+          (91, 1) <- <colorkey>
+          (0, 46) <- <colorkey>
+          (91, 46) <- <colorkey>
+
+    Pause mode ends when the user presses any non-modifier key
+    or a mouse button
+
+        >>> from pygame.locals import K_SPACE, K_LSHIFT
+        >>> mode.handle_key_press(KeyEventStub(K_SPACE))
+        >>> ui.ui_mode
+        <GameModeStub>
+
+        >>> ui.ui_mode = None
+        >>> mode.handle_mouse_release(MouseEventStub(type=MOUSEBUTTONUP))
+        >>> ui.ui_mode
+        <GameModeStub>
+
+    Modifier keypresses are ignored
+
+        >>> ui.ui_mode = None
+        >>> mode.handle_key_press(KeyEventStub(K_LSHIFT))
+        >>> ui.ui_mode
 
     """
 
