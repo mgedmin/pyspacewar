@@ -683,8 +683,16 @@ def doctest_HUDMenu():
         ...     'Hello',
         ...     'etc.\t!',
         ... ])
-        >>> menu.draw(PrintingSurfaceStub())
+        >>> surface = PrintingSurfaceStub()
+        >>> menu.draw(surface)
         (306, 236) <- <Surface(188x128x8 SW)>[(0, 0)..(187, 127)]
+
+        >>> menu.find(surface, (310, 244))
+        0
+        >>> menu.find(surface, (310, 356))
+        2
+        >>> menu.find(surface, (310, 100))
+        -1
 
     """
 
