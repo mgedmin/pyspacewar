@@ -807,6 +807,26 @@ def doctest_HUDControlsMenu():
     """
 
 
+def doctest_HUDInput():
+    """Test for HUDInput
+
+        >>> from pyspacewar.ui import HUDInput
+        >>> font = FontStub()
+        >>> input = HUDInput(font, "How much?", text='0')
+
+        >>> input.draw(PrintingSurfaceStub())
+        (20, 448) <- <Surface(760x32)>
+          (0, 0)..(759, 31) <- fill(#010208)
+          (8, 8) <- 'How much?'
+          (98, 8) <- '0'
+          (0, 0) <- <colorkey>
+          (0, 31) <- <colorkey>
+          (759, 0) <- <colorkey>
+          (759, 31) <- <colorkey>
+
+    """
+
+
 @pytest.fixture(scope='module', autouse=True)
 def setUp(test=None):
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
