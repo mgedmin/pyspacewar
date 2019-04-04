@@ -58,6 +58,8 @@ class SurfaceStub(object):
             subset = "[(%s, %s)..(%s, %s)]" % (ax, ay, ax + aw - 1, ay + ah - 1)
         else:
             subset = ""
+        if what.alpha != 255:
+            subset += "[alpha=%s]" % what.alpha
         self._record("(%s, %s) <- %r%s" % (x, y, what, subset))
         if isinstance(what, SurfaceStub):
             for op in what._ops:
@@ -140,10 +142,7 @@ class ImageStub(SurfaceStub):
         return ImageStub()
 
     def __repr__(self):
-        args = []
-        if self.alpha != 255:
-            args.append('alpha=%s' % self.alpha)
-        return 'image(%s)' % ', '.join(args)
+        return '<Image(%dx%d)>' % (self.w, self.h)
 
 
 class DrawStub(object):
@@ -547,7 +546,7 @@ def doctest_HUDFormattedText():
         (740, 540)
 
         >>> help_text.draw(PrintingSurfaceStub())
-        (30, 30) <- <Surface(740x540)>
+        (30, 30) <- <Surface(740x540)>[alpha=242]
           (0, 0)..(739, 539) <- fill(#010208)
           (0, 0) <- <colorkey>
           (0, 539) <- <colorkey>
@@ -601,7 +600,7 @@ def doctest_HUDInfoPanel():
         ... ])
 
         >>> panel.draw(PrintingSurfaceStub())
-        (10, 10) <- <Surface(100x32)>
+        (10, 10) <- <Surface(100x32)>[alpha=204.0]
           (0, 0)..(99, 31) <- fill(#080808)
           (0, 0) <- <colorkey>
           (0, 31) <- <colorkey>
@@ -625,7 +624,7 @@ def doctest_HUDShipInfo():
         >>> panel = HUDShipInfo(ship, font)
 
         >>> panel.draw(PrintingSurfaceStub())
-        (10, 10) <- <Surface(120x76)>
+        (10, 10) <- <Surface(120x76)>[alpha=204.0]
           (0, 0)..(119, 75) <- fill(#080808)
           (0, 0) <- <colorkey>
           (0, 75) <- <colorkey>
@@ -661,7 +660,7 @@ def doctest_HUDCompass():
         >>> compass = HUDCompass(world, ship, viewport)
 
         >>> compass.draw(PrintingSurfaceStub())
-        (10, 490) <- <Surface(100x100)>
+        (10, 490) <- <Surface(100x100)>[alpha=229]
           (0, 0)..(99, 99) <- fill(<colorkey>)
           (50, 50) <- circle(#001122, 50)
           (50, 50) <- #99aaff
@@ -681,14 +680,14 @@ def doctest_HUDTitle_FadingImage():
         >>> title = HUDTitle(ImageStub())
         >>> title.image = FadingImage(ImageStub())
         >>> title.draw(PrintingSurfaceStub())
-        (350, 135) <- image()
+        (350, 135) <- <Image(100x80)>
 
     Each frame also drops the alpha level
 
         >>> title.alpha
         242.25
         >>> title.draw(PrintingSurfaceStub())
-        (350, 135) <- image(alpha=242.25)
+        (350, 135) <- <Image(100x80)>[alpha=242.25]
         >>> title.alpha
         230.1375
 
@@ -711,7 +710,7 @@ def doctest_HUDTitle_NumPyFadingImage():
         >>> title = HUDTitle(ImageStub())
         >>> title.image = NumPyFadingImage(ImageStub())
         >>> title.draw(PrintingSurfaceStub())
-        (350, 135) <- image()
+        (350, 135) <- <Image(100x80)>
 
     Each frame also drops the alpha level, which is reflected directly
     in the image alpha channel via numpy array operations that we cannot
@@ -720,7 +719,7 @@ def doctest_HUDTitle_NumPyFadingImage():
         >>> title.alpha
         242.25
         >>> title.draw(PrintingSurfaceStub())
-        (350, 135) <- image()
+        (350, 135) <- <Image(100x80)>
         >>> title.alpha
         230.1375
 
@@ -744,7 +743,7 @@ def doctest_HUDMenu():
         ... ])
         >>> surface = PrintingSurfaceStub()
         >>> menu.draw(surface)
-        (306, 236) <- <Surface(188x128)>[(0, 0)..(187, 127)]
+        (306, 236) <- <Surface(188x128)>[(0, 0)..(187, 127)][alpha=229.5]
           (0, 0)..(187, 127) <- fill(<colorkey>)
           (0, 0)..(187, 31) <- fill(#d23030)
           (79, 8) <- 'Say'
@@ -787,7 +786,7 @@ def doctest_HUDControlsMenu():
         ... ])
         >>> surface = PrintingSurfaceStub()
         >>> menu.draw(surface)
-        (28, 275) <- <Surface(744x50)>[(0, 0)..(743, 49)]
+        (28, 275) <- <Surface(744x50)>[(0, 0)..(743, 49)][alpha=229.5]
           (0, 0)..(743, 49) <- fill(<colorkey>)
           (0, 0)..(743, 23) <- fill(#d23030)
           (8, 4) <- 'Help'
@@ -815,7 +814,7 @@ def doctest_HUDInput():
         >>> input = HUDInput(font, "How much?", text='0')
 
         >>> input.draw(PrintingSurfaceStub())
-        (20, 448) <- <Surface(760x32)>
+        (20, 448) <- <Surface(760x32)>[alpha=204]
           (0, 0)..(759, 31) <- fill(#010208)
           (8, 8) <- 'How much?'
           (98, 8) <- '0'
@@ -835,7 +834,7 @@ def doctest_HUDMessage():
         >>> message = HUDMessage(font, "Press f to pay respects")
 
         >>> message.draw(PrintingSurfaceStub())
-        (269, 276) <- <Surface(262x48)>
+        (269, 276) <- <Surface(262x48)>[alpha=229]
           (0, 0)..(261, 47) <- fill(#18780e)
           (16, 16) <- 'Press f to pay respects'
           (0, 0) <- <colorkey>
