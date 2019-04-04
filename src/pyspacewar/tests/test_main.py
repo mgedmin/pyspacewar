@@ -5,6 +5,8 @@ import doctest
 import os
 import sys
 
+import pytest
+
 
 class FakeGameUI(object):
 
@@ -45,6 +47,7 @@ def doctest_main():
     """
 
 
+@pytest.fixture(scope='module', autouse=True)
 def setUp(test=None):
     from pyspacewar import main
     main.GameUI = FakeGameUI

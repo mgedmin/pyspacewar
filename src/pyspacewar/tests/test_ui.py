@@ -6,6 +6,7 @@ import doctest
 import sys
 import os
 
+import pytest
 import pygame
 from pygame.locals import Rect
 
@@ -130,25 +131,10 @@ class FontStub(object):
         return TextSurfaceStub((w, h), text)
 
 
-class ImageStub(object):
+class ImageStub(SurfaceStub):
 
-    w = 100
-    h = 80
-    colorkey = None
-    alpha = 255
-
-    def get_width(self):
-        return self.w
-
-    def get_height(self):
-        return self.h
-
-    def set_colorkey(self, color):
-        r, g, b = color
-        self.colorkey = (r, g, b)
-
-    def set_alpha(self, alpha):
-        self.alpha = alpha
+    def __init__(self, size=(100, 80)):
+        super(ImageStub, self).__init__(size)
 
     def convert(self):
         return ImageStub()
@@ -177,6 +163,20 @@ class DrawStub(object):
     def circle(self, surface, color, center, radius, width=0):
         if isinstance(surface, SurfaceStub):
             surface._circle(color, center, radius, width)
+
+
+def array_alpha_stub(surface):
+    import numpy
+    size = surface.get_size()
+    array = numpy.empty(size, numpy.uint8)
+    return array
+
+
+def pixels_alpha_stub(surface):
+    import numpy
+    size = surface.get_size()
+    array = numpy.empty(size, numpy.uint8)
+    return array
 
 
 def doctest_is_modifier_key():
@@ -674,11 +674,12 @@ def doctest_HUDCompass():
     """
 
 
-def doctest_HUDTitle():
+def doctest_HUDTitle_FadingImage():
     """Test for HUDTitle
 
-        >>> from pyspacewar.ui import HUDTitle
+        >>> from pyspacewar.ui import HUDTitle, FadingImage
         >>> title = HUDTitle(ImageStub())
+        >>> title.image = FadingImage(ImageStub())
         >>> title.draw(PrintingSurfaceStub())
         (350, 135) <- image()
 
@@ -688,6 +689,38 @@ def doctest_HUDTitle():
         242.25
         >>> title.draw(PrintingSurfaceStub())
         (350, 135) <- image(alpha=242.25)
+        >>> title.alpha
+        230.1375
+
+    Eventually the image becomes invisible
+
+        >>> title.alpha = 0.95
+        >>> title.draw(PrintingSurfaceStub())
+
+    """
+
+
+def doctest_HUDTitle_NumPyFadingImage():
+    """Test for HUDTitle
+
+        >>> try:
+        ...     import numpy  # noqa: F401
+        ... except ImportError:
+        ...     pytest.skip('needs numpy')
+        >>> from pyspacewar.ui import HUDTitle, NumPyFadingImage
+        >>> title = HUDTitle(ImageStub())
+        >>> title.image = NumPyFadingImage(ImageStub())
+        >>> title.draw(PrintingSurfaceStub())
+        (350, 135) <- image()
+
+    Each frame also drops the alpha level, which is reflected directly
+    in the image alpha channel via numpy array operations that we cannot
+    easily see in this doctest
+
+        >>> title.alpha
+        242.25
+        >>> title.draw(PrintingSurfaceStub())
+        (350, 135) <- image()
         >>> title.alpha
         230.1375
 
@@ -774,12 +807,15 @@ def doctest_HUDControlsMenu():
     """
 
 
+@pytest.fixture(scope='module', autouse=True)
 def setUp(test=None):
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
     pygame.draw = DrawStub()
     pygame.Surface = SurfaceStub
+    pygame.surfarray.array_alpha = array_alpha_stub
+    pygame.surfarray.pixels_alpha = pixels_alpha_stub
 
 
 def test_suite():
