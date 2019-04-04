@@ -1164,8 +1164,8 @@ class HUDMessage(HUDElement):
         self.surface.set_colorkey((1, 1, 1))
         self.surface.fill(self.bg_color)
         img = self.font.render(text, True, self.fg_color)
-        x = (self.width - img.get_width()) / 2
-        y = (self.height - img.get_height()) / 2
+        x = (self.width - img.get_width()) // 2
+        y = (self.height - img.get_height()) // 2
         self.surface.blit(img, (x, y))
         for dx, dy in (0, 0), (1, 0), (0, 1):
             self.surface.set_at((dx, dy), (1, 1, 1))

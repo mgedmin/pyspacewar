@@ -827,6 +827,33 @@ def doctest_HUDInput():
     """
 
 
+def doctest_HUDMessage():
+    """Test for HUDMessage
+
+        >>> from pyspacewar.ui import HUDMessage
+        >>> font = FontStub()
+        >>> message = HUDMessage(font, "Press f to pay respects")
+
+        >>> message.draw(PrintingSurfaceStub())
+        (269, 276) <- <Surface(262x48)>
+          (0, 0)..(261, 47) <- fill(#18780e)
+          (16, 16) <- 'Press f to pay respects'
+          (0, 0) <- <colorkey>
+          (261, 0) <- <colorkey>
+          (0, 47) <- <colorkey>
+          (261, 47) <- <colorkey>
+          (1, 0) <- <colorkey>
+          (260, 0) <- <colorkey>
+          (1, 47) <- <colorkey>
+          (260, 47) <- <colorkey>
+          (0, 1) <- <colorkey>
+          (261, 1) <- <colorkey>
+          (0, 46) <- <colorkey>
+          (261, 46) <- <colorkey>
+
+    """
+
+
 @pytest.fixture(scope='module', autouse=True)
 def setUp(test=None):
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
