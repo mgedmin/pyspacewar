@@ -106,8 +106,13 @@ class SurfaceStub(object):
 
 class PrintingSurfaceStub(SurfaceStub):
 
+    def __init__(self, size=(800, 600), filter=None):
+        super(PrintingSurfaceStub, self).__init__(size)
+        self.filter = filter
+
     def _record(self, op):
-        print(op)
+        if not self.filter or self.filter(op):
+            print(op)
 
 
 class TextSurfaceStub(SurfaceStub):
@@ -894,6 +899,15 @@ class UIStub(object):
     def main_menu(self):
         print('Enter main menu!')
 
+    def new_game_menu(self):
+        print('Enter new game menu!')
+
+    def options_menu(self):
+        print('Enter options menu!')
+
+    def help(self):
+        print('Show help!')
+
     def quit(self):
         print('Quit!')
 
@@ -1229,6 +1243,30 @@ def doctest_MenuMode():
         ...     MouseEventStub(button=4, type=MOUSEBUTTONUP))
         >>> ui.viewport.scale
         1.25
+
+    """
+
+
+def doctest_MainMenuMode():
+    """Test for MainMenuMode
+
+        >>> from pyspacewar.ui import MainMenuMode
+        >>> ui = UIStub()
+        >>> mode = MainMenuMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: 'colorkey' not in s))
+        (285, 574) <- 'version 0.42.frog-knows'
+        (318, 188) <- <Surface(164x224)>[(0, 0)..(163, 223)][alpha=229.5]
+          (0, 0)..(163, 31) <- fill(#d23030)
+          (42, 8) <- 'New Game'
+          (0, 48)..(163, 79) <- fill(#781818)
+          (47, 56) <- 'Options'
+          (0, 96)..(163, 127) <- fill(#781818)
+          (62, 104) <- 'Help'
+          (0, 144)..(163, 175) <- fill(#781818)
+          (32, 152) <- 'Watch Demo'
+          (0, 192)..(163, 223) <- fill(#781818)
+          (62, 200) <- 'Quit'
 
     """
 
