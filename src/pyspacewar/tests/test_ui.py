@@ -876,6 +876,10 @@ class UIStub(object):
     fullscreen_mode = (800, 600)
     fullscreen = True
     show_missile_trails = True
+    sound_available = True
+    music = True
+    sound = True
+    sound_in_vacuum = True
     version_text = 'version 0.42.frog-knows'
 
     def __init__(self):
@@ -935,6 +939,18 @@ class UIStub(object):
 
     def sound_options_menu(self):
         print('Enter sound options menu!')
+
+    def toggle_music(self):
+        print('Toggle music!')
+        self.music = not self.music
+
+    def toggle_sound(self):
+        print('Toggle sound!')
+        self.sound = not self.sound
+
+    def toggle_sound_in_vacuum(self):
+        print('Toggle sound in vacuum!')
+        self.sound_in_vacuum = not self.sound_in_vacuum
 
     def controls_menu(self):
         print('Enter controls menu!')
@@ -1424,6 +1440,70 @@ def doctest_ScreenResolutionMenuMode():
         >>> mode.handle_key_press(KeyEventStub(K_RETURN))
         Play menu sound!
         Switch video mode to 640x480!
+
+    """
+
+
+def doctest_SoundOptionsMenuMode():
+    """Test for SoundOptionsMenuMode
+
+        >>> from pyspacewar.ui import SoundOptionsMenuMode
+        >>> ui = UIStub()
+        >>> mode = SoundOptionsMenuMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: 'colorkey' not in s))
+        (285, 574) <- 'version 0.42.frog-knows'
+        (246, 212) <- <Surface(308x176)>[(0, 0)..(307, 175)][alpha=229.5]
+          (0, 0)..(307, 31) <- fill(#d23030)
+          (32, 8) <- 'Music'
+          (256, 8) <- 'on'
+          (0, 48)..(307, 79) <- fill(#781818)
+          (32, 56) <- 'Sound'
+          (256, 56) <- 'on'
+          (0, 96)..(307, 127) <- fill(#781818)
+          (32, 104) <- 'Sound in vacuum'
+          (256, 104) <- 'on'
+          (0, 144)..(307, 175) <- fill(#781818)
+          (44, 152) <- 'Return to options menu'
+
+    Some systems do not have sound hardware!
+
+        >>> ui.sound_available = False
+        >>> mode.reinit_menu()
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: "'" in s))
+        (285, 574) <- 'version 0.42.frog-knows'
+          (32, 8) <- 'Music (not available)'
+          (256, 8) <- 'on'
+          (32, 56) <- 'Sound (not available)'
+          (256, 56) <- 'on'
+          (32, 104) <- 'Sound in vacuum'
+          (256, 104) <- 'on'
+          (44, 152) <- 'Return to options menu'
+
+    The settings are updated when you change them
+
+        >>> from pygame.locals import K_DOWN, K_RETURN
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        Play menu sound!
+        Toggle music!
+        >>> mode.handle_key_press(KeyEventStub(K_DOWN))
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        Play menu sound!
+        Toggle sound!
+        >>> mode.handle_key_press(KeyEventStub(K_DOWN))
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        Play menu sound!
+        Toggle sound in vacuum!
+
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: "'" in s))
+        (285, 574) <- 'version 0.42.frog-knows'
+          (32, 8) <- 'Music (not available)'
+          (246, 8) <- 'off'
+          (32, 56) <- 'Sound (not available)'
+          (246, 56) <- 'off'
+          (32, 104) <- 'Sound in vacuum'
+          (246, 104) <- 'off'
+          (44, 152) <- 'Return to options menu'
 
     """
 
