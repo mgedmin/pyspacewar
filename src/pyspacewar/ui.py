@@ -1534,8 +1534,6 @@ class OptionsMenuMode(MenuMode):
 
     def init_menu(self):
         """Initialize the mode."""
-        def title(label, on):
-            return label + '\t' + (on and 'on' or 'off')
         self.menu_items = [
             ('Video', self.ui.video_options_menu),
             ('Sound', self.ui.sound_options_menu),
