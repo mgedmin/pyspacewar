@@ -870,7 +870,8 @@ class UIStub(object):
         from pyspacewar.ui import Viewport
         self.controls = {}
         self.rev_controls = {}
-        self.viewport = Viewport(SurfaceStub())
+        self.screen = SurfaceStub()
+        self.viewport = Viewport(self.screen)
 
     def pause(self):
         print('Paused!')
@@ -887,8 +888,14 @@ class UIStub(object):
     def play_music(self, music):
         print('Play %s music!' % music)
 
+    def play_sound(self, sound):
+        print('Play %s sound!' % sound)
+
     def main_menu(self):
         print('Enter main menu!')
+
+    def quit(self):
+        print('Quit!')
 
     def zoom_in(self):
         self.viewport.scale *= 1.25
@@ -898,6 +905,8 @@ class UIStub(object):
 
 
 class GameModeStub(object):
+
+    paused = False
 
     def draw(self, surface):
         surface._record('<draw the game>')
@@ -1157,6 +1166,69 @@ def doctest_TitleMode():
         >>> mode.draw(PrintingSurfaceStub())
         (285, 574) <- 'version 0.42.frog-knows'
         Switch to demo mode!
+
+    """
+
+
+def doctest_MenuMode():
+    """Test for MenuMode
+
+        >>> from pyspacewar.ui import MenuMode
+        >>> ui = UIStub()
+        >>> mode = MenuMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub())
+        (285, 574) <- 'version 0.42.frog-knows'
+        (348, 284) <- <Surface(104x32)>[(0, 0)..(103, 31)][alpha=229.5]
+          (0, 0)..(103, 31) <- fill(<colorkey>)
+          (0, 0)..(103, 31) <- fill(#d23030)
+          (32, 8) <- 'Quit'
+          (0, 0) <- <colorkey>
+          (0, 31) <- <colorkey>
+          (103, 0) <- <colorkey>
+          (103, 31) <- <colorkey>
+
+    You can navigate the menu with arrow keys
+
+        >>> from pygame.locals import K_DOWN, K_UP, K_RETURN, K_ESCAPE
+        >>> mode.handle_key_press(KeyEventStub(K_DOWN))
+        >>> mode.handle_key_press(KeyEventStub(K_UP))
+
+    activate the selected menu item with Enter
+
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        Play menu sound!
+        Quit!
+
+    or exit the menu with Esc.
+
+        >>> mode.handle_key_press(KeyEventStub(K_ESCAPE))
+        >>> ui.ui_mode
+        <GameModeStub>
+
+        >>> ui.ui_mode = None
+
+    You can use the menu with the mouse as well.
+
+        >>> mode.mouse_visible
+        True
+
+        >>> mode.handle_mouse_press(MouseEventStub())
+        >>> mode.handle_mouse_motion(
+        ...     MouseEventStub(buttons=[0], pos=(401, 302), rel=(1, 2),
+        ...                    type=MOUSEMOTION))
+        >>> mode.handle_mouse_release(
+        ...     MouseEventStub(type=MOUSEBUTTONUP, pos=(401, 302)))
+        Play menu sound!
+        Quit!
+
+    You can still do the mouse wheel zoom of the background, for some reason
+
+        >>> mode.handle_mouse_press(MouseEventStub(button=4))
+        >>> mode.handle_mouse_release(
+        ...     MouseEventStub(button=4, type=MOUSEBUTTONUP))
+        >>> ui.viewport.scale
+        1.25
 
     """
 
