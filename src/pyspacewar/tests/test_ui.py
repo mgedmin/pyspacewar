@@ -902,8 +902,20 @@ class UIStub(object):
     def new_game_menu(self):
         print('Enter new game menu!')
 
+    def start_single_player_game(self):
+        print('Start single-player game!')
+
+    def start_two_player_game(self):
+        print('Start two-player game!')
+
+    def start_gravity_wars(self):
+        print('Start gravity wars!')
+
     def options_menu(self):
         print('Enter options menu!')
+
+    def close_menu(self):
+        print('Close menu!')
 
     def help(self):
         print('Show help!')
@@ -1267,6 +1279,28 @@ def doctest_MainMenuMode():
           (32, 152) <- 'Watch Demo'
           (0, 192)..(163, 223) <- fill(#781818)
           (62, 200) <- 'Quit'
+
+    """
+
+
+def doctest_NewGameMenuMode():
+    """Test for NewGameMenuMode
+
+        >>> from pyspacewar.ui import NewGameMenuMode
+        >>> ui = UIStub()
+        >>> mode = NewGameMenuMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: 'colorkey' not in s))
+        (285, 574) <- 'version 0.42.frog-knows'
+        (293, 212) <- <Surface(214x176)>[(0, 0)..(213, 175)][alpha=229.5]
+          (0, 0)..(213, 31) <- fill(#d23030)
+          (32, 8) <- 'One Player Game'
+          (0, 48)..(213, 79) <- fill(#781818)
+          (32, 56) <- 'Two Player Game'
+          (0, 96)..(213, 127) <- fill(#781818)
+          (47, 104) <- 'Gravity Wars'
+          (0, 144)..(213, 175) <- fill(#781818)
+          (57, 152) <- 'No, thanks'
 
     """
 
