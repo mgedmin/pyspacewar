@@ -68,6 +68,10 @@ class SurfaceStub(object):
                 self._record("  %s" % op)
 
     def fill(self, color, rect=None):
+        if not rect:
+            # clearing the entire surface makes previous drawing operations
+            # irrelevant
+            self._ops = []
         x, y, w, h = rect or (0, 0, self.w, self.h)
         self._record("(%s, %s)..(%s, %s) <- fill(%s)" % (
             x, y, x + w - 1, y + h - 1, self._fmt_color(color)))
@@ -869,6 +873,9 @@ class UIStub(object):
     menu_font = FontStub()
     hud_font = FontStub()
     ui_mode = None
+    fullscreen_mode = (800, 600)
+    fullscreen = True
+    show_missile_trails = True
     version_text = 'version 0.42.frog-knows'
 
     def __init__(self):
@@ -886,9 +893,11 @@ class UIStub(object):
 
     def toggle_fullscreen(self):
         print('Toggle fullscreen!')
+        self.fullscreen = not self.fullscreen
 
     def toggle_missile_orbits(self):
         print('Toggle missile orbits!')
+        self.show_missile_trails = not self.show_missile_trails
 
     def play_music(self, music):
         print('Play %s music!' % music)
@@ -916,6 +925,9 @@ class UIStub(object):
 
     def video_options_menu(self):
         print('Enter video options menu!')
+
+    def screen_resolution_menu(self):
+        print('Enter screen resolution menu!')
 
     def sound_options_menu(self):
         print('Enter sound options menu!')
@@ -1332,6 +1344,53 @@ def doctest_OptionsMenuMode():
           (87, 104) <- 'Controls'
           (0, 144)..(253, 175) <- fill(#781818)
           (32, 152) <- 'Return to main menu'
+
+    """
+
+
+def doctest_VideoOptionsMenuMode():
+    """Test for VideoOptionsMenuMode
+
+        >>> from pyspacewar.ui import VideoOptionsMenuMode
+        >>> ui = UIStub()
+        >>> mode = VideoOptionsMenuMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: 'colorkey' not in s))
+        (285, 574) <- 'version 0.42.frog-knows'
+        (241, 212) <- <Surface(318x176)>[(0, 0)..(317, 175)][alpha=229.5]
+          (0, 0)..(317, 31) <- fill(#d23030)
+          (32, 8) <- 'Screen size'
+          (216, 8) <- '800x600'
+          (0, 48)..(317, 79) <- fill(#781818)
+          (32, 56) <- 'Full screen mode'
+          (266, 56) <- 'on'
+          (0, 96)..(317, 127) <- fill(#781818)
+          (32, 104) <- 'Missile orbits'
+          (266, 104) <- 'on'
+          (0, 144)..(317, 175) <- fill(#781818)
+          (49, 152) <- 'Return to options menu'
+
+    Changing any of the settings updates the menu
+
+        >>> from pygame.locals import K_DOWN, K_RETURN
+        >>> mode.handle_key_press(KeyEventStub(K_DOWN))
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        Play menu sound!
+        Toggle fullscreen!
+        >>> mode.handle_key_press(KeyEventStub(K_DOWN))
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        Play menu sound!
+        Toggle missile orbits!
+
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: "'" in s))
+        (285, 574) <- 'version 0.42.frog-knows'
+          (32, 8) <- 'Screen size'
+          (216, 8) <- '800x600'
+          (32, 56) <- 'Full screen mode'
+          (256, 56) <- 'off'
+          (32, 104) <- 'Missile orbits'
+          (256, 104) <- 'off'
+          (49, 152) <- 'Return to options menu'
 
     """
 
