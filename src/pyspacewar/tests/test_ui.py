@@ -914,6 +914,15 @@ class UIStub(object):
     def options_menu(self):
         print('Enter options menu!')
 
+    def video_options_menu(self):
+        print('Enter video options menu!')
+
+    def sound_options_menu(self):
+        print('Enter sound options menu!')
+
+    def controls_menu(self):
+        print('Enter controls menu!')
+
     def close_menu(self):
         print('Close menu!')
 
@@ -1301,6 +1310,28 @@ def doctest_NewGameMenuMode():
           (47, 104) <- 'Gravity Wars'
           (0, 144)..(213, 175) <- fill(#781818)
           (57, 152) <- 'No, thanks'
+
+    """
+
+
+def doctest_OptionsMenuMode():
+    """Test for OptionsMenuMode
+
+        >>> from pyspacewar.ui import OptionsMenuMode
+        >>> ui = UIStub()
+        >>> mode = OptionsMenuMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: 'colorkey' not in s))
+        (285, 574) <- 'version 0.42.frog-knows'
+        (273, 212) <- <Surface(254x176)>[(0, 0)..(253, 175)][alpha=229.5]
+          (0, 0)..(253, 31) <- fill(#d23030)
+          (102, 8) <- 'Video'
+          (0, 48)..(253, 79) <- fill(#781818)
+          (102, 56) <- 'Sound'
+          (0, 96)..(253, 127) <- fill(#781818)
+          (87, 104) <- 'Controls'
+          (0, 144)..(253, 175) <- fill(#781818)
+          (32, 152) <- 'Return to main menu'
 
     """
 
