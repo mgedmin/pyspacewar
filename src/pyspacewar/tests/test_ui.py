@@ -926,6 +926,10 @@ class UIStub(object):
     def video_options_menu(self):
         print('Enter video options menu!')
 
+    def switch_to_mode(self, mode):
+        print('Switch video mode to %dx%d!' % mode)
+        self.fullscreen_mode = mode
+
     def screen_resolution_menu(self):
         print('Enter screen resolution menu!')
 
@@ -1395,11 +1399,41 @@ def doctest_VideoOptionsMenuMode():
     """
 
 
+def doctest_ScreenResolutionMenuMode():
+    """Test for ScreenResolutionMenuMode
+
+        >>> from pyspacewar.ui import ScreenResolutionMenuMode
+        >>> ui = UIStub()
+        >>> mode = ScreenResolutionMenuMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: 'colorkey' not in s))
+        (285, 574) <- 'version 0.42.frog-knows'
+        (258, 236) <- <Surface(284x128)>[(0, 0)..(283, 127)][alpha=229.5]
+          (0, 0)..(283, 31) <- fill(#d23030)
+          (107, 8) <- '800x600'
+          (0, 48)..(283, 79) <- fill(#781818)
+          (107, 56) <- '640x480'
+          (0, 96)..(283, 127) <- fill(#781818)
+          (32, 104) <- 'Return to options menu'
+
+    Changing any of the settings updates the menu (for no good reason, because
+    we don't indicate which mode is the selected one!)
+
+        >>> from pygame.locals import K_DOWN, K_RETURN
+        >>> mode.handle_key_press(KeyEventStub(K_DOWN))
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        Play menu sound!
+        Switch video mode to 640x480!
+
+    """
+
+
 @pytest.fixture(scope='module', autouse=True)
 def setUp(test=None):
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
+    pygame.display.list_modes = lambda: [(800, 600), (640, 480)]
     pygame.draw = DrawStub()
     pygame.image.load = ImageStub.load
     pygame.Surface = SurfaceStub
