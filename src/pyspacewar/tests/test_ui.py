@@ -12,6 +12,8 @@ from pygame.locals import (
     Rect, KEYDOWN, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION,
 )
 
+from pyspacewar.ui import key_name
+
 
 class SurfaceStub(object):
 
@@ -972,7 +974,7 @@ class UIStub(object):
         print('Enter controls menu!')
 
     def set_control(self, action, key):
-        print('Change %s keybinding to %s!' % (action, key))
+        print('Change %s keybinding to %s!' % (action, key_name(key)))
 
     def close_menu(self):
         print('Close menu!')
@@ -996,6 +998,9 @@ class GameModeStub(object):
 
     def draw(self, surface):
         surface._record('<draw the game>')
+
+    def reinit_menu(self):
+        pass
 
     def __repr__(self):
         return '<GameModeStub>'
@@ -1116,6 +1121,9 @@ def doctest_PauseMode():
           (91, 46) <- <colorkey>
 
     The message fades in slowly over 5 seconds
+    XXX: This test fails sometimes because time.time() chages at an
+    unpredictable speed so we might get [alpha=115] if the computer
+    is faster today!
 
         >>> mode.pause_entered -= 2.5
         >>> mode.draw(PrintingSurfaceStub())
@@ -1570,11 +1578,41 @@ def doctest_ControlsMenuMode():
 
         >>> from pygame.locals import K_DELETE, K_RETURN
         >>> mode.handle_key_press(KeyEventStub(K_DELETE))
-        Change P1_LEFT keybinding to None!
+        Change P1_LEFT keybinding to (unset)!
         >>> mode.handle_key_press(KeyEventStub(K_RETURN))
         Play menu sound!
         >>> ui.ui_mode
         <pyspacewar.ui.WaitingForControlMode object at ...>
+
+    """
+
+
+def doctest_WaitingForControlMode():
+    """Test for WaitingForControlMode
+
+        >>> from pyspacewar.ui import WaitingForControlMode
+        >>> ui = UIStub()
+        >>> mode = WaitingForControlMode(ui, 'P1_LEFT')
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: 'colorkey' not in s))
+        <draw the game>
+        (244, 276) <- <Surface(312x48)>[alpha=229]
+          (0, 0)..(311, 47) <- fill(#18780e)
+          (16, 16) <- 'Press a key or ESC to cancel'
+
+        >>> from pygame.locals import K_a
+        >>> mode.handle_key_press(KeyEventStub(K_a))
+        Change P1_LEFT keybinding to A!
+        >>> ui.ui_mode
+        <GameModeStub>
+
+    You can cancel the keybinding change by clicking any mouse button
+
+        >>> ui.ui_mode = None
+        >>> mode.handle_mouse_press(MouseEventStub())
+        >>> mode.handle_mouse_release(MouseEventStub(type=MOUSEBUTTONUP))
+        >>> ui.ui_mode
+        <GameModeStub>
 
     """
 
