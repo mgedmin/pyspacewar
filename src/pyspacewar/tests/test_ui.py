@@ -875,6 +875,8 @@ class UIStub(object):
     menu_font = FontStub()
     hud_font = FontStub()
     input_font = FontStub()
+    help_font = FontStub()
+    help_bold_font = FontStub()
     ui_mode = None
     fullscreen_mode = (800, 600)
     fullscreen = True
@@ -888,20 +890,20 @@ class UIStub(object):
     def __init__(self):
         from pyspacewar.ui import Viewport
         self.controls = {
-            'P1_LEFT': [],
-            'P1_RIGHT': [],
-            'P1_FORWARD': [],
-            'P1_BACKWARD': [],
-            'P1_BRAKE': [],
-            'P1_FIRE': [],
-            'P1_TOGGLE_AI': [],
-            'P2_LEFT': [],
-            'P2_RIGHT': [],
-            'P2_FORWARD': [],
-            'P2_BACKWARD': [],
-            'P2_BRAKE': [],
-            'P2_FIRE': [],
-            'P2_TOGGLE_AI': [],
+            'P1_LEFT': [None],
+            'P1_RIGHT': [None],
+            'P1_FORWARD': [None],
+            'P1_BACKWARD': [None],
+            'P1_BRAKE': [None],
+            'P1_FIRE': [None],
+            'P1_TOGGLE_AI': [None],
+            'P2_LEFT': [None],
+            'P2_RIGHT': [None],
+            'P2_FORWARD': [None],
+            'P2_BACKWARD': [None],
+            'P2_BRAKE': [None],
+            'P2_FIRE': [None],
+            'P2_TOGGLE_AI': [None],
         }
         self.rev_controls = {}
         self.screen = SurfaceStub()
@@ -1569,34 +1571,34 @@ def doctest_ControlsMenuMode():
         (130, 574) <- 'Press ENTER to change a binding, BACKSPACE to clear it'
           (332, 4) <- 'Player 1'
           (8, 30) <- 'Turn left'
-          (736, 30) <- ''
+          (666, 30) <- '(unset)'
           (8, 56) <- 'Turn right'
-          (736, 56) <- ''
+          (666, 56) <- '(unset)'
           (8, 82) <- 'Accelerate'
-          (736, 82) <- ''
+          (666, 82) <- '(unset)'
           (8, 108) <- 'Decelerate'
-          (736, 108) <- ''
+          (666, 108) <- '(unset)'
           (8, 134) <- 'Launch missile'
-          (736, 134) <- ''
+          (666, 134) <- '(unset)'
           (8, 160) <- 'Brake'
-          (736, 160) <- ''
+          (666, 160) <- '(unset)'
           (8, 186) <- 'Toggle computer control'
-          (736, 186) <- ''
+          (666, 186) <- '(unset)'
           (332, 212) <- 'Player 2'
           (8, 238) <- 'Turn left'
-          (736, 238) <- ''
+          (666, 238) <- '(unset)'
           (8, 264) <- 'Turn right'
-          (736, 264) <- ''
+          (666, 264) <- '(unset)'
           (8, 290) <- 'Accelerate'
-          (736, 290) <- ''
+          (666, 290) <- '(unset)'
           (8, 316) <- 'Decelerate'
-          (736, 316) <- ''
+          (666, 316) <- '(unset)'
           (8, 342) <- 'Launch missile'
-          (736, 342) <- ''
+          (666, 342) <- '(unset)'
           (8, 368) <- 'Brake'
-          (736, 368) <- ''
+          (666, 368) <- '(unset)'
           (8, 394) <- 'Toggle computer control'
-          (736, 394) <- ''
+          (666, 394) <- '(unset)'
           (262, 420) <- 'Return to options menu'
 
         >>> from pygame.locals import K_DELETE, K_RETURN
@@ -1684,6 +1686,42 @@ def doctest_PlayMode():
         ...     MouseEventStub(button=4, type=MOUSEBUTTONUP))
         >>> ui.viewport.scale
         1.25
+
+    """
+
+
+def doctest_HelpMode():
+    """Test for HelpMode
+
+        >>> from pyspacewar.ui import HelpMode
+        >>> ui = UIStub()
+        >>> mode = HelpMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+
+    The help text is long so let's cheat a bit
+
+        >>> mode.help_text.text = 'I give you help!'
+
+        >>> mode.draw(PrintingSurfaceStub())
+        (30, 30) <- <Surface(740x540)>[alpha=242]
+          (0, 0)..(739, 539) <- fill(#010208)
+          (0, 0) <- <colorkey>
+          (0, 539) <- <colorkey>
+          (739, 0) <- <colorkey>
+          (739, 539) <- <colorkey>
+        (70, 70) <- 'I'
+        (90, 70) <- 'give'
+        (140, 70) <- 'you'
+        (180, 70) <- 'help!'
+        (620, 514) <- 'Page 1 of 1'
+
+        >>> from pygame.locals import K_PAGEDOWN, K_PAGEUP
+        >>> mode.handle_key_press(KeyEventStub(K_PAGEDOWN))
+        >>> mode.handle_key_press(KeyEventStub(K_PAGEUP))
+        >>> mode.handle_mouse_release(MouseEventStub())
+
+        >>> ui.ui_mode
+        <GameModeStub>
 
     """
 
