@@ -982,6 +982,9 @@ class UIStub(object):
     def help(self):
         print('Show help!')
 
+    def end_game(self):
+        print('End game!')
+
     def quit(self):
         print('Quit!')
 
@@ -1609,6 +1612,28 @@ def doctest_WaitingForControlMode():
         >>> mode.handle_mouse_release(MouseEventStub(type=MOUSEBUTTONUP))
         >>> ui.ui_mode
         <GameModeStub>
+
+    """
+
+
+def doctest_GameMenuMode():
+    """Test for GameMenuMode
+
+        >>> from pyspacewar.ui import GameMenuMode
+        >>> ui = UIStub()
+        >>> mode = GameMenuMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: 'colorkey' not in s))
+        (285, 574) <- 'version 0.42.frog-knows'
+        (313, 212) <- <Surface(174x176)>[(0, 0)..(173, 175)][alpha=229.5]
+          (0, 0)..(173, 31) <- fill(#d23030)
+          (32, 8) <- 'Resume game'
+          (0, 48)..(173, 79) <- fill(#781818)
+          (52, 56) <- 'Options'
+          (0, 96)..(173, 127) <- fill(#781818)
+          (67, 104) <- 'Help'
+          (0, 144)..(173, 175) <- fill(#781818)
+          (47, 152) <- 'End Game'
 
     """
 
