@@ -1649,7 +1649,7 @@ class ControlsMenuMode(MenuMode):
         return ([(label, )] +
                 [(title + '\t' + ', '.join(map(key_name,
                                                self.ui.controls[action])),
-                  self.set_control, title, action)
+                  self.set_control, action)
                  for title, action in items])
 
     def init_menu(self):
@@ -1678,9 +1678,9 @@ class ControlsMenuMode(MenuMode):
         return HUDControlsMenu(self.ui.input_font,
                                [item[0] for item in self.menu_items])
 
-    def set_control(self, action, key):
+    def set_control(self, action):
         """Change a control"""
-        self.ui.ui_mode = WaitingForControlMode(self.ui, action, key)
+        self.ui.ui_mode = WaitingForControlMode(self.ui, action)
 
     def clear_item(self):
         """Clear the selected menu item."""
@@ -1689,7 +1689,7 @@ class ControlsMenuMode(MenuMode):
             handler = action[0]
             args = action[1:]
             if handler == self.set_control:
-                title, action = args
+                action = args[0]
                 self.ui.set_control(action, None)
                 self.reinit_menu()
 
@@ -1699,9 +1699,8 @@ class WaitingForControlMode(UIMode):
 
     inherit_pause_from_prev_mode = True
 
-    def __init__(self, ui, action, key):
+    def __init__(self, ui, action):
         self.action = action
-        self.key = key
         UIMode.__init__(self, ui)
 
     def init(self):
@@ -1717,7 +1716,7 @@ class WaitingForControlMode(UIMode):
 
     def handle_any_other_key(self, event):
         """Handle a KEYDOWN event for unknown keys."""
-        self.ui.set_control(self.key, event.key)
+        self.ui.set_control(self.action, event.key)
         self.prev_mode.reinit_menu()
         self.return_to_previous_mode()
 
