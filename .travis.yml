@@ -1,5 +1,4 @@
 language: python
-sudo: required
 dist: xenial
 python:
     - 2.7
@@ -7,10 +6,23 @@ python:
     - 3.5
     - 3.6
     - 3.7
+    - pypy2.7-6.0.0
+    - pypy3.5-6.0.0
 before_install:
     - sudo apt-get update -q
     - sudo apt-get build-dep -y python-pygame
     - pip install -U pip
+    - |
+      include_dir=/home/travis/virtualenv/$TRAVIS_PYTHON_VERSION/include
+      if [ -L $include_dir ]; then
+        # pygame tries to install stuff into $include_dir/site/pygame,
+        # which will not work if $include_dir is a symlink to a read-only
+        # system-wide include dir as is the case for pypy2.7 and pypy3.5
+        # (but not cpython for some reason)
+        real_include_dir=$(readlink $include_dir)
+        rm $include_dir
+        cp -r $real_include_dir $include_dir
+      fi
 install:
     - pip install coverage coveralls -e .
 script:
