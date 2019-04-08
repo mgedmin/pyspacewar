@@ -982,6 +982,9 @@ class UIStub(object):
     def help(self):
         print('Show help!')
 
+    def game_menu(self):
+        print('Enter game menu!')
+
     def end_game(self):
         print('End game!')
 
@@ -993,6 +996,27 @@ class UIStub(object):
 
     def zoom_out(self):
         self.viewport.scale /= 1.25
+
+    def toggle_ai(self, player):
+        print('Toggle autopilot for player %d!' % player)
+
+    def turn_left(self, player):
+        print('Player %d, turn left!' % player)
+
+    def turn_right(self, player):
+        print('Player %d, turn right!' % player)
+
+    def accelerate(self, player):
+        print('Player %d, accelerate!' % player)
+
+    def backwards(self, player):
+        print('Player %d, reverse!' % player)
+
+    def brake(self, player):
+        print('Player %d, brake!' % player)
+
+    def launch_missile(self, player):
+        print('Player %d, fire missile!' % player)
 
 
 class GameModeStub(object):
@@ -1634,6 +1658,32 @@ def doctest_GameMenuMode():
           (67, 104) <- 'Help'
           (0, 144)..(173, 175) <- fill(#781818)
           (47, 152) <- 'End Game'
+
+    """
+
+
+def doctest_PlayMode():
+    """Test for PlayMode
+
+        >>> from pyspacewar.ui import PlayMode
+        >>> ui = UIStub()
+        >>> mode = PlayMode(ui)
+        >>> mode.enter(prev_mode=None)
+        Play game music!
+
+    Button 1 opens the game menu
+
+        >>> mode.handle_mouse_press(MouseEventStub())
+        >>> mode.handle_mouse_release(MouseEventStub(type=MOUSEBUTTONUP))
+        Enter game menu!
+
+    Other buttons do not open the game menu
+
+        >>> mode.handle_mouse_press(MouseEventStub(button=4))
+        >>> mode.handle_mouse_release(
+        ...     MouseEventStub(button=4, type=MOUSEBUTTONUP))
+        >>> ui.viewport.scale
+        1.25
 
     """
 

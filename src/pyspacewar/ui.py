@@ -1780,7 +1780,7 @@ class PlayMode(UIMode):
         if event.button == 1:
             self.ui.game_menu()
         else:
-            UIMode.handle_mouse_press(self, event)
+            UIMode.handle_mouse_release(self, event)
 
 
 class GravityWarsMode(UIMode):
