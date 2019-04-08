@@ -872,6 +872,7 @@ class UIStub(object):
 
     menu_font = FontStub()
     hud_font = FontStub()
+    input_font = FontStub()
     ui_mode = None
     fullscreen_mode = (800, 600)
     fullscreen = True
@@ -884,7 +885,22 @@ class UIStub(object):
 
     def __init__(self):
         from pyspacewar.ui import Viewport
-        self.controls = {}
+        self.controls = {
+            'P1_LEFT': [],
+            'P1_RIGHT': [],
+            'P1_FORWARD': [],
+            'P1_BACKWARD': [],
+            'P1_BRAKE': [],
+            'P1_FIRE': [],
+            'P1_TOGGLE_AI': [],
+            'P2_LEFT': [],
+            'P2_RIGHT': [],
+            'P2_FORWARD': [],
+            'P2_BACKWARD': [],
+            'P2_BRAKE': [],
+            'P2_FIRE': [],
+            'P2_TOGGLE_AI': [],
+        }
         self.rev_controls = {}
         self.screen = SurfaceStub()
         self.viewport = Viewport(self.screen)
@@ -954,6 +970,9 @@ class UIStub(object):
 
     def controls_menu(self):
         print('Enter controls menu!')
+
+    def set_control(self, action, key):
+        print('Change %s keybinding to %s!' % (action, key))
 
     def close_menu(self):
         print('Close menu!')
@@ -1504,6 +1523,58 @@ def doctest_SoundOptionsMenuMode():
           (32, 104) <- 'Sound in vacuum'
           (246, 104) <- 'off'
           (44, 152) <- 'Return to options menu'
+
+    """
+
+
+def doctest_ControlsMenuMode():
+    """Test for ControlsMenuMode
+
+        >>> from pyspacewar.ui import ControlsMenuMode
+        >>> ui = UIStub()
+        >>> mode = ControlsMenuMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: "'" in s))
+        (130, 574) <- 'Press ENTER to change a binding, BACKSPACE to clear it'
+          (332, 4) <- 'Player 1'
+          (8, 30) <- 'Turn left'
+          (736, 30) <- ''
+          (8, 56) <- 'Turn right'
+          (736, 56) <- ''
+          (8, 82) <- 'Accelerate'
+          (736, 82) <- ''
+          (8, 108) <- 'Decelerate'
+          (736, 108) <- ''
+          (8, 134) <- 'Launch missile'
+          (736, 134) <- ''
+          (8, 160) <- 'Brake'
+          (736, 160) <- ''
+          (8, 186) <- 'Toggle computer control'
+          (736, 186) <- ''
+          (332, 212) <- 'Player 2'
+          (8, 238) <- 'Turn left'
+          (736, 238) <- ''
+          (8, 264) <- 'Turn right'
+          (736, 264) <- ''
+          (8, 290) <- 'Accelerate'
+          (736, 290) <- ''
+          (8, 316) <- 'Decelerate'
+          (736, 316) <- ''
+          (8, 342) <- 'Launch missile'
+          (736, 342) <- ''
+          (8, 368) <- 'Brake'
+          (736, 368) <- ''
+          (8, 394) <- 'Toggle computer control'
+          (736, 394) <- ''
+          (262, 420) <- 'Return to options menu'
+
+        >>> from pygame.locals import K_DELETE, K_RETURN
+        >>> mode.handle_key_press(KeyEventStub(K_DELETE))
+        Change P1_LEFT keybinding to None!
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        Play menu sound!
+        >>> ui.ui_mode
+        <pyspacewar.ui.WaitingForControlMode object at ...>
 
     """
 
