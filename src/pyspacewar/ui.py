@@ -1299,11 +1299,13 @@ class PauseMode(UIMode):
     show_message_after = 1  # seconds
     fade_in_time = 5  # seconds
 
+    clock = staticmethod(time.time)
+
     def enter(self, prev_mode):
         """Enter the mode."""
         UIMode.enter(self, prev_mode)
         self.message = None
-        self.pause_entered = time.time()
+        self.pause_entered = self.clock()
         self.animate = self.wait_for_fade
 
     def draw(self, screen):
@@ -1315,13 +1317,13 @@ class PauseMode(UIMode):
             self.message.draw(screen)
 
     def wait_for_fade(self):
-        if time.time() >= self.pause_entered + self.show_message_after:
+        if self.clock() >= self.pause_entered + self.show_message_after:
             self.message = HUDMessage(self.ui.menu_font, "Paused")
             self.message.alpha = 0
             self.animate = self.fade_in
 
     def fade_in(self):
-        t = time.time() - self.pause_entered - self.show_message_after
+        t = self.clock() - self.pause_entered - self.show_message_after
         if t > self.fade_in_time:
             self.message.alpha = int(255 * 0.9)
             self.animate = None

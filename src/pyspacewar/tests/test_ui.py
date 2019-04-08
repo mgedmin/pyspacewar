@@ -1098,10 +1098,9 @@ def doctest_PauseMode():
         >>> mode.draw(PrintingSurfaceStub())
         <draw the game>
 
-    Instead of advancing the system clock by 1 second let's push
-    the mode enter time backwards by 1 second
+    Let's pretend the system clock advanced by 1 second exactly
 
-        >>> mode.pause_entered -= 1.0
+        >>> mode.clock = lambda: mode.pause_entered + 1.0
         >>> mode.draw(PrintingSurfaceStub())
         <draw the game>
         (354, 276) <- <Surface(92x48)>[alpha=0]
@@ -1121,11 +1120,8 @@ def doctest_PauseMode():
           (91, 46) <- <colorkey>
 
     The message fades in slowly over 5 seconds
-    XXX: This test fails sometimes because time.time() chages at an
-    unpredictable speed so we might get [alpha=115] if the computer
-    is faster today!
 
-        >>> mode.pause_entered -= 2.5
+        >>> mode.clock = lambda: mode.pause_entered + 3.5
         >>> mode.draw(PrintingSurfaceStub())
         <draw the game>
         (354, 276) <- <Surface(92x48)>[alpha=114]
@@ -1144,7 +1140,7 @@ def doctest_PauseMode():
           (0, 46) <- <colorkey>
           (91, 46) <- <colorkey>
 
-        >>> mode.pause_entered -= 3.0
+        >>> mode.clock = lambda: mode.pause_entered + 6.5
         >>> mode.draw(PrintingSurfaceStub())
         <draw the game>
         (354, 276) <- <Surface(92x48)>[alpha=229]
