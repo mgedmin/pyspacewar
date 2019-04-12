@@ -156,10 +156,20 @@ class ImageStub(SurfaceStub):
         return ImageStub()
 
     def convert(self):
-        return ImageStub()
+        return ImageStub(self.get_size())
+
+    def convert_alpha(self):
+        return ImageStub(self.get_size())
 
     def __repr__(self):
         return '<Image(%dx%d)>' % (self.w, self.h)
+
+
+class TransformStub(object):
+
+    @staticmethod
+    def scale(surface, size):
+        return ImageStub(size)
 
 
 class DrawStub(object):
@@ -1789,14 +1799,27 @@ def doctest_HelpMode():
     """
 
 
+def doctest_GameUI():
+    """Test for GameUI
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.load_settings('/dev/null')
+        >>> ui.init()
+
+    """
+
+
 @pytest.fixture(scope='module', autouse=True)
 def setUp(test=None):
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
     pygame.display.list_modes = lambda: [(800, 600), (640, 480)]
+    pygame.display.set_icon = lambda icon: None
     pygame.draw = DrawStub()
     pygame.image.load = ImageStub.load
+    pygame.transform.scale = TransformStub.scale
     pygame.Surface = SurfaceStub
     pygame.surfarray.array_alpha = array_alpha_stub
     pygame.surfarray.pixels_alpha = pixels_alpha_stub

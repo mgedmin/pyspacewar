@@ -2092,7 +2092,7 @@ class GameUI(object):
             pygame.image.load(img)
             for img in glob.glob(find('images', 'planet*.png'))
         ]
-        if not self.planet_images:
+        if not self.planet_images:  # pragma: nocover
             raise RuntimeError("Could not find planet bitmaps")
 
     def _load_background(self):
