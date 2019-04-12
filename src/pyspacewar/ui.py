@@ -1859,7 +1859,7 @@ class GravityWarsMode(UIMode):
                 next(self.state)
             elif event.key == K_BACKSPACE:
                 self.prompt.text = self.prompt.text[:-1]
-            elif event.unicode.isdigit() or event.unicode in ('-', '.'):
+            elif event.unicode.isdigit() or event.unicode == '.':
                 self.prompt.text += event.unicode
 
 

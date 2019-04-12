@@ -870,6 +870,15 @@ def doctest_HUDMessage():
     """
 
 
+class ShipStub(object):
+
+    direction = 0
+    launch_speed = 3.0
+
+    def launch(self):
+        print("Fire missile!")
+
+
 class UIStub(object):
 
     menu_font = FontStub()
@@ -908,6 +917,7 @@ class UIStub(object):
         self.rev_controls = {}
         self.screen = SurfaceStub()
         self.viewport = Viewport(self.screen)
+        self.ships = [ShipStub(), ShipStub()]
 
     def pause(self):
         print('Paused!')
@@ -1686,6 +1696,59 @@ def doctest_PlayMode():
         ...     MouseEventStub(button=4, type=MOUSEBUTTONUP))
         >>> ui.viewport.scale
         1.25
+
+    """
+
+
+def doctest_GravityWarsMode():
+    """Test for GravityWarsMode
+
+        >>> from pyspacewar.ui import GravityWarsMode
+        >>> ui = UIStub()
+        >>> mode = GravityWarsMode(ui)
+        >>> mode.enter(prev_mode=None)
+        Play gravitywars music!
+
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: 'colorkey' not in s))
+        (20, 448) <- <Surface(760x32)>[alpha=204]
+          (0, 0)..(759, 31) <- fill(#010208)
+          (8, 8) <- 'Player 1, launch angle (0): '
+          (288, 8) <- ''
+
+        >>> from pygame.locals import K_4, K_5, K_PERIOD, K_BACKSPACE, K_RETURN
+        >>> mode.handle_key_press(KeyEventStub(K_4, unicode=u'4'))
+        >>> mode.handle_key_press(KeyEventStub(K_5, unicode=u'5'))
+        >>> mode.handle_key_press(KeyEventStub(K_4, unicode=u'4'))
+        >>> mode.handle_key_press(KeyEventStub(K_BACKSPACE))
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: "'" in s))
+          (8, 8) <- 'Player 1, launch angle (0): '
+          (288, 8) <- '45'
+
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: "'" in s))
+          (8, 8) <- 'Player 1, launch speed (3.0): '
+          (308, 8) <- ''
+
+        >>> mode.handle_key_press(KeyEventStub(K_4, unicode=u'2'))
+        >>> mode.handle_key_press(KeyEventStub(K_PERIOD, unicode=u'.'))
+        >>> mode.handle_key_press(KeyEventStub(K_PERIOD, unicode=u'.'))
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        >>> mode.handle_key_press(KeyEventStub(K_BACKSPACE))
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        Fire missile!
+
+        >>> mode.draw(PrintingSurfaceStub(filter=lambda s: "'" in s))
+          (8, 8) <- 'Player 2, launch angle (0): '
+          (288, 8) <- ''
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        >>> mode.handle_key_press(KeyEventStub(K_RETURN))
+        Fire missile!
+
+        >>> mode.handle_mouse_release(MouseEventStub(type=MOUSEBUTTONUP))
+        Enter game menu!
+
+        >>> mode.handle_mouse_release(MouseEventStub(button=2))
 
     """
 
