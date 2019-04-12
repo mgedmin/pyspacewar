@@ -887,35 +887,6 @@ class FadingImage(object):
         surface.blit(self.image, (x, y))
 
 
-class NumericFadingImage(object):
-    """An image that can smoothly fade away.
-
-    Implemented using Numeric arrays to scale the alpha channel on the fly.
-    """
-
-    def __init__(self, image):
-        import Numeric
-        self.image = image
-        self.mask = pygame.surfarray.array_alpha(image).astype(Numeric.Int)
-        if hasattr(pygame.surfarray, 'use_arraytype'):
-            # This is a global switch, which breaks the abstraction a bit. :(
-            pygame.surfarray.use_arraytype('numeric')
-
-    def draw(self, surface, x, y, alpha):
-        """Draw the image.
-
-        ``alpha`` is a floating point value between 0 and 255.
-        """
-        import Numeric
-        array = pygame.surfarray.pixels_alpha(self.image)
-        # It might be possible to do this in a simpler way: see
-        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2915311
-        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2814793
-        array[...] = (self.mask * alpha / 255).astype(Numeric.UnsignedInt8)
-        del array  # unlock the surface before blitting
-        surface.blit(self.image, (x, y))
-
-
 class NumPyFadingImage(object):
     """An image that can smoothly fade away.
 
@@ -951,7 +922,7 @@ class HUDTitle(HUDElement):
         HUDElement.__init__(self, image.get_width(), image.get_height(),
                             xalign, yalign)
         self.alpha = 255
-        for cls in NumPyFadingImage, NumericFadingImage, FadingImage:
+        for cls in NumPyFadingImage, FadingImage:
             try:
                 self.image = cls(image)
             except ImportError:
