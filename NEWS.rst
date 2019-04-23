@@ -1,6 +1,7 @@
 Unreleased:
 
-- Support Python 3.6 and 3.7 (no actual code changes required).
+April 23, 2019: Released version 1.1.1:
+
 - Drop video mode filtering by aspect ratio (21:9 monitors exist).
 - Switch to GitHub for bug tracking.
 - Dropped support for Python 3.4.

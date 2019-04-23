@@ -2,7 +2,10 @@
 PySpaceWar version number tracker.
 """
 
-version = "1.1.1.dev0"
+# zest.releaser insists on this being stored in a variable called __version__
+# but we want version elsewhere in the codebase.
+__version__ = '1.1.1'
+version = __version__
 
 
 def get_git_revision(unknown='', format=' (git %s)'):

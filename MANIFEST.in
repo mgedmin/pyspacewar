@@ -25,3 +25,8 @@ include LICENSE
 
 # added by check_manifest.py
 include *.mk
+
+# added by check_manifest.py
+include *.py
+include *.xml
+include pytest.ini
