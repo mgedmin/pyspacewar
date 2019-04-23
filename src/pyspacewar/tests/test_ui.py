@@ -1627,6 +1627,7 @@ def doctest_ControlsMenuMode():
         >>> mode.handle_key_press(KeyEventStub(K_RETURN))
         Play menu sound!
         >>> ui.ui_mode
+        ... # doctest: +ELLIPSIS
         <pyspacewar.ui.WaitingForControlMode object at ...>
 
     """
