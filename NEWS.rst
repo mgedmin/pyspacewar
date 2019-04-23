@@ -1,5 +1,7 @@
 Unreleased:
 
+- Nothing changed yet.
+
 April 23, 2019: Released version 1.1.1:
 
 - Drop video mode filtering by aspect ratio (21:9 monitors exist).
