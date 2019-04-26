@@ -770,7 +770,7 @@ def doctest_HUDCompass():
     """
 
 
-def doctest_HUDCompass_8bpp():
+def doctest_HUDCompass_no_antialiasing():
     """Test for HUDCompass
 
         >>> from pyspacewar.ui import HUDCompass, Viewport
@@ -780,7 +780,7 @@ def doctest_HUDCompass_8bpp():
         >>> viewport = Viewport(SurfaceStub())
         >>> compass = HUDCompass(world, ship, viewport)
 
-        >>> compass.draw(PrintingSurfaceStub(bitsize=8))
+        >>> compass.draw(PrintingSurfaceStub(bitsize=16))
         (10, 490) <- <Surface(100x100)>[alpha=229]
           (0, 0)..(99, 99) <- fill(<colorkey>)
           (50, 50) <- circle(#001122, 50)
