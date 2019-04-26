@@ -888,6 +888,90 @@ def doctest_HUDMenu():
     """
 
 
+def doctest_HUDMenu_scrolling():
+    r"""Test for HUDMenu
+
+        >>> from pyspacewar.ui import HUDMenu
+        >>> font = FontStub()
+        >>> menu = HUDMenu(font, [
+        ...     'Item {}'.format(n) for n in range(6)
+        ... ])
+        >>> surface = PrintingSurfaceStub(
+        ...     size=(200, 200),
+        ...     filter=lambda s: 'colorkey' not in s,
+        ... )
+        >>> menu.draw(surface)
+        (38, 12) <- <Surface(124x272)>[(0, 0)..(123, 175)][alpha=229.5]
+          (0, 0)..(123, 31) <- fill(#d23030)
+          (32, 8) <- 'Item 0'
+          (0, 48)..(123, 79) <- fill(#781818)
+          (32, 56) <- 'Item 1'
+          (0, 96)..(123, 127) <- fill(#781818)
+          (32, 104) <- 'Item 2'
+          (0, 144)..(123, 175) <- fill(#781818)
+          (32, 152) <- 'Item 3'
+          (0, 192)..(123, 223) <- fill(#781818)
+          (32, 200) <- 'Item 4'
+          (0, 240)..(123, 271) <- fill(#781818)
+          (32, 248) <- 'Item 5'
+
+    If we look closely we can see that the menu is larger than the
+    screen surface so only the upper part of it was displayed.
+
+        >>> menu.full_height
+        272
+        >>> menu.height
+        176
+        >>> menu.top
+        0
+
+    Scrolling happens automatically if you select an item below the
+    displayed portion.
+
+        >>> menu.selected_item = 5
+        >>> menu.draw(surface)
+        (38, 12) <- <Surface(124x272)>[(0, 96)..(123, 271)][alpha=229.5]
+          (0, 0)..(123, 31) <- fill(#781818)
+          (32, 8) <- 'Item 0'
+          (0, 48)..(123, 79) <- fill(#781818)
+          (32, 56) <- 'Item 1'
+          (0, 96)..(123, 127) <- fill(#781818)
+          (32, 104) <- 'Item 2'
+          (0, 144)..(123, 175) <- fill(#781818)
+          (32, 152) <- 'Item 3'
+          (0, 192)..(123, 223) <- fill(#781818)
+          (32, 200) <- 'Item 4'
+          (0, 240)..(123, 271) <- fill(#d23030)
+          (32, 248) <- 'Item 5'
+
+        >>> menu.top
+        96
+
+    Scrolling also happens automatically if you select an item above the
+    displayed portion.
+
+        >>> menu.selected_item = 1
+        >>> menu.draw(surface)
+        (38, 12) <- <Surface(124x272)>[(0, 48)..(123, 223)][alpha=229.5]
+          (0, 0)..(123, 31) <- fill(#781818)
+          (32, 8) <- 'Item 0'
+          (0, 48)..(123, 79) <- fill(#d23030)
+          (32, 56) <- 'Item 1'
+          (0, 96)..(123, 127) <- fill(#781818)
+          (32, 104) <- 'Item 2'
+          (0, 144)..(123, 175) <- fill(#781818)
+          (32, 152) <- 'Item 3'
+          (0, 192)..(123, 223) <- fill(#781818)
+          (32, 200) <- 'Item 4'
+          (0, 240)..(123, 271) <- fill(#781818)
+          (32, 248) <- 'Item 5'
+
+        >>> menu.top
+        48
+
+    """
+
+
 def doctest_HUDControlsMenu():
     r"""Test for HUDControlsMenu
 
