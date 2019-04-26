@@ -1291,6 +1291,12 @@ def doctest_UIMode():
         >>> ui.viewport.scale
         1.0
 
+    Key events are passed to registered key handlers, but there are
+    no default ones, so nothing much happens.
+
+        >>> from pygame.locals import K_a
+        >>> mode.handle_key_press(KeyEventStub(K_a))
+
     And that's pretty much it.
 
         >>> mode.leave()
@@ -1877,6 +1883,18 @@ def doctest_PlayMode():
         ...     MouseEventStub(button=4, type=MOUSEBUTTONUP))
         >>> ui.viewport.scale
         1.25
+
+    Keyboard controls are remappable
+
+        >>> from pygame.locals import K_f
+        >>> ui.rev_controls[K_f] = 'P1_FIRE'
+        >>> mode.handle_key_press(KeyEventStub(K_f))
+        Player 0, fire missile!
+
+        >>> from pygame.locals import K_h
+        >>> ui.controls['P1_LEFT'] = [K_h]
+        >>> mode.handle_held_keys(PressedKeysStub(K_h))
+        Player 0, turn left!
 
     """
 
