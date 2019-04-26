@@ -616,6 +616,70 @@ def doctest_HUDFormattedText():
     """
 
 
+def doctest_HUDFormattedText_layout_pages_last_paragraph_has_keep_with_next():
+    """Test for HUDFormattedText.layout_pages
+
+        >>> from pyspacewar.ui import HUDFormattedText
+        >>> font = FontStub()
+        >>> bold_font = FontStub()
+        >>> text = u'''
+        ... = Hello =
+        ...
+        ... Lorem ipsum et cetera and so on blah blah blah.
+        ...
+        ... = And another thing =
+        ...
+        ... when splitting pages we keep titles together with the
+        ... text that follows them.
+        ...
+        ... = And the last thing =
+        ... '''.strip()
+        >>> help_text = HUDFormattedText(font, bold_font, text)
+        >>> pages = help_text.layout_pages(text, (300, 100))
+
+    This lays out the text onto multiple pages.
+
+        >>> for n, page in enumerate(pages):
+        ...     print('Page {}:'.format(n))
+        ...     for para_size, para in page:
+        ...         print('- paragraph (height={})'.format(para_size))
+        Page 0:
+        - paragraph (height=64)
+        Page 1:
+        - paragraph (height=80)
+        Page 2:
+        - paragraph (height=16)
+
+    There's one paragraph on each page because the title has been
+    merged together with the following text, to keep them on the same
+    page.
+    """
+
+
+def doctest_HUDFormattedText_render_text_no_pages():
+    """Test for HUDFormattedText.layout_pages
+
+        >>> from pyspacewar.ui import HUDFormattedText
+        >>> font = FontStub()
+        >>> bold_font = FontStub()
+        >>> text = ''
+        >>> help_text = HUDFormattedText(font, bold_font, text)
+        >>> help_text.split_to_paragraphs(text)
+        ['']
+        >>> help_text.layout_pages(text, (300, 100))
+        [[(0, [])]]
+        >>> help_text.draw(PrintingSurfaceStub())
+        (30, 30) <- <Surface(740x540)>[alpha=242]
+          (0, 0)..(739, 539) <- fill(#010208)
+          (0, 0) <- <colorkey>
+          (0, 539) <- <colorkey>
+          (739, 0) <- <colorkey>
+          (739, 539) <- <colorkey>
+        (620, 514) <- 'Page 1 of 1'
+
+    """
+
+
 def doctest_HUDInfoPanel():
     """Tests for HUDInfoPanel
 

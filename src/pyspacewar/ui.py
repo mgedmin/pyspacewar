@@ -653,7 +653,7 @@ class HUDFormattedText(HUDElement):
         last_item_size = 0
         last_item_bits = []
         items = []
-        for paragraph in self.split_to_paragraphs(self.text):
+        for paragraph in self.split_to_paragraphs(text):
             size, bits, keep_with_next = self.layout_paragraph(paragraph,
                                                                width)
             if last_item_bits:  # join with previous
@@ -681,7 +681,10 @@ class HUDFormattedText(HUDElement):
         pages = self.layout_pages(self.text, (width, height))
         self.n_pages = len(pages)
         if not pages:
-            return
+            # This cannot happen due to the way str.split() works in
+            # python -- we'll always have at least one page with at
+            # least one paragraph, even if it is empty.
+            return  # pragma: nocover
         self.page = max(0, min(self.page, len(pages)-1))
         left = page_rect.left
         top = page_rect.top
