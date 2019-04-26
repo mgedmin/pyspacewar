@@ -17,10 +17,11 @@ from pyspacewar.ui import key_name
 
 class SurfaceStub(object):
 
-    def __init__(self, size=(800, 600)):
+    def __init__(self, size=(800, 600), bitsize=32):
         self.w, self.h = size
         self.alpha = 255
         self.colorkey = None
+        self.bitsize = bitsize
         self._ops = []
 
     def get_width(self):
@@ -36,7 +37,7 @@ class SurfaceStub(object):
         return Rect(0, 0, self.w, self.h)
 
     def get_bitsize(self):
-        return 32
+        return self.bitsize
 
     def set_alpha(self, alpha):
         self.alpha = alpha
@@ -112,8 +113,8 @@ class SurfaceStub(object):
 
 class PrintingSurfaceStub(SurfaceStub):
 
-    def __init__(self, size=(800, 600), filter=None):
-        super(PrintingSurfaceStub, self).__init__(size)
+    def __init__(self, size=(800, 600), filter=None, bitsize=32):
+        super(PrintingSurfaceStub, self).__init__(size, bitsize)
         self.filter = filter
 
     def _record(self, op):
@@ -760,6 +761,27 @@ def doctest_HUDCompass():
           (49, 49) <- circle(#aa7766, 2)
           (50, 50)..(95, 50) <- aaline(#445566)
           (50, 50)..(50, 50) <- aaline(#99aaff)
+
+    """
+
+
+def doctest_HUDCompass_8bpp():
+    """Test for HUDCompass
+
+        >>> from pyspacewar.ui import HUDCompass, Viewport
+        >>> from pyspacewar.world import World, Ship, Vector
+        >>> world = World()
+        >>> ship = Ship(velocity=Vector(1.0, 1.0))
+        >>> viewport = Viewport(SurfaceStub())
+        >>> compass = HUDCompass(world, ship, viewport)
+
+        >>> compass.draw(PrintingSurfaceStub(bitsize=8))
+        (10, 490) <- <Surface(100x100)>[alpha=229]
+          (0, 0)..(99, 99) <- fill(<colorkey>)
+          (50, 50) <- circle(#001122, 50)
+          (50, 50) <- #99aaff
+          (50, 50)..(95, 50) <- line(#445566)
+          (50, 50)..(81, 19) <- line(#99aaff)
 
     """
 
