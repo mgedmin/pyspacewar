@@ -129,7 +129,10 @@ class TextSurfaceStub(SurfaceStub):
         self.text = text
 
     def __repr__(self):
-        return repr(str(self.text))
+        text = self.text
+        if not isinstance(text, str):
+            text = text.encode('UTF-8')
+        return repr(text)
 
 
 class FontStub(object):
@@ -1990,6 +1993,48 @@ def doctest_HelpMode():
         >>> from pygame.locals import K_PAGEDOWN, K_PAGEUP
         >>> mode.handle_key_press(KeyEventStub(K_PAGEDOWN))
         >>> mode.handle_key_press(KeyEventStub(K_PAGEUP))
+        >>> mode.handle_mouse_release(MouseEventStub())
+
+        >>> ui.ui_mode
+        <GameModeStub>
+
+    """
+
+
+def doctest_HelpMode_more_pages():
+    """Test for HelpMode
+
+        >>> from pyspacewar.ui import HelpMode
+        >>> ui = UIStub()
+        >>> mode = HelpMode(ui)
+        >>> mode.enter(prev_mode=GameModeStub())
+
+    We need to draw once to do layout
+
+        >>> mode.draw(SurfaceStub())
+        >>> mode.help_text.page
+        0
+        >>> mode.help_text.n_pages
+        3
+
+    We can page with the keyboard
+
+        >>> from pygame.locals import K_PAGEDOWN, K_PAGEUP
+        >>> mode.handle_key_press(KeyEventStub(K_PAGEDOWN))
+        >>> mode.help_text.page
+        1
+        >>> mode.handle_key_press(KeyEventStub(K_PAGEUP))
+        >>> mode.help_text.page
+        0
+
+    We can page with the mouse
+
+        >>> mode.handle_mouse_release(MouseEventStub())
+        >>> mode.help_text.page
+        1
+        >>> mode.handle_mouse_release(MouseEventStub())
+        >>> mode.help_text.page
+        2
         >>> mode.handle_mouse_release(MouseEventStub())
 
         >>> ui.ui_mode
