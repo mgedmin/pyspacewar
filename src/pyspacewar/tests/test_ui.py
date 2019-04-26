@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-import unittest
 import doctest
-import sys
 import os
+import shutil
+import sys
+import tempfile
+import unittest
 
 import pytest
 import pygame
@@ -2048,8 +2050,56 @@ def doctest_GameUI():
 
         >>> from pyspacewar.ui import GameUI
         >>> ui = GameUI()
+        >>> ui.load_settings()
         >>> ui.load_settings('/dev/null')
         >>> ui.init()
+
+    """
+
+
+def doctest_GameUI_load_settings():
+    """Test for GameUI
+
+        >>> tmpdir = tempfile.mkdtemp(prefix='pyspacewar-test-')
+        >>> filename = os.path.join(tmpdir, 'pyspacewarrc')
+        >>> with open(filename, 'w') as fp:
+        ...    _ = fp.write('''
+        ... [video]
+        ... mode = 1366x768
+        ...
+        ... [controls]
+        ... p2_left = None
+        ... ''')
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.load_settings(filename)
+
+        >>> ui.fullscreen_mode
+        (1366, 768)
+        >>> ui.controls['P2_LEFT']
+        [None]
+
+        >>> shutil.rmtree(tmpdir)
+
+    """
+
+
+def doctest_GameUI_save_settings():
+    """Test for GameUI
+
+        >>> tmpdir = tempfile.mkdtemp(prefix='pyspacewar-test-')
+        >>> filename = os.path.join(tmpdir, 'pyspacewarrc')
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.fullscreen_mode = (1366, 768)
+        >>> ui.save_settings(filename)
+
+        >>> os.path.exists(filename)
+        True
+
+        >>> shutil.rmtree(tmpdir)
 
     """
 
