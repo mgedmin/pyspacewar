@@ -1925,10 +1925,15 @@ class GameUI(object):
         for action, key in DEFAULT_CONTROLS.items():
             self.set_control(action, key)
 
-    def load_settings(self, filename=None):
-        """Load settings from a configuration file."""
+    def get_settings_filename(self, filename=None):
+        """Determine the filename for the settings file."""
         if not filename:
             filename = os.path.expanduser('~/.pyspacewarrc')
+        return filename
+
+    def load_settings(self, filename=None):
+        """Load settings from a configuration file."""
+        filename = self.get_settings_filename(filename)
         config = self.get_config_parser()
         config.read([filename])
         self.fullscreen = config.getboolean('video', 'fullscreen')
@@ -1957,8 +1962,7 @@ class GameUI(object):
 
     def save_settings(self, filename=None):
         """Save settings to a configuration file."""
-        if not filename:
-            filename = os.path.expanduser('~/.pyspacewarrc')
+        filename = self.get_settings_filename(filename)
         config = self.get_config_parser()
         with open(filename, 'w') as f:
             config.write(f)
