@@ -1757,7 +1757,7 @@ def doctest_SoundOptionsMenuMode():
 
 
 def doctest_ControlsMenuMode():
-    """Test for ControlsMenuMode
+    r"""Test for ControlsMenuMode
 
         >>> from pyspacewar.ui import ControlsMenuMode
         >>> ui = UIStub()
@@ -1805,6 +1805,16 @@ def doctest_ControlsMenuMode():
         >>> ui.ui_mode
         ... # doctest: +ELLIPSIS
         <pyspacewar.ui.WaitingForControlMode object at ...>
+
+    Note that menu item selection skips labels such as "Player 1"
+
+        >>> from pygame.locals import K_UP, K_DOWN
+        >>> mode.handle_key_press(KeyEventStub(K_UP))
+        >>> mode.menu.items[mode.menu.selected_item]
+        'Return to options menu'
+        >>> mode.handle_key_press(KeyEventStub(K_DOWN))
+        >>> mode.menu.items[mode.menu.selected_item]
+        'Turn left\t(unset)'
 
     """
 
