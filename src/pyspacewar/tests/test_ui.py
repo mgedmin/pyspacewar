@@ -2268,6 +2268,39 @@ def doctest_GameUI_resize_window():
     """
 
 
+def doctest_GameUI_no_sound():
+    """Test for GameUI
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.sound_available = False
+
+        >>> ui._load_sounds()
+        >>> ui.sounds
+        {}
+
+    """
+
+
+def doctest_GameUI_sound_file_load_failure():
+    """Test for GameUI
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.sound_available = True
+        >>> ui._sound_effect_names = ['bounce', 'respawn']
+        >>> patch('pygame.mixer.Sound', side_effect=pygame.error('bad format!'))
+
+        >>> ui._load_sounds()
+        pyspacewar: could not load electricshock.wav
+        pyspacewar: could not load coin2.wav
+
+        >>> ui.sounds
+        {}
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()

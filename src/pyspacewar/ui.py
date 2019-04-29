@@ -2121,6 +2121,10 @@ class GameUI(object):
             # of subsequent blits
             self.background_surface = scaled.convert()
 
+    _sound_effect_names = [
+        'thruster', 'fire', 'bounce', 'hit', 'explode', 'respawn', 'menu',
+    ]
+
     def _load_sounds(self):
         """Load sound effects."""
         self.sounds = {}
@@ -2130,8 +2134,7 @@ class GameUI(object):
         config = ConfigParser()
         config.add_section('sounds')
         config.read([find('sounds', 'sounds.ini')])
-        for name in ['thruster', 'fire', 'bounce', 'hit', 'explode', 'respawn',
-                     'menu']:
+        for name in self._sound_effect_names:
             if config.has_option('sounds', name):
                 filename = config.get('sounds', name)
                 if filename:
