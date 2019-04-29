@@ -2056,7 +2056,7 @@ class GameUI(object):
         # when there are too many missiles around.
         return (800, 600)
 
-    def _set_display_mode(self):
+    def _set_display_mode(self, _depth=0):
         """Set display mode."""
         if self.fullscreen:
             # Consider using DOUBLEBUF and HWSURFACE flags here

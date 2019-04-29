@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 
+import mock
 import pytest
 import pygame
 from pygame.locals import (
@@ -2144,6 +2145,10 @@ def do_not_work():
     raise pygame.error("it don't work!")
 
 
+def patch(*a, **kw):
+    mock.patch(*a, **kw).start()
+
+
 def doctest_GameUI_audio_problems():
     """Test for GameUI
 
@@ -2152,8 +2157,8 @@ def doctest_GameUI_audio_problems():
 
     Let's pretend the pygame mixer initialization failed
 
-        >>> pygame.mixer.get_init = lambda: False
-        >>> pygame.mixer.init = do_not_work
+        >>> patch('pygame.mixer.get_init', lambda: False)
+        >>> patch('pygame.mixer.init', do_not_work)
 
     We want to display an error message to the console
 
@@ -2164,7 +2169,7 @@ def doctest_GameUI_audio_problems():
 
     However if repeated initialization succeeds, then we're happy
 
-        >>> pygame.mixer.init = lambda: None
+        >>> patch('pygame.mixer.init', lambda: None)
         >>> ui._init_pygame()
         >>> ui.sound_available
         True
@@ -2172,8 +2177,85 @@ def doctest_GameUI_audio_problems():
     """
 
 
-@pytest.fixture(scope='module', autouse=True)
-def setUp(test=None, doctest_namespace=None):
+def doctest_GameUI_display_mode_fullscreen():
+    """Test for GameUI
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+
+    Some preparation is required
+
+        >>> ui.fullscreen_mode = (800, 600)
+        >>> ui.fullscreen = True
+        >>> ui._load_background()
+
+    We can now set a fullscreen display mode
+
+        >>> ui._set_display_mode()
+
+    """
+
+
+def doctest_GameUI_display_mode_24bpp():
+    """Test for GameUI
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+
+    Some preparation is required
+
+        >>> ui.fullscreen_mode = (800, 600)
+        >>> ui.fullscreen = True
+        >>> ui._load_background()
+
+    Let's pretend we're using a 24 bits per pixel mode
+
+        >>> patch('pygame.display.set_mode',
+        ...       return_value=SurfaceStub(bitsize=24))
+
+        >>> ui._set_display_mode()
+
+        >>> ui.draw_line == pygame.draw.aaline
+        True
+
+    """
+
+
+def doctest_GameUI_display_mode_16bpp():
+    """Test for GameUI
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+
+    Some preparation is required
+
+        >>> ui.fullscreen_mode = (800, 600)
+        >>> ui.fullscreen = True
+        >>> ui._load_background()
+
+    Let's pretend we're using a 16 bits per pixel mode
+
+        >>> patch('pygame.display.set_mode',
+        ...       return_value=SurfaceStub(bitsize=16))
+
+        >>> ui._set_display_mode()
+
+        >>> ui.draw_line == pygame.draw.line
+        True
+
+    """
+
+
+@pytest.yield_fixture(autouse=True)
+def _pytest_setup(doctest_namespace):
+    fake_test = mock.Mock()
+    fake_test.globs = doctest_namespace
+    setUp(fake_test)
+    yield
+    tearDown(fake_test)
+
+
+def setUp(test):
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
@@ -2187,6 +2269,10 @@ def setUp(test=None, doctest_namespace=None):
     pygame.surfarray.pixels_alpha = pixels_alpha_stub
 
 
+def tearDown(test):
+    mock.patch.stopall()
+
+
 def test_suite():
     path = os.path.normpath(
         os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -2198,7 +2284,7 @@ def test_suite():
     )
     return unittest.TestSuite([
         doctest.DocTestSuite('pyspacewar.ui', optionflags=optionflags,
-                             setUp=setUp),
+                             setUp=setUp, tearDown=tearDown),
         doctest.DocTestSuite(optionflags=optionflags),
     ])
 
