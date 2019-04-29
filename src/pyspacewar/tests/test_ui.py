@@ -2104,6 +2104,42 @@ def doctest_GameUI_save_settings():
     """
 
 
+class UIModeStub:
+
+    def __init__(self, name):
+        self.name = name
+
+    def enter(self, prev_mode):
+        print("Entering {} mode!".format(self.name))
+
+    def leave(self, new_mode):
+        print("Leaving {} mode!".format(self.name))
+
+
+def doctest_GameUI_ui_mode():
+    """Test for GameUI.ui_mode
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+
+    Initially the mode is None
+
+        >>> ui.ui_mode
+
+    We can change it to something else
+
+        >>> ui.ui_mode = UIModeStub('first')
+        Entering first mode!
+
+    Changing it automatically calls leave() on the old mode
+
+        >>> ui.ui_mode = UIModeStub('second')
+        Leaving first mode!
+        Entering second mode!
+
+    """
+
+
 @pytest.fixture(scope='module', autouse=True)
 def setUp(test=None):
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
