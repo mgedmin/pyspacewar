@@ -2140,8 +2140,40 @@ def doctest_GameUI_ui_mode():
     """
 
 
+def do_not_work():
+    raise pygame.error("it don't work!")
+
+
+def doctest_GameUI_audio_problems():
+    """Test for GameUI
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+
+    Let's pretend the pygame mixer initialization failed
+
+        >>> pygame.mixer.get_init = lambda: False
+        >>> pygame.mixer.init = do_not_work
+
+    We want to display an error message to the console
+
+        >>> ui._init_pygame()
+        pyspacewar: disabling sound: it don't work!
+        >>> ui.sound_available
+        False
+
+    However if repeated initialization succeeds, then we're happy
+
+        >>> pygame.mixer.init = lambda: None
+        >>> ui._init_pygame()
+        >>> ui.sound_available
+        True
+
+    """
+
+
 @pytest.fixture(scope='module', autouse=True)
-def setUp(test=None):
+def setUp(test=None, doctest_namespace=None):
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
