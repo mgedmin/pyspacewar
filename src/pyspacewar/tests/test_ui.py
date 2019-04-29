@@ -2279,6 +2279,10 @@ def doctest_GameUI_no_sound():
         >>> ui.sounds
         {}
 
+        >>> ui._load_music()
+        >>> ui.music_files
+        {}
+
     """
 
 
