@@ -2246,6 +2246,28 @@ def doctest_GameUI_display_mode_16bpp():
     """
 
 
+def doctest_GameUI_resize_window():
+    """Test for GameUI
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+
+    Some preparation is required
+
+        >>> ui._load_background()
+
+    When a user resizes the game window, we get an event and handle it
+
+        >>> ui._resize_window((810, 609))
+
+        >>> ui.screen.get_size()
+        (810, 609)
+        >>> ui.background_surface.get_size()
+        (810, 609)
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
