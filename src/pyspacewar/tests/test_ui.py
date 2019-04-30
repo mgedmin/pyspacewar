@@ -2406,6 +2406,17 @@ def doctest_GameUI_count_trails():
     """
 
 
+def doctest_GameUI_keep_ships_visible():
+    """Test for GameUI._keep_ships_visible
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui._keep_ships_visible()
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
