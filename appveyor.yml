@@ -15,7 +15,7 @@ init:
 install:
   - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - python --version
-  - pip install pytest
+  - pip install pytest mock
   - pip install -e .
   - 'python -c "import pygame; print(pygame.__version__)"'
 
