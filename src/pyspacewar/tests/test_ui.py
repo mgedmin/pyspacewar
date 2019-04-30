@@ -2383,6 +2383,17 @@ def doctest_GameUI_start_sound_stop_sound():
     """
 
 
+def doctest_GameUI_new_game():
+    """Test for GameUI._new_game
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui._new_game(1)
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
