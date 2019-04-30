@@ -2394,6 +2394,18 @@ def doctest_GameUI_new_game():
     """
 
 
+def doctest_GameUI_count_trails():
+    """Test for GameUI_count_trails
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.missile_trails = {}
+        >>> ui._count_trails()
+        0
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
