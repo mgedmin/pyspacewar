@@ -2305,6 +2305,59 @@ def doctest_GameUI_sound_file_load_failure():
     """
 
 
+def doctest_GameUI_play_music_no_sound_available():
+    """Test for GameUI.play_music
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.sound_available = False
+        >>> ui.play_music('demo')
+
+    Nothing happens
+    """
+
+
+def doctest_GameUI_play_music_when_disabled():
+    """Test for GameUI.play_music
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.sound_available = True
+        >>> ui.music = False
+        >>> ui.play_music('demo')
+
+    Nothing happens
+    """
+
+
+def doctest_GameUI_play_music_again():
+    """Test for GameUI.play_music
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.sound_available = True
+        >>> ui.music = True
+        >>> ui.music_files = {}
+        >>> ui.play_music('demo')
+        >>> ui.play_music('demo')
+
+    """
+
+
+def doctest_GameUI_play_music_failure():
+    """Test for GameUI.play_music
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.sound_available = True
+        >>> ui.music = True
+        >>> ui.music_files = {'demo': 'nosuchfile.ogg'}
+        >>> ui.play_music('demo')
+        pyspacewar: could not load nosuchfile.ogg
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
