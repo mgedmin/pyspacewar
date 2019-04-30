@@ -2358,6 +2358,18 @@ def doctest_GameUI_play_music_failure():
     """
 
 
+def doctest_GameUI_play_sound():
+    """Test for GameUI.play_sound
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.sound_available = True
+        >>> ui._load_sounds()
+        >>> ui.play_sound('respawn')
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
