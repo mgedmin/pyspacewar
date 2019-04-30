@@ -2417,6 +2417,74 @@ def doctest_GameUI_keep_ships_visible():
     """
 
 
+def doctest_GameUI_interact():
+    """Test for GameUI.interact
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.interact()
+
+    Things are more interesting when there are actual events to process!
+
+    Clicking the close button on the window decoration:
+
+        >>> from pygame.locals import QUIT
+        >>> event = pygame.event.Event(QUIT)
+        >>> pygame.event.post(event)
+        >>> try:
+        ...     ui.interact()
+        ... except SystemExit as e:
+        ...     print("Exit: %s" % e)
+        Exit: 0
+
+    Resizing the game window
+
+        >>> from pygame.locals import VIDEORESIZE
+        >>> event = pygame.event.Event(VIDEORESIZE, size=(802, 600))
+        >>> pygame.event.post(event)
+        >>> ui.interact()
+
+    Bashing keys
+
+        >>> from pygame.locals import KEYDOWN, K_F12
+        >>> event = pygame.event.Event(KEYDOWN, key=K_F12)
+        >>> pygame.event.post(event)
+        >>> ui.interact()
+
+        >>> from pygame.locals import K_RETURN, KMOD_ALT
+        >>> event = pygame.event.Event(KEYDOWN, key=K_RETURN, mod=KMOD_ALT)
+        >>> pygame.event.post(event)
+        >>> ui.interact()
+
+        >>> from pygame.locals import K_a
+        >>> event = pygame.event.Event(KEYDOWN, key=K_a)
+        >>> pygame.event.post(event)
+        >>> ui.interact()
+
+    Bashing mouse buttons
+
+        >>> from pygame.locals import MOUSEBUTTONDOWN
+        >>> event = pygame.event.Event(MOUSEBUTTONDOWN, button=1,
+        ...                            pos=(400, 300))
+        >>> pygame.event.post(event)
+        >>> ui.interact()
+
+        >>> from pygame.locals import MOUSEBUTTONUP
+        >>> event = pygame.event.Event(MOUSEBUTTONUP, button=1,
+        ...                            pos=(400, 300))
+        >>> pygame.event.post(event)
+        >>> ui.interact()
+
+        >>> from pygame.locals import MOUSEMOTION
+        >>> event = pygame.event.Event(MOUSEMOTION, buttons=[False] * 3,
+        ...                            pos=(400, 300), rel=(-10, 2))
+        >>> pygame.event.post(event)
+        >>> ui.interact()
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
