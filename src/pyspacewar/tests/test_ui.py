@@ -2549,6 +2549,19 @@ def doctest_GameUI_sound_options_menu():
     """
 
 
+def doctest_GameUI_screen_resolution_menu():
+    """Test for GameUI.screen_resolution_menu
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.screen_resolution_menu()
+        >>> ui.ui_mode
+        <ScreenResolutionMenuMode>
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
