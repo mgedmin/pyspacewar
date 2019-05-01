@@ -2681,6 +2681,43 @@ def doctest_GameUI_switch_to_mode():
     """
 
 
+def doctest_GameUI_set_control():
+    """Test for GameUI.set_control
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+
+    You can bind keys
+
+        >>> from pygame.locals import K_h
+        >>> ui.set_control('P1_LEFT', K_h)
+        >>> [key_name(k) for k in ui.controls['P1_LEFT']]
+        ['LEFT', 'H']
+        >>> ui.rev_controls[K_h]
+        'P1_LEFT'
+
+    You can rebind keys
+
+        >>> ui.set_control('P2_LEFT', K_h)
+        >>> [key_name(k) for k in ui.controls['P1_LEFT']]
+        ['LEFT']
+        >>> [key_name(k) for k in ui.controls['P2_LEFT']]
+        ['A', 'H']
+        >>> ui.rev_controls[K_h]
+        'P2_LEFT'
+
+    There's one special case where you unbind everything from an action that
+    leaves a list of one item instead of an empty list
+
+        >>> from pygame.locals import K_LEFT
+        >>> ui.set_control('P2_LEFT', K_LEFT)
+        >>> ui.controls['P1_LEFT']
+        [None]
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
