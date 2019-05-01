@@ -2644,6 +2644,19 @@ def doctest_GameUI_game_menu():
     """
 
 
+def doctest_GameUI_resume_game():
+    """Test for GameUI.resume_game
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.resume_game()
+        >>> ui.ui_mode
+        <PlayMode>
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
