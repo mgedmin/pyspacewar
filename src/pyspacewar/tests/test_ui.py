@@ -2744,6 +2744,22 @@ def doctest_GameUI_zoom_out():
     """
 
 
+def doctest_GameUI_toggle_missile_orbits():
+    """Test for GameUI.toggle_missile_orbits
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.toggle_missile_orbits()
+        >>> ui.show_missile_trails
+        False
+        >>> ui.toggle_missile_orbits()
+        >>> ui.show_missile_trails
+        True
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
