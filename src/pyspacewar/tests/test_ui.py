@@ -2510,6 +2510,19 @@ def doctest_GameUI_new_game_menu():
     """
 
 
+def doctest_GameUI_options_menu():
+    """Test for GameUI.options_menu
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.options_menu()
+        >>> ui.ui_mode
+        <OptionsMenuMode>
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
