@@ -1178,6 +1178,9 @@ class UIMode(object):
         self.clear_keymap()
         self.init()
 
+    def __repr__(self):
+        return '<{}>'.format(self.__class__.__name__)
+
     def init(self):
         """Initialize the mode."""
         pass

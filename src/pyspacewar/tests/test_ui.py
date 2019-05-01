@@ -1810,7 +1810,7 @@ def doctest_ControlsMenuMode():
         Play menu sound!
         >>> ui.ui_mode
         ... # doctest: +ELLIPSIS
-        <pyspacewar.ui.WaitingForControlMode object at ...>
+        <WaitingForControlMode>
 
     Note that menu item selection skips labels such as "Player 1"
 
@@ -2481,6 +2481,18 @@ def doctest_GameUI_interact():
         ...                            pos=(400, 300), rel=(-10, 2))
         >>> pygame.event.post(event)
         >>> ui.interact()
+
+    """
+
+
+def doctest_GameUI_pause():
+    """Test for GameUI.pause
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.pause()
+        >>> ui.ui_mode
+        <PauseMode>
 
     """
 
