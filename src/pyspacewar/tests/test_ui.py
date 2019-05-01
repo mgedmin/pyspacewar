@@ -2618,6 +2618,19 @@ def doctest_GameUI_start_two_player_game():
     """
 
 
+def doctest_GameUI_start_gravity_wars():
+    """Test for GameUI.start_gravity_wars
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.start_gravity_wars()
+        >>> ui.ui_mode
+        <GravityWarsMode>
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
