@@ -2718,6 +2718,19 @@ def doctest_GameUI_set_control():
     """
 
 
+def doctest_GameUI_zoom_in():
+    """Test for GameUI.zoom_in
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.zoom_in()
+        >>> ui.desired_zoom_level
+        1.25
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
