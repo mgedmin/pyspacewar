@@ -2575,6 +2575,19 @@ def doctest_GameUI_controls_menu():
     """
 
 
+def doctest_GameUI_watch_demo():
+    """Test for GameUI.watch_demo
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.watch_demo()
+        >>> ui.ui_mode
+        <DemoMode>
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
