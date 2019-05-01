@@ -2588,6 +2588,21 @@ def doctest_GameUI_watch_demo():
     """
 
 
+def doctest_GameUI_start_single_player_game():
+    """Test for GameUI.start_single_player_game
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.start_single_player_game()
+        >>> ui.ui_mode
+        <PlayMode>
+        >>> ui.ai_controlled
+        [False, True]
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
