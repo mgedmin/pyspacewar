@@ -2917,6 +2917,32 @@ def doctest_GameUI_draw_Ship():
     """
 
 
+def doctest_GameUI_calc_Ship_thrusters():
+    """Test for GameUI.calc_Ship_thrusters
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+
+        >>> from pyspacewar.world import Vector
+        >>> ship = ui.ships[0]
+        >>> ship.engage_brakes = True
+        >>> ship.velocity = Vector(10, 0)
+        >>> ship.direction = 45
+        >>> ui.calc_Ship_thrusters(ship)
+        (0.2, 0, 0.2, 0.2, 0, 0)
+
+        >>> ship.direction = 360 - 45
+        >>> ui.calc_Ship_thrusters(ship)
+        (0.2, 0, 0, 0, 0.2, 0.2)
+
+        >>> ship.direction = 135
+        >>> ui.calc_Ship_thrusters(ship)
+        (0, 0.4, 0.2, 0.2, 0, 0)
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
