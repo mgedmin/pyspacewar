@@ -2972,6 +2972,21 @@ def doctest_GameUI_missile_trails():
     """
 
 
+def doctest_GameUI_draw_Missile():
+    """Test for GameUI.draw_Missile
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.start_single_player_game()
+        >>> ui.launch_missile(0)
+        >>> ui.update_missile_trails()
+        >>> [(missile, trail)] = ui.missile_trails.items()
+        >>> ui.draw_Missile(missile)
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
