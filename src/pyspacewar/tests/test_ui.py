@@ -66,7 +66,7 @@ class SurfaceStub(object):
             subset = "[(%s, %s)..(%s, %s)]" % (ax, ay, ax + aw - 1, ay + ah - 1)
         else:
             subset = ""
-        if what.alpha != 255:
+        if isinstance(what, SurfaceStub) and what.alpha != 255:
             subset += "[alpha=%s]" % what.alpha
         self._record("(%s, %s) <- %r%s" % (x, y, what, subset))
         if isinstance(what, SurfaceStub):
@@ -2877,6 +2877,22 @@ def doctest_GameUI_update_continuous_sounds():
         >>> ui.update_continuous_sounds()
         >>> list(ui.sound_looping)
         ['thruster']
+
+    """
+
+
+def doctest_GameUI_draw():
+    """Test for GameUI.draw
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.screen = SurfaceStub()
+
+        >>> ui.draw()
+
+        >>> ui.show_debug_info = True
+        >>> ui.draw()
 
     """
 
