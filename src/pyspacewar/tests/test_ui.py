@@ -2831,14 +2831,20 @@ def doctest_GameUI_toggle_ai():
     """
 
 
-def doctest_GameUI_turn_left():
-    """Test for GameUI.turn_left
+def doctest_GameUI_player_actions():
+    """Test for GameUI.turn_left and other player actions
 
         >>> from pyspacewar.ui import GameUI
         >>> ui = GameUI()
         >>> ui.init()
         >>> ui.start_single_player_game()
+
         >>> ui.turn_left(0)
+        >>> ui.turn_right(0)
+        >>> ui.accelerate(0)
+        >>> ui.backwards(0)
+        >>> ui.brake(0)
+        >>> ui.launch_missile(0)
 
     """
 
