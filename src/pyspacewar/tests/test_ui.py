@@ -2987,6 +2987,23 @@ def doctest_GameUI_draw_Missile():
     """
 
 
+def doctest_GameUI_draw_Debris():
+    """Test for GameUI.draw_Missile
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.ships[0].die()
+        >>> from pyspacewar.world import Debris
+        >>> for obj in ui.game.world.objects:
+        ...     if isinstance(obj, Debris):
+        ...         debris = obj
+        ...         break
+        >>> ui.draw_Debris(debris)
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
