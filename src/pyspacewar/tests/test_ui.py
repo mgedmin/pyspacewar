@@ -481,6 +481,26 @@ def doctest_FrameRateCounter_fps():
     """
 
 
+def doctest_FrameRateCounter_fps_no_division_by_zero():
+    """Tests for FrameRateCounter.fps
+
+        >>> from pyspacewar.ui import FrameRateCounter
+        >>> frc = FrameRateCounter()
+        >>> frc.frames = []
+        >>> frc.fps()
+        0
+
+        >>> frc.frames = [1000]
+        >>> frc.fps()
+        0
+
+        >>> frc.frames += [1000]
+        >>> frc.fps()
+        0
+
+    """
+
+
 def doctest_FrameRateCounter_notional_fps():
     """Tests for FrameRateCounter.notional_fps
 
