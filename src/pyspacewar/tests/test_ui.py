@@ -2818,6 +2818,19 @@ def doctest_GameUI_toggle_sound_in_vacuum():
     """
 
 
+def doctest_GameUI_toggle_ai():
+    """Test for GameUI.toggle_ai
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+
+        >>> ui.toggle_ai(1)
+        >>> ui.toggle_ai(1)
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
