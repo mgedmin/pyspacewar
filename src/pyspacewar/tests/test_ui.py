@@ -2760,6 +2760,27 @@ def doctest_GameUI_toggle_missile_orbits():
     """
 
 
+def doctest_GameUI_toggle_music():
+    """Test for GameUI.toggle_music
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+
+        >>> ui.toggle_music()
+        >>> ui.music
+        False
+
+        >>> ui.toggle_music()
+        >>> ui.music
+        True
+
+        >>> ui.sound_available = False
+        >>> ui.toggle_music()
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
