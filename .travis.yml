@@ -5,8 +5,8 @@ python:
     - 3.5
     - 3.6
     - 3.7
-    - pypy2.7-6.0.0
-    - pypy3.5-6.0.0
+    - pypy
+    - pypy3
 before_install:
     - sudo apt-get update -q
     - sudo apt-get build-dep -y python-pygame
@@ -16,7 +16,7 @@ before_install:
       if [ -L $include_dir ]; then
         # pygame tries to install stuff into $include_dir/site/pygame,
         # which will not work if $include_dir is a symlink to a read-only
-        # system-wide include dir as is the case for pypy2.7 and pypy3.5
+        # system-wide include dir as is the case for pypy and pypy3
         # (but not cpython for some reason)
         real_include_dir=$(readlink $include_dir)
         rm $include_dir
