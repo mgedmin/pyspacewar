@@ -2897,6 +2897,26 @@ def doctest_GameUI_draw():
     """
 
 
+def doctest_GameUI_draw_Ship():
+    """Test for GameUI.draw_Ship
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.screen = SurfaceStub()
+        >>> ui.start_two_player_game()
+        >>> ui.accelerate(0)
+        >>> ui.backwards(0)
+        >>> ui.turn_left(0)
+        >>> ui.ships[0].dead = True
+        >>> ui.draw_Ship(ui.ships[0])
+
+        >>> ui.turn_right(1)
+        >>> ui.draw_Ship(ui.ships[1])
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
