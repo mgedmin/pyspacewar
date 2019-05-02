@@ -440,6 +440,8 @@ class FrameRateCounter(object):
         if len(self.frames) < 2:
             return 0
         ms = self.frames[-1] - self.frames[0]
+        if ms == 0:
+            return 0
         frames = len(self.frames) - 1
         return frames * 1000.0 / ms
 

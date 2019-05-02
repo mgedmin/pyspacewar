@@ -2943,6 +2943,35 @@ def doctest_GameUI_calc_Ship_thrusters():
     """
 
 
+def doctest_GameUI_missile_trails():
+    """Test for GameUI.update_missile_trails and draw_missile_trails
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.MAX_TRAIL = 5
+        >>> ui.init()
+        >>> ui.start_single_player_game()
+        >>> ui.launch_missile(0)
+
+        >>> for n in range(ui.MAX_TRAIL + 1):
+        ...     ui.update_missile_trails()
+
+        >>> [(missile, trail)] = ui.missile_trails.items()
+        >>> len(trail)
+        5
+
+        >>> ui.draw_missile_trails()
+
+        >>> missile.explode()
+        >>> for n in range(ui.MAX_TRAIL + 1):
+        ...     ui.update_missile_trails()
+
+        >>> ui.missile_trails
+        {}
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
