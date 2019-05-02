@@ -2831,6 +2831,18 @@ def doctest_GameUI_toggle_ai():
     """
 
 
+def doctest_GameUI_turn_left():
+    """Test for GameUI.turn_left
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.start_single_player_game()
+        >>> ui.turn_left(0)
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
