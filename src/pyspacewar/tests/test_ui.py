@@ -2849,6 +2849,22 @@ def doctest_GameUI_player_actions():
     """
 
 
+def doctest_GameUI_sound_effects():
+    """Test for GameUI sound effects
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.sound_in_vacuum = True
+
+        >>> ui.bounce_effect_Ship(ui.ships[0], ui.ships[1])
+        >>> ui.hit_effect_Ship(ui.ships[0], ui.ships[1])
+        >>> ui.explode_effect_Ship(ui.ships[0], ui.ships[1])
+        >>> ui.respawn_effect_Ship(ui.ships[0])
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
