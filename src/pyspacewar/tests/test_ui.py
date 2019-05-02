@@ -3004,6 +3004,21 @@ def doctest_GameUI_draw_Debris():
     """
 
 
+def doctest_GameUI_wait_for_tick():
+    """Test for GameUI.wait_for_tick
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+
+        >>> ui.wait_for_tick()
+
+        >>> ui.pause()
+        >>> ui.wait_for_tick()
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
