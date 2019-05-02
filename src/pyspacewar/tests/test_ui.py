@@ -2781,6 +2781,25 @@ def doctest_GameUI_toggle_music():
     """
 
 
+def doctest_GameUI_toggle_sound():
+    """Test for GameUI.toggle_sound
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.start_sound('thruster')
+
+        >>> ui.toggle_sound()
+        >>> ui.sound
+        False
+
+        >>> ui.toggle_sound()
+        >>> ui.sound
+        True
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
