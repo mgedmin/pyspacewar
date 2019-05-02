@@ -2865,6 +2865,22 @@ def doctest_GameUI_sound_effects():
     """
 
 
+def doctest_GameUI_update_continuous_sounds():
+    """Test for GameUI.update_continuous_sounds
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.init()
+        >>> ui.start_single_player_game()
+
+        >>> ui.accelerate(0)
+        >>> ui.update_continuous_sounds()
+        >>> list(ui.sound_looping)
+        ['thruster']
+
+    """
+
+
 @pytest.yield_fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
