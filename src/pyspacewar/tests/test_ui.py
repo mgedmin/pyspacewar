@@ -2106,6 +2106,28 @@ def doctest_GameUI_load_settings():
     """
 
 
+def doctest_GameUI_load_settings_bad_mode():
+    """Test for GameUI
+
+        >>> tmpdir = tempfile.mkdtemp(prefix='pyspacewar-test-')
+        >>> filename = os.path.join(tmpdir, 'pyspacewarrc')
+        >>> with open(filename, 'w') as fp:
+        ...    _ = fp.write('''
+        ... [video]
+        ... mode = excellent
+        ... ''')
+
+        >>> from pyspacewar.ui import GameUI
+        >>> ui = GameUI()
+        >>> ui.load_settings(filename)
+
+        >>> ui.fullscreen_mode
+
+        >>> shutil.rmtree(tmpdir)
+
+    """
+
+
 def doctest_GameUI_save_settings():
     """Test for GameUI
 
