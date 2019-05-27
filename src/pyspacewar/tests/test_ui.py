@@ -3100,7 +3100,8 @@ def test_suite():
     return unittest.TestSuite([
         doctest.DocTestSuite('pyspacewar.ui', optionflags=optionflags,
                              setUp=setUp, tearDown=tearDown),
-        doctest.DocTestSuite(optionflags=optionflags),
+        doctest.DocTestSuite(optionflags=optionflags,
+                             setUp=setUp, tearDown=tearDown),
     ])
 
 
