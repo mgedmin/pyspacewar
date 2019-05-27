@@ -1,6 +1,8 @@
 Unreleased:
 
-- Nothing changed yet.
+- Use bundled Noto Sans fonts instead of expecting Verdana to be somewhere on
+  the system.
+- Test coverage almost 100%!
 
 April 23, 2019: Released version 1.1.1:
 

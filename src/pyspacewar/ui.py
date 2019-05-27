@@ -2205,29 +2205,13 @@ class GameUI(object):
 
     def _init_fonts(self):
         """Load fonts."""
-        # Work around another bug in pygame:
-        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/3415468
-        verdana = '/usr/share/fonts/truetype/msttcorefonts/verdana.ttf'
-        verdana_bold = '/usr/share/fonts/truetype/msttcorefonts/verdanab.ttf'
-        if not os.path.exists(verdana):
-            verdana = pygame.font.match_font('Verdana')
-        if not os.path.exists(verdana_bold):
-            verdana_bold = pygame.font.match_font('Verdana', bold=True)
-        # Work around a bug in pygame:
-        # http://aspn.activestate.com/ASPN/Mail/Message/pygame-users/2970161
-        if verdana and os.path.basename(verdana).lower() == 'verdanaz.ttf':
-            fontdir = os.path.dirname(verdana)
-            verdana = os.path.join(fontdir, 'verdana.ttf')
-            verdana_bold = os.path.join(fontdir, 'verdanab.ttf')
-            if not os.path.exists(verdana):
-                verdana = None
-            if not os.path.exists(verdana_bold):
-                verdana_bold = verdana
-        self.hud_font = pygame.font.Font(verdana, 14)
-        self.help_font = pygame.font.Font(verdana, 16)
-        self.help_bold_font = pygame.font.Font(verdana_bold, 16)
-        self.input_font = pygame.font.Font(verdana, 24)
-        self.menu_font = pygame.font.Font(verdana_bold, 30)
+        font = find('fonts', 'NotoSans-Regular.ttf')
+        bold_font = find('fonts', 'NotoSans-Bold.ttf')
+        self.hud_font = pygame.font.Font(font, 14)
+        self.help_font = pygame.font.Font(font, 16)
+        self.help_bold_font = pygame.font.Font(bold_font, 16)
+        self.input_font = pygame.font.Font(font, 24)
+        self.menu_font = pygame.font.Font(bold_font, 30)
 
     def _new_game(self, players=1):
         """Start a new game."""
