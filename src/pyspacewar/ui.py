@@ -11,9 +11,9 @@ import random
 import itertools
 
 try:
-    from configparser import ConfigParser
-except ImportError:
     from ConfigParser import RawConfigParser as ConfigParser
+except ImportError:
+    from configparser import ConfigParser
 
 try:
     unicode
