@@ -23,7 +23,7 @@ def get_git_revision(unknown='', format=' (git %s)'):
         ver = p.communicate()[0].strip()
         if not isinstance(ver, str):
             ver = ver.decode('UTF-8', 'replace')
-        return format % ver
+        return format % ver.replace('-', '.')
 
 
 if 'dev' in version:
