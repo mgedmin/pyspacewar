@@ -30,3 +30,7 @@ include *.mk
 include *.py
 include *.xml
 include pytest.ini
+
+# added by check_manifest.py
+recursive-include src *.ttf
+recursive-include src *.txt
