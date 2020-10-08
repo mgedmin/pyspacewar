@@ -10,7 +10,7 @@ all:
 
 .PHONY: test check
 test check:
-	./test.py
+	tox -p auto
 
 .PHONY: coverage
 coverage:
