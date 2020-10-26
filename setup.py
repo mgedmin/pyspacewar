@@ -71,6 +71,7 @@ setup(
             'images/*',
             'music/*',
             'sounds/*',
+            'fonts/*',
         ],
     },
     install_requires=['pygame'],
