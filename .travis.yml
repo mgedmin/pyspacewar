@@ -16,11 +16,6 @@ addons:
       - libjpeg-dev
       - libpng-dev
       - libportmidi-dev
-      # pygame 1.2 needed SDL 1.2
-      - libsdl-image1.2-dev
-      - libsdl-mixer1.2-dev
-      - libsdl-ttf2.0-dev
-      - libsdl1.2-dev
       # pygame 2.0 needs SDL 2
       - libsdl2-dev
       - libsdl2-image-dev
