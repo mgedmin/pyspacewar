@@ -8,9 +8,24 @@ python:
   - 3.9
   - pypy
   - pypy3
+apt:
+  packages:
+    - fontconfig
+    - libfreetype6-dev
+    - libjpeg-dev
+    - libpng-dev
+    - libportmidi-dev
+    # pygame 1.2 needed SDL 1.2
+    - libsdl-image1.2-dev
+    - libsdl-mixer1.2-dev
+    - libsdl-ttf2.0-dev
+    - libsdl1.2-dev
+    # pygame 2.0 needs SDL 2
+    - libsdl2-dev
+    - libsdl2-image-dev
+    - libsdl2-mixer-dev
+    - libsdl2-ttf-dev
 before_install:
-  - sudo apt-get update -q
-  - sudo apt-get build-dep -y python-pygame
   - pip install -U pip
   - |
     include_dir=/home/travis/virtualenv/$TRAVIS_PYTHON_VERSION/include
