@@ -1,6 +1,9 @@
 PySpaceWar
 ==========
 
+.. image:: https://travis-ci.com/mgedmin/pyspacewar.svg?branch=master
+    :target: https://travis-ci.com/mgedmin/pyspacewar
+
 Two ships duel in a gravity field.   Gravity doesn't affect the ships
 themselves (which have spanking new anti-gravity devices), but it affects
 missiles launced by the ships.
