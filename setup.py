@@ -76,4 +76,12 @@ setup(
         ],
     },
     install_requires=['pygame'],
+    extras_require={
+        'numpy': [
+            'numpy',
+        ],
+        'test': [
+            'mock',
+        ],
+    },
 )
