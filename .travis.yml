@@ -35,7 +35,7 @@ before_install:
       cp -r $real_include_dir $include_dir
     fi
 install:
-  - pip install coverage coveralls -e .
+  - pip install coverage coveralls -e .[test]
 script:
   - coverage run -m pytest src
 after_success:
