@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Install OS dependencies
-        run: sudo apt-get install -y ${{ env.packages }}
+        run: sudo apt-get update && sudo apt-get install -y ${{ env.packages }}
 
       - name: Git clone
         uses: actions/checkout@v2
