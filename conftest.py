@@ -1,7 +1,7 @@
 import os
 
-import pytest
 import pygame
+import pytest
 
 
 @pytest.fixture(scope='session', autouse=True)

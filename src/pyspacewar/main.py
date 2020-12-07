@@ -2,8 +2,8 @@
 PySpaceWar command line processing and main loop
 """
 
-import sys
 import optparse
+import sys
 
 from pyspacewar.ui import GameUI
 

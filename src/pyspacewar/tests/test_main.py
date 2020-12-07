@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import unittest
 import doctest
 import os
 import sys
+import unittest
 
 import pytest
 

@@ -4,11 +4,11 @@ PySpaceWar benchmarks for optimisation work
 """
 from __future__ import print_function
 
+import optparse
 import os
+import random
 import sys
 import time
-import random
-import optparse
 
 import pygame
 from pygame.locals import *
@@ -24,10 +24,10 @@ def setup_path():
 setup_path()
 
 
-from pyspacewar.game import Game
-from pyspacewar.world import Ship
 from pyspacewar.ai import AIController
+from pyspacewar.game import Game
 from pyspacewar.ui import GameUI
+from pyspacewar.world import Ship
 
 
 def get_cpu_speed():

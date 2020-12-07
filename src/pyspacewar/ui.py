@@ -2,13 +2,14 @@
 Graphical user interface for PySpaceWar
 """
 
-import os
-import sys
 import glob
-import time
-import math
-import random
 import itertools
+import math
+import os
+import random
+import sys
+import time
+
 
 try:
     from ConfigParser import RawConfigParser as ConfigParser
@@ -23,8 +24,6 @@ except NameError:
 import pygame
 from pygame.locals import (
     FULLSCREEN,
-    KEYDOWN,
-    KMOD_ALT,
     K_1,
     K_2,
     K_BACKSPACE,
@@ -59,6 +58,14 @@ from pygame.locals import (
     K_SCROLLOCK,
     K_SPACE,
     K_UP,
+    KEYDOWN,
+    KMOD_ALT,
+    MOUSEBUTTONDOWN,
+    MOUSEBUTTONUP,
+    MOUSEMOTION,
+    QUIT,
+    RESIZABLE,
+    VIDEORESIZE,
     K_a,
     K_d,
     K_f,
@@ -67,19 +74,13 @@ from pygame.locals import (
     K_q,
     K_s,
     K_w,
-    MOUSEBUTTONDOWN,
-    MOUSEBUTTONUP,
-    MOUSEMOTION,
-    QUIT,
-    RESIZABLE,
     Rect,
-    VIDEORESIZE,
 )
 
-from .world import Vector, Missile
-from .game import Game
 from .ai import AIController
+from .game import Game
 from .version import version
+from .world import Missile, Vector
 
 
 MODIFIER_KEYS = {

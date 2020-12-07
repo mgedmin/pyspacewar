@@ -9,10 +9,14 @@ import tempfile
 import unittest
 
 import mock
-import pytest
 import pygame
+import pytest
 from pygame.locals import (
-    Rect, KEYDOWN, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION,
+    KEYDOWN,
+    MOUSEBUTTONDOWN,
+    MOUSEBUTTONUP,
+    MOUSEMOTION,
+    Rect,
 )
 
 from pyspacewar.ui import key_name

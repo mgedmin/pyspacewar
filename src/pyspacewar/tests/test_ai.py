@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import unittest
 import doctest
-import sys
 import os
+import sys
+import unittest
 
 
 def effect(msg):

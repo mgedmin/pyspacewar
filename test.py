@@ -3,10 +3,10 @@
 Run all unit tests.
 """
 
-import unittest
 import glob
-import sys
 import os
+import sys
+import unittest
 
 
 def main():

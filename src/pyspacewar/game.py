@@ -3,10 +3,10 @@ PySpaceWar game logic: creation of worlds, respawning of ships, synchronizing
 with wall clock.
 """
 
-import time
 import random
+import time
 
-from .world import World, Vector, Ship, Planet
+from .world import Planet, Ship, Vector, World
 
 
 class PythonTimeSource(object):
