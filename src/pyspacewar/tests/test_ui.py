@@ -2477,7 +2477,7 @@ def doctest_GameUI_interact():
 
         >>> from pygame.locals import QUIT
         >>> event = pygame.event.Event(QUIT)
-        >>> pygame.event.post(event)
+        >>> _ = pygame.event.post(event)
         >>> try:
         ...     ui.interact()
         ... except SystemExit as e:
@@ -2488,24 +2488,24 @@ def doctest_GameUI_interact():
 
         >>> from pygame.locals import VIDEORESIZE
         >>> event = pygame.event.Event(VIDEORESIZE, size=(802, 600))
-        >>> pygame.event.post(event)
+        >>> _ = pygame.event.post(event)
         >>> ui.interact()
 
     Bashing keys
 
         >>> from pygame.locals import KEYDOWN, K_F12
         >>> event = pygame.event.Event(KEYDOWN, key=K_F12)
-        >>> pygame.event.post(event)
+        >>> _ = pygame.event.post(event)
         >>> ui.interact()
 
         >>> from pygame.locals import K_RETURN, KMOD_ALT
         >>> event = pygame.event.Event(KEYDOWN, key=K_RETURN, mod=KMOD_ALT)
-        >>> pygame.event.post(event)
+        >>> _ = pygame.event.post(event)
         >>> ui.interact()
 
         >>> from pygame.locals import K_a
         >>> event = pygame.event.Event(KEYDOWN, key=K_a)
-        >>> pygame.event.post(event)
+        >>> _ = pygame.event.post(event)
         >>> ui.interact()
 
     Bashing mouse buttons
@@ -2513,19 +2513,19 @@ def doctest_GameUI_interact():
         >>> from pygame.locals import MOUSEBUTTONDOWN
         >>> event = pygame.event.Event(MOUSEBUTTONDOWN, button=1,
         ...                            pos=(400, 300))
-        >>> pygame.event.post(event)
+        >>> _ = pygame.event.post(event)
         >>> ui.interact()
 
         >>> from pygame.locals import MOUSEBUTTONUP
         >>> event = pygame.event.Event(MOUSEBUTTONUP, button=1,
         ...                            pos=(400, 300))
-        >>> pygame.event.post(event)
+        >>> _ = pygame.event.post(event)
         >>> ui.interact()
 
         >>> from pygame.locals import MOUSEMOTION
         >>> event = pygame.event.Event(MOUSEMOTION, buttons=[False] * 3,
         ...                            pos=(400, 300), rel=(-10, 2))
-        >>> pygame.event.post(event)
+        >>> _ = pygame.event.post(event)
         >>> ui.interact()
 
     """
