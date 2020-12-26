@@ -3065,7 +3065,7 @@ def doctest_GameUI_wait_for_tick():
     """
 
 
-@pytest.yield_fixture(autouse=True)
+@pytest.fixture(autouse=True)
 def _pytest_setup(doctest_namespace):
     fake_test = mock.Mock()
     fake_test.globs = doctest_namespace
