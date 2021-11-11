@@ -98,7 +98,8 @@ class Game(object):
                                self.ship_placement_margin)
         ship.velocity = Vector(0, 0)
         granularity = self.ROTATION_SPEED * self.DELTA_TIME
-        ship.direction = self.rng.randrange(360 / granularity) * granularity
+        ship.direction = self.rng.randrange(
+            int(360 / granularity)) * granularity
         ship.respawn()
 
     def auto_respawn(self):
@@ -166,7 +167,7 @@ class Game(object):
                                 game.planet_placement_margin)
         for n in range(ships):
             granularity = cls.ROTATION_SPEED * cls.DELTA_TIME
-            direction = rng.randrange(360 / granularity) * granularity
+            direction = rng.randrange(int(360 / granularity)) * granularity
             ship = Ship(appearance=n, direction=direction)
             # Install a standard engine
             ship.rotation_speed = cls.ROTATION_SPEED
