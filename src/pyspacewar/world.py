@@ -19,7 +19,7 @@ class Vector(tuple):
         >>> v1.x = 5
         Traceback (most recent call last):
           ...
-        AttributeError: can't set attribute
+        AttributeError: ...
 
     """
 
