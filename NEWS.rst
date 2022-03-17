@@ -4,7 +4,7 @@ Unreleased:
   the system.
 - Test coverage is 100%!
 - Add support for Python 3.8, 3.9, and 3.10.
-- Drop support for Python 3.5.
+- Drop support for Python 3.5 and 3.6.
 
 April 23, 2019: Released version 1.1.1:
 
