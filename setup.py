@@ -45,6 +45,7 @@ setup(
     url='https://mg.pov.lt/pyspacewar/',
     description='A game loosely inspired by the original Spacewar',
     long_description=long_description,
+    long_description_content_type='text/x-rst',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: MacOS X',
