@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-import doctest
-import os
-import sys
-import unittest
-
 
 class Object(object):
 
@@ -753,18 +748,3 @@ def doctest_Planet():
         >>> moon.collision(sun)  # nothing happens
 
     """
-
-
-def test_suite():
-    path = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), '..', '..'))
-    if path not in sys.path:
-        sys.path.append(path)
-    return unittest.TestSuite([
-        doctest.DocTestSuite('pyspacewar.world'),
-        doctest.DocTestSuite(),
-    ])
-
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')

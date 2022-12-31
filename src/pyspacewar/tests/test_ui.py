@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
-import doctest
 import os
 import shutil
-import sys
 import tempfile
-import unittest
 
 import mock
 import pygame
@@ -3066,15 +3063,7 @@ def doctest_GameUI_wait_for_tick():
 
 
 @pytest.fixture(autouse=True)
-def _pytest_setup(doctest_namespace):
-    fake_test = mock.Mock()
-    fake_test.globs = doctest_namespace
-    setUp(fake_test)
-    yield
-    tearDown(fake_test)
-
-
-def setUp(test):
+def pytest_setup():
     os.environ['SDL_VIDEODRIVER'] = 'dummy'
     os.environ['SDL_AUDIODRIVER'] = 'dummy'
     pygame.init()  # so that pygame.key.name() works
@@ -3086,28 +3075,5 @@ def setUp(test):
     pygame.Surface = SurfaceStub
     pygame.surfarray.array_alpha = array_alpha_stub
     pygame.surfarray.pixels_alpha = pixels_alpha_stub
-
-
-def tearDown(test):
+    yield
     mock.patch.stopall()
-
-
-def test_suite():
-    path = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), '..', '..'))
-    if path not in sys.path:
-        sys.path.append(path)
-    optionflags = (
-        doctest.REPORT_ONLY_FIRST_FAILURE
-        | doctest.REPORT_NDIFF
-    )
-    return unittest.TestSuite([
-        doctest.DocTestSuite('pyspacewar.ui', optionflags=optionflags,
-                             setUp=setUp, tearDown=tearDown),
-        doctest.DocTestSuite(optionflags=optionflags,
-                             setUp=setUp, tearDown=tearDown),
-    ])
-
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')

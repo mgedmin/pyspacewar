@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-import doctest
-import os
-import sys
-import unittest
-
 
 class TimeSourceStub(object):
 
@@ -310,15 +305,3 @@ def doctest_Game_new():
         2
 
     """
-
-
-def test_suite():
-    path = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), '..', '..'))
-    if path not in sys.path:
-        sys.path.append(path)
-    return doctest.DocTestSuite()
-
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')

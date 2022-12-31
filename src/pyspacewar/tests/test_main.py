@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-import doctest
-import os
 import sys
-import unittest
 
 import pytest
 
@@ -48,18 +45,6 @@ def doctest_main():
 
 
 @pytest.fixture(scope='module', autouse=True)
-def setUp(test=None):
+def fake_game_ui(test=None):
     from pyspacewar import main
     main.GameUI = FakeGameUI
-
-
-def test_suite():
-    path = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), '..', '..'))
-    if path not in sys.path:
-        sys.path.append(path)
-    return doctest.DocTestSuite(setUp=setUp)
-
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')

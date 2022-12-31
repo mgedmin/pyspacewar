@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-import doctest
-import os
-import sys
-import unittest
-
 
 def effect(msg):
     def callback(*args):
@@ -233,15 +228,3 @@ def doctest_AIController_maybe_fire():
         >>> ai.maybe_fire(enemy, 10)
 
     """
-
-
-def test_suite():
-    path = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), '..', '..'))
-    if path not in sys.path:
-        sys.path.append(path)
-    return doctest.DocTestSuite()
-
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')
