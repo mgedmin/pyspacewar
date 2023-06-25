@@ -18,7 +18,7 @@ Bug tracker: https://github.com/mgedmin/pyspacewar/issues
 
 Requirements:
 
-* Python (https://www.python.org/), at least version 2.7
+* Python (https://www.python.org/), at least version 3.7
 * PyGame (https://www.pygame.org/)
 
 
