@@ -23,8 +23,7 @@ install:
   - ps: if (-not (Test-Path $env:PYTHON)) { throw "No $env:PYTHON" }
   - "set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   - python --version
-  - pip install pytest mock
-  - pip install -e .
+  - pip install -e '.[test]'
   - 'python -c "import pygame; print(pygame.__version__)"'
 
 build: off
