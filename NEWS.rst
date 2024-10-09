@@ -1,4 +1,4 @@
-Unreleased:
+October 9, 2024: Released version 1.2.0:
 
 - Use bundled Noto Sans fonts instead of expecting Verdana to be somewhere on
   the system.

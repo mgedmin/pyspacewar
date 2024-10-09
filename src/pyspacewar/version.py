@@ -4,7 +4,7 @@ PySpaceWar version number tracker.
 
 # zest.releaser insists on this being stored in a variable called __version__
 # but we want version elsewhere in the codebase.
-__version__ = '1.2.0.dev0'
+__version__ = '1.2.0'
 version = __version__
 
 

@@ -1,6 +1,6 @@
 FILE_WITH_VERSION = src/pyspacewar/version.py
 FILE_WITH_CHANGELOG = NEWS.rst
-CHANGELOG_DATE_FORMAT = %B %d, %Y
+CHANGELOG_DATE_FORMAT = %B %-d, %Y
 CHANGELOG_FORMAT = $(changelog_date): Released version $(changelog_ver):
 
 .PHONY: all
