@@ -86,7 +86,7 @@ setup(
         ],
         'test': [
             'mock',
-            'pytest < 8',
+            'pytest',
         ],
     },
 )
