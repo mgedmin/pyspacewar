@@ -3,7 +3,7 @@ Unreleased:
 - Use bundled Noto Sans fonts instead of expecting Verdana to be somewhere on
   the system.
 - Test coverage is 100%!
-- Add support for Python 3.8, 3.9, 3.10, 3.11, and 3.12.
+- Add support for Python 3.8, 3.9, 3.10, 3.11, 3.12, and 3.13.
 - Drop support for Python 2.7, 3.5 and 3.6.
 
 April 23, 2019: Released version 1.1.1:
