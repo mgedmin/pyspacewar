@@ -1,7 +1,7 @@
 PySpaceWar
 ==========
 
-.. image:: https://github.com/mgedmin/pyspacewar/workflows/build/badge.svg?branch=master
+.. image:: https://github.com/mgedmin/pyspacewar/actions/workflows/build.yml/badge.svg?branch=master
     :target: https://github.com/mgedmin/pyspacewar/actions
 
 Two ships duel in a gravity field.   Gravity doesn't affect the ships
