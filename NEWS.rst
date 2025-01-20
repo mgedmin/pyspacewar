@@ -1,6 +1,6 @@
 Unreleased:
 
-- No changes yet.
+- Drop support for Python 3.7
 
 October 9, 2024: Released version 1.2.0:
 

@@ -13,8 +13,7 @@ test:                           ##: run tests
 
 .PHONY: coverage
 coverage:                       ##: measure test coverage
-	tox -p auto -e coverage,coverage3 -- -p
-	coverage combine
+	tox -e coverage
 	coverage report -m
 
 
