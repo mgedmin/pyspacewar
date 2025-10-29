@@ -1,14 +1,18 @@
 #!/usr/bin/env python
-import os
-import sys
+import ast
+import pathlib
+import re
 
 from setuptools import setup
 
 
-with open('NEWS.rst') as f:
-    news = f.read()
+here = pathlib.Path(__file__).parent
 
-long_description = """\
+
+news = here.joinpath('NEWS.rst').read_text()
+
+
+long_description = """
 Two ships duel in a gravity field.   Gravity doesn't affect
 the ships themselves (which have spanking new anti-gravity
 devices), but it affects missiles launced by the ships.
@@ -21,16 +25,18 @@ specify the direction and velocity of their missiles.
 Latest changes
 --------------
 
-""" + '\n\n'.join(news.split('\n\n')[:2])
-
-pkgdir = os.path.join('src', 'pyspacewar')
+""".lstrip('\n') + '\n\n'.join(news.split('\n\n')[:2])
 
 
 def determine_version():
-    sys.path.insert(0, 'src')
-    from pyspacewar.version import version
-    del sys.path[0]
-    return version
+    metadata = {}
+    with (here / 'src' / 'pyspacewar' / 'version.py').open() as f:
+        rx = re.compile("(__version__|__author__|__url__|__licence__) = (.*)")
+        for line in f:
+            m = rx.match(line)
+            if m:
+                metadata[m.group(1)] = ast.literal_eval(m.group(2))
+    return metadata["__version__"]
 
 
 version = determine_version()
