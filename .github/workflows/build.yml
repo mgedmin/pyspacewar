@@ -37,6 +37,11 @@ jobs:
           # Building pygame for pypy on Windows sounds like a pain
           - python-version: "pypy3.10"
             os: ubuntu-latest
+        exclude:
+          # Pygame doesn't support Python 3.14 on Windows yet:
+          # https://github.com/pygame/pygame/issues/4627
+          - python-version: "3.14"
+            os: windows-latest
 
     steps:
       - name: Install OS dependencies (Linux)
