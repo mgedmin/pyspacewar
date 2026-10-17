@@ -1,6 +1,6 @@
 Unreleased:
 
-- Add support for Python 3.14.
+- Add support for Python 3.14 and 3.15.
 - Drop support for Python 3.7, 3.8, and 3.9
 
 October 9, 2024: Released version 1.2.0:
