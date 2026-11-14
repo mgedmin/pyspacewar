@@ -30,13 +30,17 @@ jobs:
           - "3.12"
           - "3.13"
           - "3.14"
+          - "3.15"
         os:
           - ubuntu-latest
           - windows-latest
         exclude:
-          # Pygame doesn't support Python 3.14 on Windows yet:
-          # https://github.com/pygame/pygame/issues/4627
+          # Pygame doesn't support Python 3.14 or 3.15 on Windows yet:
+          # - https://github.com/pygame/pygame/issues/4627 (3.14)
+          # - https://github.com/pygame/pygame/issues/4716 (3.15)
           - python-version: "3.14"
+            os: windows-latest
+          - python-version: "3.15"
             os: windows-latest
 
     steps:
